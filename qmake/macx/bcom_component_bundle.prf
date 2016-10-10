@@ -1,0 +1,58 @@
+# Author(s) : Loic Touraine
+
+INFOPLIST_FILEPATH = $$_PRO_FILE_PWD_/$${QMAKE_INFO_PLIST}
+exists($${INFOPLIST_FILEPATH}) {
+    INFOPLIST_CONTENT = $$cat($${INFOPLIST_FILEPATH},lines)
+    INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@EXECUTABLE@", $$TARGET)
+    INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@SHORT_VERSION@", $$VERSION)
+    write_file($$OUT_PWD/Info.plist, INFOPLIST_CONTENT)
+}
+
+infoplist_resources.path = Contents
+infoplist_resources.files = $$OUT_PWD/Info.plist
+QMAKE_BUNDLE_DATA += infoplist_resources
+
+for (bundle_data, QMAKE_BUNDLE_DATA) {
+    for (bundle_file, $${bundle_data}.files) {
+        create_bundle.depends += $${bundle_file}
+        for (bundle_path, $${bundle_data}.path ) {
+            !equals(BUNDLE_PREPARE_CMD,"") {
+                BUNDLE_PREPARE_CMD += &&
+            }
+            !equals(BUNDLE_PACKAGE_CMD,"") {
+                BUNDLE_PACKAGE_CMD += &&
+            }
+            BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${QMAKE_BUNDLE_EXTENSION}/$${bundle_path}
+            BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${QMAKE_BUNDLE_EXTENSION}/$${bundle_path}/
+        }
+    }
+}
+
+for (bundle_binary, QMAKE_BUNDLE_BINARY) {
+    for (bundle_file, $${bundle_binary}.files) {
+        for (bundle_path, $${bundle_binary}.path ) {
+            !equals(BUNDLE_PREPARE_CMD,"") {
+                BUNDLE_PREPARE_CMD += &&
+            }
+            !equals(BUNDLE_PACKAGE_CMD,"") {
+                BUNDLE_PACKAGE_CMD += &&
+            }
+            BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${QMAKE_BUNDLE_EXTENSION}/$${bundle_path}
+            BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${QMAKE_BUNDLE_EXTENSION}/$${bundle_path}/$${TARGET}
+        }
+    }
+}
+
+bcom_component_bundle_clean.commands = rm -rf $${TARGET}$${QMAKE_BUNDLE_EXTENSION}
+
+bcom_component_bundle_prepare.commands = $$BUNDLE_PREPARE_CMD
+bcom_component_bundle_prepare.depends += bcom_component_bundle_clean
+
+#Files copy in bundle must occur after the library build : the bcom_component_bundle depends on the Makefile's $(TARGET)
+create_bundle.commands = $$BUNDLE_PACKAGE_CMD
+create_bundle.depends += bcom_component_bundle_prepare $(TARGET)
+
+#QMAKE doesn't manage adding targets from inference rules : we need to explicitly declare each target even when they are dependent on each other
+QMAKE_EXTRA_TARGETS += bcom_component_bundle_clean bcom_component_bundle_prepare create_bundle
+#NOTE: DO NOT PUT bcom_component_bundle in POST or PRE_TARGETDEPS as it will create a circular dependent upon $(TARGET) and will result in the build of the target AFTER the bcom_component_bundle target
+#which gives an error (the target to copy doesn't exists)

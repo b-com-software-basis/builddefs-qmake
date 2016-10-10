@@ -1,0 +1,69 @@
+# Author(s) : Stephane Leduc
+# NOTE : paramteres and sample values for each param
+
+# Product name
+#SETUP_PRODUCTNAME=$$shell_quote(b<>com *Ultra plugin* BinauralVirtualComponents)
+
+# Setup file prefix (used only for nsis OutFile param)
+#SETUP_FILEPFX=Setup_b-com_
+
+# Setup filename
+#SETUP_FILENAME=UltraPlugin_BinauralVirtualComponents
+
+# Version
+#SETUP_VERSION=$${VERSION}
+
+# Unique setup guid (need to be changed!)
+#SETUP_GUID=1234
+
+# Install dir
+#SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/Steinberg/VSTPlugins/))
+
+# Sub install dir (added to install dir) (OPTIONAL - value can be empty)
+#SETUP_SUBINSTALLDIR=bcom
+
+# Copy a specified file in a specified dir (OPTIONAL - values can be empty)
+#SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))
+#SETUP_COPYFILENAME=$${TARGET}.$${DYNLIBEXT}
+
+# Copy all contents of directory (OPTIONAL - values can be empty)
+#SETUP_COPYDIR=$$shell_quote($$shell_path($$_PRO_FILE_PWD_/config/BVC_minimal_config))
+
+#global defaults
+MAKENSIS_COMMAND = $$system(where makensis)
+isEmpty(MAKENSIS_COMMAND) {
+    exists($$(PROGRAMFILES)/NSIS/makensis.exe) {
+        MAKENSIS_COMMAND = $$(PROGRAMFILES)/NSIS/makensis.exe
+    } else {
+        message("Unable to find NSIS application : check your windows NSIS installation")
+    }
+}
+
+
+NSISCOMMAND = $$shell_quote($$shell_path($${MAKENSIS_COMMAND})) \
+                            /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME} /DSETUP_FILENAME=$${SETUP_FILENAME} \
+                            /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID} \
+                            /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR}
+
+if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
+    NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}
+}
+
+!isEmpty(SETUP_SUBINSTALLDIR) {
+    NSISCOMMAND += /DSETUP_SUBINSTALLDIR=$${SETUP_SUBINSTALLDIR}
+}
+!isEmpty(SETUP_COPYDIR) {
+    NSISCOMMAND += /DSETUP_COPYDIR=$${SETUP_COPYDIR}
+}
+
+NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/$${SETUP_FILEPFX}$${SETUP_FILENAME}.exe))) \
+               $$shell_quote($$shell_path($$_PRO_FILE_PWD_/builddefs/nsis/Setup.nsi))
+
+
+
+create_setup.commands = $$NSISCOMMAND
+#create_setup.depends = all install
+QMAKE_EXTRA_TARGETS  += create_setup
+
+
+

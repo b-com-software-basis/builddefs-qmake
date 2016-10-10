@@ -1,0 +1,25 @@
+# Author(s) : Loic Touraine
+
+for(source, SOURCES) {
+    contains(source,.*\\.mm?$) {
+        warning(Objective-C source \'$$source\' found in SOURCES but should be in OBJECTIVE_SOURCES)
+        SOURCES -= $$source
+        OBJECTIVE_SOURCES += $$source
+    }
+}
+
+QMAKE_EXTRA_COMPILERS -= objective_c
+
+isEmpty(QMAKE_OBJECTIVE_CC):QMAKE_OBJECTIVE_CC = $$QMAKE_CC
+
+isEmpty(OBJECTIVE_C_OBJECTS_DIR):OBJECTIVE_C_OBJECTS_DIR = objectivec_objects
+isEmpty(QMAKE_EXT_OBJECTIVE_C):QMAKE_EXT_OBJECTIVE_C = .mm .m
+
+bcom_objective_c.dependency_type = TYPE_C
+bcom_objective_c.variables = QMAKE_OBJECTIVE_CFLAGS
+bcom_objective_c.commands = $$QMAKE_OBJECTIVE_CC -c $(QMAKE_COMP_QMAKE_OBJECTIVE_CFLAGS) $(DEFINES) $(INCPATH) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+bcom_objective_c.output = $$OBJECTIVE_C_OBJECTS_DIR/${QMAKE_FILE_BASE}$${first(QMAKE_EXT_OBJ)}
+bcom_objective_c.input = BCOM_OBJECTIVE_SOURCES
+bcom_objective_c.name = Compile ${QMAKE_FILE_IN}
+silent:bcom_objective_c.commands = @echo objective-c ${QMAKE_FILE_IN} && $$bcom_objective_c.commands
+QMAKE_EXTRA_COMPILERS += bcom_objective_c
