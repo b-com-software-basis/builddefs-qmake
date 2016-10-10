@@ -1,0 +1,7 @@
+# Author(s) : Loic Touraine
+
+macx {
+    include (macx/bcom_rez.prf)
+    include (macx/bcom_resmerger.prf)
+    include (macx/bcom_objective_c.prf)
+}
