@@ -1,0 +1,30 @@
+# Author(s) : Loic Touraine
+
+QMAKE_EXTRA_COMPILERS -= rez_source
+#global defaults
+isEmpty(QMAKE_REZ) {
+    exists("/Applications/Xcode.app/Contents/Developer/Tools/Rez") {
+       QMAKE_REZ = "/Applications/Xcode.app/Contents/Developer/Tools/Rez"
+    } else {
+        exists("/Developer/Tools/Rez") {
+            QMAKE_REZ = "/Developer/Tools/Rez"
+        } else {
+            message("Unable to find Rez application : check your Xcode and Developer Tools installation")
+        }
+    }
+}
+
+isEmpty(REZ_DIR):REZ_DIR = .
+isEmpty(QMAKE_EXT_REZ):QMAKE_EXT_REZ = .rsrc
+QMAKE_REZ_FLAGS += -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk #$$QMAKE_MAC_SDK_PATH
+
+bcom_rez_source.CONFIG += no_link
+bcom_rez_source.dependency_type = TYPE_C
+bcom_rez_source.variables = QMAKE_REZ_FLAGS
+bcom_rez_source.commands = $$QMAKE_REZ ${QMAKE_FILE_IN} $(QMAKE_COMP_QMAKE_REZ_FLAGS) -o ${QMAKE_FILE_OUT} -useDF
+bcom_rez_source.output = $$REZ_DIR/${QMAKE_FILE_BASE}$${first(QMAKE_EXT_REZ)}
+bcom_rez_source.input = BCOM_REZ_FILES
+bcom_rez_source.name = REZ ${QMAKE_FILE_IN}
+bcom_rez_source.variable_out = BCOM_REZ_COMPILED_FILES
+silent:bcom_rez_source.commands = @echo rez ${QMAKE_FILE_IN} && $$bcom_rez_source.commands
+QMAKE_EXTRA_COMPILERS += bcom_rez_source
