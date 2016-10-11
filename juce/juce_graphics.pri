@@ -9,20 +9,18 @@ include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_events.pri)
 
 JUCEPATH=$$_PRO_FILE_PWD_/libs/Juce
 
-QMAKE_JUCEMODULENAME=juceGraphics
+QMAKE_JUCEMODULENAME=juce_graphics
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-message("Including " $${QMAKE_JUCEMODULENAME})
-QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-DEFINES += JUCE_MODULE_$${QMAKE_JUCEMODULENAME}=1
+	message("Including " $${QMAKE_JUCEMODULENAME})
+	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-!contains(INCLUDEPATH,$${JUCEPATH}) {
-    INCLUDEPATH += $${JUCEPATH}
-}
+	!contains(INCLUDEPATH,$${JUCEPATH}) {
+		INCLUDEPATH += $${JUCEPATH}
+	}
 
-
-
-# Common sources
-SOURCES += \
-    $${JUCEPATH}/modules/juce_graphics/juce_graphics.cpp
+	# Common sources
+	SOURCES += \
+		$${JUCEPATH}/modules/juce_graphics/juce_graphics.cpp
 }

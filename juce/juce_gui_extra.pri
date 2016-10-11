@@ -8,20 +8,18 @@ include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_gui_basics.pri)
 
 JUCEPATH=$$_PRO_FILE_PWD_/libs/Juce
 
-QMAKE_JUCEMODULENAME=juceGuiExtra
+QMAKE_JUCEMODULENAME=juce_gui_extra
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-message("Including " $${QMAKE_JUCEMODULENAME})
-QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-DEFINES += JUCE_MODULE_$${QMAKE_JUCEMODULENAME}=1
+	message("Including " $${QMAKE_JUCEMODULENAME})
+	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-!contains(INCLUDEPATH,$${JUCEPATH}) {
-    INCLUDEPATH += $${JUCEPATH}
-}
+	!contains(INCLUDEPATH,$${JUCEPATH}) {
+		INCLUDEPATH += $${JUCEPATH}
+	}
 
-
-
-# Common sources
-SOURCES += \
-    $${JUCEPATH}/modules/juce_gui_extra/juce_gui_extra.cpp
+	# Common sources
+	SOURCES += \
+		$${JUCEPATH}/modules/juce_gui_extra/juce_gui_extra.cpp
 }
