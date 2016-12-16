@@ -32,8 +32,9 @@
 #global defaults
 MAKENSIS_COMMAND = $$system(where makensis)
 isEmpty(MAKENSIS_COMMAND) {
-    exists($$(PROGRAMFILES)/NSIS/makensis.exe) {
-        MAKENSIS_COMMAND = $$(PROGRAMFILES)/NSIS/makensis.exe
+    PATH = $$clean_path($$getenv(PROGRAMFILES(X86))/NSIS/makensis.exe)
+    exists($${PATH}) {
+        MAKENSIS_COMMAND = $${PATH}
     } else {
         message("Unable to find NSIS application : check your windows NSIS installation")
     }
