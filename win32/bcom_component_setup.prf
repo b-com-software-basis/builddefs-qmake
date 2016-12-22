@@ -62,8 +62,8 @@ NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${TARGETDEPLO
 
 
 
-create_setup.commands = $$NSISCOMMAND
-#create_setup.depends = all install
+create_bundle.commands = $$NSISCOMMAND
+#create_bundle.depends = all install
 QMAKE_EXTRA_TARGETS  += create_bundle
 
 
