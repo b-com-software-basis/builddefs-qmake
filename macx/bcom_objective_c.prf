@@ -9,7 +9,7 @@ for(source, SOURCES) {
 }
 
 QMAKE_EXTRA_COMPILERS -= objective_c
-
+QMAKE_OBJECTIVE_CFLAGS += -x objective-c++
 isEmpty(QMAKE_OBJECTIVE_CC):QMAKE_OBJECTIVE_CC = $$QMAKE_CC
 
 isEmpty(OBJECTIVE_C_OBJECTS_DIR):OBJECTIVE_C_OBJECTS_DIR = objectivec_objects
