@@ -1,50 +1,70 @@
 # Author(s) : Loic Touraine
 
-INFOPLIST_FILEPATH = $$_PRO_FILE_PWD_/$${QMAKE_INFO_PLIST}
-exists($${INFOPLIST_FILEPATH}) {
-    INFOPLIST_CONTENT = $$cat($${INFOPLIST_FILEPATH},lines)
-    INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@EXECUTABLE@", $$TARGET)
-    INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@SHORT_VERSION@", $$VERSION)
-    write_file($$OUT_PWD/Info.plist, INFOPLIST_CONTENT)
-}
+for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
+    INFOPLIST_FILEPATH = $$_PRO_FILE_PWD_/$${QMAKE_INFO_PLIST}
+    INFOPLIST_BUNDLEPKGTYPE = BNDL
+    contains(BUNDLE_EXTENSION,.aaxplugin) {
+        INFOPLIST_BUNDLEPKGTYPE = TDMw
+    }
+    exists($${INFOPLIST_FILEPATH}) {
+        INFOPLIST_CONTENT = $$cat($${INFOPLIST_FILEPATH},lines)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@EXECUTABLE@", $$TARGET)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@SHORT_VERSION@", $$VERSION)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@BUNDLEPKGTYPE@", $$INFOPLIST_BUNDLEPKGTYPE)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@PLUGINCODE@", $$JUCEPLUGIN_PLUGINCODE)
+        write_file($$OUT_PWD/Info.plist$${BUNDLE_EXTENSION}, INFOPLIST_CONTENT)
+        QMAKE_DISTCLEAN += $$OUT_PWD/Info.plist$${BUNDLE_EXTENSION}
+    }
 
-infoplist_resources.path = Contents
-infoplist_resources.files = $$OUT_PWD/Info.plist
-QMAKE_BUNDLE_DATA += infoplist_resources
+    infoplist_resources.path = Contents
+    infoplist_resources.files = $$OUT_PWD/Info.plist$${BUNDLE_EXTENSION}
+    QMAKE_BUNDLE_DATA += infoplist_resources
 
-for (bundle_data, QMAKE_BUNDLE_DATA) {
-    for (bundle_file, $${bundle_data}.files) {
-        create_bundle.depends += $${bundle_file}
-        for (bundle_path, $${bundle_data}.path ) {
-            !equals(BUNDLE_PREPARE_CMD,"") {
-                BUNDLE_PREPARE_CMD += &&
+    for (bundle_data, QMAKE_BUNDLE_DATA) {
+        for (bundle_file, $${bundle_data}.files) {
+            create_bundle.depends += $${bundle_file}
+            for (bundle_path, $${bundle_data}.path ) {
+                !equals(BUNDLE_PREPARE_CMD,"") {
+                    BUNDLE_PREPARE_CMD += &&
+                }
+                !equals(BUNDLE_PACKAGE_CMD,"") {
+                    BUNDLE_PACKAGE_CMD += &&
+                }
+                BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}
+                # Handle Info.plist
+                contains(bundle_data,infoplist_resources) {
+                    BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}/Info.plist
+                }
+                # Standard copy for all other files except Info.plist
+                !contains(bundle_data,infoplist_resources) {
+                    BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}/
+                }
             }
-            !equals(BUNDLE_PACKAGE_CMD,"") {
-                BUNDLE_PACKAGE_CMD += &&
-            }
-            BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${QMAKE_BUNDLE_EXTENSION}/$${bundle_path}
-            BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${QMAKE_BUNDLE_EXTENSION}/$${bundle_path}/
         }
     }
-}
 
-for (bundle_binary, QMAKE_BUNDLE_BINARY) {
-    for (bundle_file, $${bundle_binary}.files) {
-        for (bundle_path, $${bundle_binary}.path ) {
-            !equals(BUNDLE_PREPARE_CMD,"") {
-                BUNDLE_PREPARE_CMD += &&
+    for (bundle_binary, QMAKE_BUNDLE_BINARY) {
+        for (bundle_file, $${bundle_binary}.files) {
+            for (bundle_path, $${bundle_binary}.path ) {
+                !equals(BUNDLE_PREPARE_CMD,"") {
+                    BUNDLE_PREPARE_CMD += &&
+                }
+                !equals(BUNDLE_PACKAGE_CMD,"") {
+                    BUNDLE_PACKAGE_CMD += &&
+                }
+                BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}
+                BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}/$${TARGET}
             }
-            !equals(BUNDLE_PACKAGE_CMD,"") {
-                BUNDLE_PACKAGE_CMD += &&
-            }
-            BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${QMAKE_BUNDLE_EXTENSION}/$${bundle_path}
-            BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${QMAKE_BUNDLE_EXTENSION}/$${bundle_path}/$${TARGET}
         }
     }
+
+    !equals(BUNDLE_PACKAGE_CLEAN_CMD,"") {
+        BUNDLE_PACKAGE_CLEAN_CMD += &&
+    }
+    BUNDLE_PACKAGE_CLEAN_CMD += rm -rf $${TARGET}$${BUNDLE_EXTENSION}
 }
 
-bcom_component_bundle_clean.commands = rm -rf $${TARGET}$${QMAKE_BUNDLE_EXTENSION}
-
+bcom_component_bundle_clean.commands = $${BUNDLE_PACKAGE_CLEAN_CMD}
 bcom_component_bundle_prepare.commands = $$BUNDLE_PREPARE_CMD
 bcom_component_bundle_prepare.depends += bcom_component_bundle_clean
 

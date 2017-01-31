@@ -59,9 +59,13 @@ contains(QMAKE_JUCEAUDIOCONFIG,juceAU) {
 
 macx {
     include ($$_PRO_FILE_PWD_/builddefs/qmake/macx/audio_unit.pri)
+    contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
+        QMAKE_BUNDLE_EXTENSION_LIST += .aaxplugin
+    }
     contains(QMAKE_JUCEAUDIOCONFIG,juceAU) {
         BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/AU/juce_AU_Wrapper.mm
         BCOM_REZ_FILES += $${JUCEPATH}/modules/juce_audio_plugin_client/AU/juce_AU_Resources.r
+        QMAKE_BUNDLE_EXTENSION_LIST += .component
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
@@ -71,6 +75,11 @@ macx {
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
         BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/VST3/juce_VST3_Wrapper.mm
     }
+
+    contains(QMAKE_JUCEAUDIOCONFIG,juceVST|juceVST3) {
+        QMAKE_BUNDLE_EXTENSION_LIST += .vst
+    }
+    # message("Bundle extension list" $${QMAKE_BUNDLE_EXTENSION_LIST})
 }
 
 # Common sources
