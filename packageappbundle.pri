@@ -50,13 +50,13 @@ for(depfile, packagedepsfiles) {
                     message($${pkgCfgFilePath} "doesn't exist - take default behavior")
                     win32:equals(pkgLinkModeOverride, "shared") {
                         # Deployment - Copy shared submodules dependencies
-                        QMAKE_POST_LINK += $${QMAKE_COPY} $$shell_quote($$shell_path($${deployFolder}/lib/$$QMAKE_TARGET.arch/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${DYNLIBEXT})) $$shell_quote($$shell_path($$OUT_PWD/))
+                        QMAKE_POST_LINK += $${QMAKE_COPY} $$shell_quote($$shell_path($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${DYNLIBEXT})) $$shell_quote($$shell_path($$OUT_PWD/))
                     }
 
                 } else {
                     message($${pkgCfgFilePath} "exists")
-                    pkgCfgSharedLibVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$QMAKE_TARGET.arch/$${pkgLinkModeOverride}/$$OUTPUTDIR
-                    pkgCfgSharedLibVars += --define-variable=libdir=$${deployFolder}/lib/$$QMAKE_TARGET.arch/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                    pkgCfgSharedLibVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                    pkgCfgSharedLibVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
                     pkgCfgSharedLibVars += --define-variable=lext=$${DYNLIBEXT} --libs-only-other --static
                     !win32 {
                         pkgCfgSharedLibVars += --define-variable=pfx=$${LIBPREFIX}

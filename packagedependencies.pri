@@ -52,17 +52,17 @@ for(depfile, packagedepsfiles) {
                 message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values (check your config if it should exists)")
                 QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
                 equals(pkgLinkModeOverride,"static") {
-                    LIBS += $${deployFolder}/lib/$$QMAKE_TARGET.arch/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
+                    LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
                     bFoundAtLeastOneStaticDep = 1
                 } else {
-                    LIBS += $${deployFolder}/lib/$$QMAKE_TARGET.arch/$$OUTPUTDIR -l$${libName}
+                    LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR -l$${libName}
                 }
 
             } else {
                 message("--> [INFO] "  $${pkgCfgFilePath} "exists")
-                pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$QMAKE_TARGET.arch/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
                 pkgCfgVars += --define-variable=lext=$${LIBEXT}
-                pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$QMAKE_TARGET.arch/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
                 !win32 {
                     pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
                 }
