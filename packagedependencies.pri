@@ -124,6 +124,7 @@ exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
     PCFILE_CONTENT = $$replace(PCFILE_CONTENT, "@TARGET@", $$TARGET)
     PCFILE_CONTENT = $$replace(PCFILE_CONTENT, "@VERSION@", $$VERSION)
     write_file($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc, PCFILE_CONTENT)
+    QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
 }
 
 package_files.path = $${PROJECTDEPLOYDIR}
