@@ -1,18 +1,10 @@
 #Those rules depend upon libs/CoreAudioUtilityClasses submodule
-#TODO : check if some frameworks can be set in juce_audio_plugin, keeping only AU specific frameworks in this file !
+
 LIBS += -framework AudioUnit
 LIBS += -framework AudioToolbox
 LIBS += -framework CoreAudio
 LIBS += -framework CoreAudioKit
 LIBS += -framework CoreMIDI
-LIBS += -framework Accelerate
-LIBS += -framework Cocoa
-LIBS += -framework DiscRecording
-LIBS += -framework IOKit
-LIBS += -framework OpenGL
-LIBS += -framework QTKit
-LIBS += -framework QuartzCore
-LIBS += -framework WebKit
 
 COREAUDIOPATH=$$_PRO_FILE_PWD_/libs/CoreAudioUtilityClasses/CoreAudio
 QMAKE_REZ_FLAGS= -I $${COREAUDIOPATH}/AudioUnits/AUPublic/AUBase -F AudioUnit -F CoreServices -F CarbonCore -i /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers

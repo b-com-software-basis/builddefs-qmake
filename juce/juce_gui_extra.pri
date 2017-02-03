@@ -22,4 +22,8 @@ QMAKE_JUCEMODULENAME=juce_gui_extra
 	# Common sources
 	SOURCES += \
 		$${JUCEPATH}/modules/juce_gui_extra/juce_gui_extra.cpp
+        macx {
+            LIBS += -framework IOKit
+            LIBS += -framework WebKit
+        }
 }

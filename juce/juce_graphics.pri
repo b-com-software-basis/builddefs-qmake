@@ -23,4 +23,8 @@ QMAKE_JUCEMODULENAME=juce_graphics
 	# Common sources
 	SOURCES += \
 		$${JUCEPATH}/modules/juce_graphics/juce_graphics.cpp
+        macx {
+            LIBS += -framework Cocoa
+            LIBS += -framework QuartzCore
+        }
 }

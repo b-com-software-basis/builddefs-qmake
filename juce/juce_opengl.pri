@@ -22,4 +22,7 @@ QMAKE_JUCEMODULENAME=juce_opengl
 	# Common sources
 	SOURCES += \
 		$${JUCEPATH}/modules/juce_opengl/juce_opengl.cpp
+        macx {
+            LIBS += -framework OpenGL
+        }
 }

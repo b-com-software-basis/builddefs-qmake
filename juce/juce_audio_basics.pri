@@ -22,4 +22,7 @@ QMAKE_JUCEMODULENAME=juce_audio_basics
 	# Common sources
 	SOURCES += \
 		$${JUCEPATH}/modules/juce_audio_basics/juce_audio_basics.cpp
+        macx {
+            LIBS += -framework Accelerate
+        }
 }
