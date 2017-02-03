@@ -20,7 +20,8 @@ QMAKE_REZ_FLAGS += -isysroot /Applications/Xcode.app/Contents/Developer/Platform
 
 bcom_rez_source.CONFIG += no_link
 bcom_rez_source.dependency_type = TYPE_C
-bcom_rez_source.commands = $$QMAKE_REZ ${QMAKE_FILE_IN} $${QMAKE_REZ_FLAGS} -o ${QMAKE_FILE_OUT} -useDF
+bcom_rez_source.variables = QMAKE_REZ_FLAGS
+bcom_rez_source.commands = $$QMAKE_REZ ${QMAKE_FILE_IN} $(QMAKE_COMP_QMAKE_REZ_FLAGS) -o ${QMAKE_FILE_OUT} -useDF
 bcom_rez_source.output = $$REZ_DIR/${QMAKE_FILE_BASE}$${first(QMAKE_EXT_REZ)}
 bcom_rez_source.input = BCOM_REZ_FILES
 bcom_rez_source.name = REZ ${QMAKE_FILE_IN}

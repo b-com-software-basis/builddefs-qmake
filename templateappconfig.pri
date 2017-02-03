@@ -1,3 +1,8 @@
+# Author(s) : Loic Touraine, Stephane Leduc
+
+# Include extended compiler rules
+include ($$_PRO_FILE_PWD_/builddefs/qmake/bcom_compiler_specs.prf)
+
 TEMPLATE = app
 CONFIG += app_bundle
 
@@ -63,3 +68,9 @@ win32 {
     QMAKE_TARGET_COPYRIGHT=Copyright (c) 2016 b-com
     QMAKE_TARGET_PRODUCT=$$TARGET
 }
+
+# Parse dependencies if any and fill CFLAGS,CXXFLAGS and LFLAGS
+include ($$_PRO_FILE_PWD_/builddefs/qmake/packagedependencies.pri)
+
+# Add post build copy of dependencies with application
+include ($$_PRO_FILE_PWD_/builddefs/qmake/bcom_package_app.pri)

@@ -20,7 +20,8 @@ isEmpty(QMAKE_EXT_RESMERGER):QMAKE_EXT_RESMERGER = .rsrc
 
 bcom_resmerger_source.CONFIG += no_link combine
 bcom_resmerger_source.dependency_type = TYPE_C
-bcom_resmerger_source.commands = $$QMAKE_RESMERGER $${QMAKE_RESMERGER_FLAGS} ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+bcom_resmerger_source.variables = QMAKE_RESMERGER_FLAGS
+bcom_resmerger_source.commands = $$QMAKE_RESMERGER $(QMAKE_COMP_QMAKE_RESMERGER_FLAGS) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
 bcom_resmerger_source.output = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
 bcom_resmerger_source.input = BCOM_REZ_COMPILED_FILES
 bcom_resmerger_source.name = RESMERGER $${BCOM_REZ_COMPILED_FILES}

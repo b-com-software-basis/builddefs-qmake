@@ -3,6 +3,9 @@
 # Detect build toolchain and define BCOM_TARGET_ARCH
 include($$_PRO_FILE_PWD_/builddefs/qmake/bcom_arch_define.pri)
 
+# Include extended compiler rules
+include ($$_PRO_FILE_PWD_/builddefs/qmake/bcom_compiler_specs.prf)
+
 TEMPLATE = lib
 
 staticlib {
@@ -85,3 +88,6 @@ win32 {
 
 target.path = $${TARGETDEPLOYDIR}
 INSTALLS += target
+
+# Parse dependencies if any and fill CFLAGS,CXXFLAGS and LFLAGS
+include ($$_PRO_FILE_PWD_/builddefs/qmake/packagedependencies.pri)
