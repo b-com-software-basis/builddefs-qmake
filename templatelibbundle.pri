@@ -18,7 +18,7 @@ macx {
     QMAKE_CXXFLAGS += -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions
     QMAKE_CXXFLAGS += -O0
 
-    # Default BCOM_COMPONENT_BUNDLE_CFGDIR definition
-    BCOM_COMPONENT_BUNDLE_CFGDIR = Contents/Resources
-    DEFINES += "__BCOM_COMPONENT_BUNDLE_CFGDIR__=$${BCOM_COMPONENT_BUNDLE_CFGDIR}"
+    bcom_component_binary.path = Contents/MacOS
+    bcom_component_binary.files = lib$${TARGET}.$${DYNLIBEXT}
+    QMAKE_BUNDLE_BINARY += bcom_component_binary
 }
