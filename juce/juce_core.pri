@@ -15,6 +15,17 @@ QMAKE_JUCEMODULENAME=juce_core
 		INCLUDEPATH += $${JUCEPATH}
 	}
 
+	# Specific DEBUG/RELEASE juce mandatory defines (also mandatory for VST/VST3 build)
+	CONFIG(debug,debug|release) {
+	    DEFINES += _DEBUG=1
+	    DEFINES += DEBUG=1
+	}
+
+	CONFIG(release,debug|release) {
+	    DEFINES += _NDEBUG=1
+	    DEFINES += NDEBUG=1
+	}
+
 	# Common sources
 	SOURCES += \
 		$${JUCEPATH}/modules/juce_core/juce_core.cpp
