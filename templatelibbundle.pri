@@ -22,3 +22,8 @@ macx {
     bcom_component_binary.files = lib$${TARGET}.$${DYNLIBEXT}
     QMAKE_BUNDLE_BINARY += bcom_component_binary
 }
+
+win32 {
+    # global name for create_bundle
+    SETUP_COPYFILENAME=$${TARGET}.$${DYNLIBEXT}
+}
