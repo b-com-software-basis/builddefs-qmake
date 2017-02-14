@@ -1,5 +1,10 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
+# Check input parameters existence
+!defined(DEPENDENCIESCONFIG,var) {
+    warning("DEPENDENCIESCONFIG is not defined : defaulting to shared dependencies mode")
+}
+
 # Detect build toolchain and define BCOM_TARGET_ARCH
 include($$_PRO_FILE_PWD_/builddefs/qmake/bcom_arch_define.pri)
 

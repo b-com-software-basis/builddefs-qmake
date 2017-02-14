@@ -1,5 +1,11 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
+# Check input parameters existence
+!defined(PROJECTDEPLOYDIR,var) {
+    error("PROJECTDEPLOYDIR must be defined before templatelibconfig.pri inclusion. A typical definition is $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}.")
+}
+
+
 # Detect build toolchain and define BCOM_TARGET_ARCH
 include($$_PRO_FILE_PWD_/builddefs/qmake/bcom_arch_define.pri)
 
