@@ -25,6 +25,7 @@ QMAKE_JUCEMODULENAME=juce_audio_plugin_client
 contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
     DEFINES += JUCE_PLUGIN_BUILD_VST=1
     SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/VST/juce_VST_Wrapper.cpp
+    INCLUDEPATH += $$_PRO_FILE_PWD_/libs/Steinberg/CommonVST_3.6
 } else {
     DEFINES += JUCE_PLUGIN_BUILD_VST=0
 }
