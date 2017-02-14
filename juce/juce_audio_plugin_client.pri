@@ -23,39 +23,39 @@ QMAKE_JUCEMODULENAME=juce_audio_plugin_client
 }
 
 contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
-    DEFINES += JUCE_PLUGIN_BUILD_VST=1
+    JUCE_PLUGIN_BUILD_VST=1
     SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/VST/juce_VST_Wrapper.cpp
     INCLUDEPATH += $$_PRO_FILE_PWD_/libs/Steinberg/CommonVST_3.6
 } else {
-    DEFINES += JUCE_PLUGIN_BUILD_VST=0
+    JUCE_PLUGIN_BUILD_VST=0
 }
 
 contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
-    DEFINES += JUCE_PLUGIN_BUILD_VST3=1
+    JUCE_PLUGIN_BUILD_VST3=1
     SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/VST3/juce_VST3_Wrapper.cpp
     INCLUDEPATH += $$_PRO_FILE_PWD_/libs/Steinberg/CommonVST_3.6
 } else {
-    DEFINES += JUCE_PLUGIN_BUILD_VST3=0
+    JUCE_PLUGIN_BUILD_VST3=0
 }
 
 contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
- DEFINES += JUCE_PLUGIN_BUILD_AAX=1
+    JUCE_PLUGIN_BUILD_AAX=1
     SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/AAX/juce_AAX_Wrapper.cpp
 } else {
-    DEFINES += JUCE_PLUGIN_BUILD_AAX=0
+    JUCE_PLUGIN_BUILD_AAX=0
 }
 
 contains(QMAKE_JUCEAUDIOCONFIG,juceRTAS) {
- DEFINES += JUCE_PLUGIN_BUILD_RTAS=1
+    JUCE_PLUGIN_BUILD_RTAS=1
     #TODO : add needed definitions
 } else {
-    DEFINES += JUCE_PLUGIN_BUILD_RTAS=0
+    JUCE_PLUGIN_BUILD_RTAS=0
 }
 
 contains(QMAKE_JUCEAUDIOCONFIG,juceAU) {
-    DEFINES += JUCE_PLUGIN_BUILD_AU=1
+    JUCE_PLUGIN_BUILD_AU=1
 } else {
-    DEFINES += JUCE_PLUGIN_BUILD_AU=0
+    JUCE_PLUGIN_BUILD_AU=0
 }
 
 macx {
