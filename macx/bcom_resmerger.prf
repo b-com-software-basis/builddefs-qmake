@@ -28,8 +28,3 @@ bcom_resmerger_source.name = RESMERGER $${BCOM_REZ_COMPILED_FILES}
 bcom_resmerger_source.variable_out = RESMERGERFILE
 silent:bcom_resmerger_source.commands = @echo resmerger$${BCOM_REZ_COMPILED_FILES} && $$wbcom_resmerger_source.commands
 QMAKE_EXTRA_COMPILERS += bcom_resmerger_source
-
-component_resources.path = Contents/Resources
-component_resources.files = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
-component_resources.depends = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
-QMAKE_BUNDLE_DATA += component_resources

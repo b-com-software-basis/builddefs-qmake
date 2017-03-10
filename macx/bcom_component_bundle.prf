@@ -1,4 +1,12 @@
 # Author(s) : Loic Touraine
+# Check resource compiled files existence
+
+!isEmpty(BCOM_REZ_COMPILED_FILES) {
+    component_resources.path = Contents/Resources
+    component_resources.files = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
+    component_resources.depends = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
+    QMAKE_BUNDLE_DATA += component_resources
+}
 
 for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
     INFOPLIST_FILEPATH = $$_PRO_FILE_PWD_/$${QMAKE_INFO_PLIST}
