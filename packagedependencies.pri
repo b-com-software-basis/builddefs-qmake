@@ -16,6 +16,7 @@ contains(DEPENDENCIESCONFIG,staticlib) {
 
 CONFIG(debug,debug|release) {
     OUTPUTDIR = debug
+    DEBUGPFX = debug-
 }
 
 CONFIG(release,debug|release) {
@@ -55,7 +56,12 @@ for(depfile, packagedepsfiles) {
             }
 
             deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
-            pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
+            pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
+            !exists($${pkgCfgFilePath}) {
+                # No specific .pc file for debug mode :
+                # this package is a bcom like standard package with no library debug suffix
+                pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
+            }
             !exists($${pkgCfgFilePath}) {# default behavior
                 message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values (check your config if it should exists)")
                 QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
