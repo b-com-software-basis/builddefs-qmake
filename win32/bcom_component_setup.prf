@@ -55,7 +55,7 @@ if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
 }
 
 NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${SETUP_FILEPFX}$${SETUP_FILENAME}.exe))) \
-               $$shell_quote($$shell_path($$_PRO_FILE_PWD_/builddefs/qmake/win32/nsis/Setup.nsi))
+               $$shell_quote($$shell_path($$PWD/nsis/Setup.nsi))
 
 
 
