@@ -1,7 +1,7 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 # Detect build toolchain and define BCOM_TARGET_ARCH
-include($$_PRO_FILE_PWD_/builddefs/qmake/bcom_arch_define.pri)
+include(../bcom_arch_define.pri)
 
 contains(DEPENDENCIESCONFIG,staticlib) {
     DEPLINKMODE = static

@@ -1,5 +1,6 @@
 # Author(s) : Loic Touraine
-include ($$_PRO_FILE_PWD_/builddefs/qmake/templatelibconfig.pri)
+
+include (templatelibconfig.pri)
 
 macx {
     # replace sharedlib LFLAG with bundle one

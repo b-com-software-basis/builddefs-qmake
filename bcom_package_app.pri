@@ -4,5 +4,5 @@ macx{
 }
 
 win32 {
-    include ($$_PRO_FILE_PWD_/builddefs/qmake/win32/packageappbundle.pri)
+    include (win32/packageappbundle.pri)
 }
