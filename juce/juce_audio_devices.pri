@@ -4,11 +4,17 @@
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
 #Inclusion of other modules must occur FIRST !
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_events.pri)
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_audio_basics.pri)
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_audio_formats.pri)
+include(juce_events.pri)
+include(juce_audio_basics.pri)
+include(juce_audio_formats.pri)
 
-JUCEPATH=$$_PRO_FILE_PWD_/libs/Juce
+# Check input parameters existence - libs absolute path
+!defined(_BCOM_LIBS_ROOT_,var) {
+    _BCOM_LIBS_ROOT_ = $$_PRO_FILE_PWD_
+    warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
+}
+
+JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
 
 
 QMAKE_JUCEMODULENAME=juce_audio_devices

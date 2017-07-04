@@ -4,11 +4,17 @@
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
 #Inclusion of other modules must occur FIRST !
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_gui_basics.pri)
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_audio_basics.pri)
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_audio_processors.pri)
+include(juce_gui_basics.pri)
+include(juce_audio_basics.pri)
+include(juce_audio_processors.pri)
 
-JUCEPATH=$$_PRO_FILE_PWD_/libs/Juce
+# Check input parameters existence - libs absolute path
+!defined(_BCOM_LIBS_ROOT_,var) {
+    _BCOM_LIBS_ROOT_ = $$_PRO_FILE_PWD_
+    warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
+}
+
+JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
 
 
 QMAKE_JUCEMODULENAME=juce_audio_plugin_client
@@ -25,7 +31,7 @@ QMAKE_JUCEMODULENAME=juce_audio_plugin_client
 contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
     JUCE_PLUGIN_BUILD_VST=1
     SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/VST/juce_VST_Wrapper.cpp
-    INCLUDEPATH += $$_PRO_FILE_PWD_/libs/Steinberg/CommonVST_3.6
+    INCLUDEPATH += $${_BCOM_LIBS_ROOT_}/libs/Steinberg/CommonVST_3.6
 } else {
     JUCE_PLUGIN_BUILD_VST=0
 }
@@ -33,7 +39,7 @@ contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
 contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
     JUCE_PLUGIN_BUILD_VST3=1
     SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/VST3/juce_VST3_Wrapper.cpp
-    INCLUDEPATH += $$_PRO_FILE_PWD_/libs/Steinberg/CommonVST_3.6
+    INCLUDEPATH += $${_BCOM_LIBS_ROOT_}/libs/Steinberg/CommonVST_3.6
 } else {
     JUCE_PLUGIN_BUILD_VST3=0
 }
@@ -59,7 +65,7 @@ contains(QMAKE_JUCEAUDIOCONFIG,juceAU) {
 }
 
 macx {
-    include ($$_PRO_FILE_PWD_/builddefs/qmake/macx/audio_unit.pri)
+    include (audio_unit.pri)
     contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
         QMAKE_BUNDLE_EXTENSION_LIST += .aaxplugin
     }
