@@ -1,7 +1,7 @@
 # Author(s) : Loic Touraine
 
 macx {
-    include ($$_PRO_FILE_PWD_/builddefs/qmake/macx/bcom_rez.prf)
-    include ($$_PRO_FILE_PWD_/builddefs/qmake/macx/bcom_resmerger.prf)
-    include ($$_PRO_FILE_PWD_/builddefs/qmake/macx/bcom_objective_c.prf)
+    include (macx/bcom_rez.prf)
+    include (macx/bcom_resmerger.prf)
+    include (macx/bcom_objective_c.prf)
 }
