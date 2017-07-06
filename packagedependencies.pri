@@ -138,18 +138,22 @@ exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
     QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
 }
 
-package_files.path = $${PROJECTDEPLOYDIR}
-exists($$_PRO_FILE_PWD_/packagedependencies.txt) {
-    package_files.files = $$_PRO_FILE_PWD_/packagedependencies.txt
-}
-win32:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
-    package_files.files += $$_PRO_FILE_PWD_/packagedependencies-win.txt
-}
-macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
-    package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
-}
-exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
-    package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
-}
+# TODO : place in an other file - separate finding and copy dependencies
+# PROJECTDEPLOYDIR only defined for lib
+defined(PROJECTDEPLOYDIR,var) {
+    package_files.path = $${PROJECTDEPLOYDIR}
+    exists($$_PRO_FILE_PWD_/packagedependencies.txt) {
+        package_files.files = $$_PRO_FILE_PWD_/packagedependencies.txt
+    }
+    win32:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
+        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-win.txt
+    }
+    macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
+        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+    }
+    exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
+        package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
+    }
 
-INSTALLS += package_files
+    INSTALLS += package_files
+}
