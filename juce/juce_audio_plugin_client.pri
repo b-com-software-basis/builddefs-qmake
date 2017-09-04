@@ -86,6 +86,11 @@ macx {
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST|juceVST3) {
         QMAKE_BUNDLE_EXTENSION_LIST += .vst
     }
+
+    contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
+        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/modules/juce_audio_plugin_client/AAX/juce_AAX_Wrapper.mm
+        QMAKE_BUNDLE_EXTENSION_LIST += .aaxplugin
+    }
     # message("Bundle extension list" $${QMAKE_BUNDLE_EXTENSION_LIST})
 }
 
