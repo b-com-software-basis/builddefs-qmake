@@ -25,6 +25,8 @@ macx {
 }
 
 win32 {
-    # global name for create_bundle
-    SETUP_COPYFILENAME=$${TARGET}.$${DYNLIBEXT}
+    # set target for AAX
+    bcom_component_binary.path = Contents
+    bcom_component_binary.files = $${TARGET}.$${DYNLIBEXT}
+    QMAKE_SETUP_BINARY += bcom_component_binary
 }

@@ -96,7 +96,8 @@ Section "Install"
   File logo.ico
   
   !ifdef SETUP_COPYFILEPATH & SETUP_COPYFILENAME
-    File ${SETUP_COPYFILEPATH}${SETUP_COPYFILENAME}
+	; copy file or dir
+    File /a /r ${SETUP_COPYFILEPATH}${SETUP_COPYFILENAME}
   !endif
   
   !ifdef SETUP_COPYDIR
@@ -115,12 +116,10 @@ Section "Uninstall"
   ; current install dir
   RMDir /r "$INSTDIR"
   
-  ; manage optionnal subdir an remove only if empty
-  ${If} ${SETUP_SUBINSTALLDIR} != ""
-	RMDir "$INSTDIR\..\.."
-  ${Else}
+  ; manage optionnal subdir
+  !ifdef SETUP_SUBINSTALLDIR
 	RMDir "$INSTDIR\.."
-  ${EndIf}
+  !endif
   
   SetRegView 64
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SETUP_GUID}"

@@ -94,6 +94,15 @@ macx {
     # message("Bundle extension list" $${QMAKE_BUNDLE_EXTENSION_LIST})
 }
 
+win32 {
+    contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
+        QMAKE_PLUGIN_EXTENSION_LIST += .aaxplugin
+    }
+    contains(QMAKE_JUCEAUDIOCONFIG,juceAU|juceVST|juceVST3) {
+        QMAKE_PLUGIN_EXTENSION_LIST += .dll
+    }
+}
+
 # Common sources
 SOURCES += \
     $${JUCEPATH}/modules/juce_audio_plugin_client/utility/juce_PluginUtilities.cpp
