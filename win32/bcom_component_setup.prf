@@ -1,8 +1,8 @@
 # Author(s) : Stephane Leduc
 # NOTE : paramteres and sample values for each param
 
-# Product name
-#SETUP_PRODUCTNAME=$$shell_quote(b<>com *Ultra plugin* BinauralVirtualComponents)
+# Product name - withou quote (added after in this script)
+#SETUP_PRODUCTNAME=b<>com *Ultra plugin* BinauralVirtualComponents
 
 # Setup file prefix (used only for nsis OutFile param)
 #SETUP_FILEPFX=Setup_b-com_
@@ -16,7 +16,7 @@
 # Unique setup guid (need to be changed!)
 #SETUP_GUID=1234
 
-# Install dir
+# Install dir - can be defined for custom install or taken with default path for audio plugins
 #SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/Steinberg/VSTPlugins/))
 
 # Sub install dir (added to install dir) (OPTIONAL - value can be empty)
@@ -25,7 +25,8 @@
 # Copy all contents of directory (OPTIONAL - values can be empty)
 #SETUP_COPYDIR=$$shell_quote($$shell_path($$_PRO_FILE_PWD_/config/BVC_minimal_config))
 
-#global defaults
+
+# global defaults - detect nsis
 MAKENSIS_COMMAND = $$system(where makensis)
 isEmpty(MAKENSIS_COMMAND) {
     PATH = $$clean_path($$getenv(PROGRAMFILES(X86))/NSIS/makensis.exe)
@@ -36,32 +37,151 @@ isEmpty(MAKENSIS_COMMAND) {
     }
 }
 
-SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
-
-NSISCOMMAND = $$shell_quote($$shell_path($${MAKENSIS_COMMAND})) \
-                            /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME} /DSETUP_FILENAME=$${SETUP_FILENAME} \
-                            /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID} \
-                            /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR}
-
-if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
-    NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}
+# Check mandatory input parameters existence
+!defined(SETUP_PRODUCTNAME,var){
+    error("SETUP_PRODUCTNAME must be defined in _BundleConfig.pri")
+}
+!defined(SETUP_FILENAME,var){
+    error("SETUP_FILENAME must be defined in _BundleConfig.pri")
+}
+!defined(SETUP_VERSION,var){
+    error("SETUP_VERSION must be defined in _BundleConfig.pri")
+}
+!defined(SETUP_GUID,var){
+    error("SETUP_GUID must be defined in _BundleConfig.pri")
 }
 
-!isEmpty(SETUP_SUBINSTALLDIR) {
-    NSISCOMMAND += /DSETUP_SUBINSTALLDIR=$${SETUP_SUBINSTALLDIR}
+# manage packaging according to plugin extension
+for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
+
+    #init unused value
+    SETUP_AAX_SUFFIX =
+    SETUP_COPYDIR_VALUE =
+    # saved default values (vst)
+    isEmpty(SETUP_INSTALLDIR) {
+        SETUP_INSTALLDIR_VALUE=$$shell_quote($$shell_path($$(PROGRAMW6432)/Steinberg/VSTPlugins/))
+    }
+
+    # AAX plugin
+    contains(PLUGIN_EXTENSION,.aaxplugin) {
+
+        # manage 32/64bit build
+        contains(BCOM_TARGET_ARCH, x86_64) {
+            AAXPLUGIN_ARCH = x64
+        }
+        contains(BCOM_TARGET_ARCH, i386) {
+            AAXPLUGIN_ARCH = Win32
+        }
+
+        # prepare AAX output dir
+        aax_dir_prepare.path = Contents
+        aax_dir_prepare.files = $$shell_quote($$shell_path($$PWD/assets/aax/PlugIn.ico))
+        QMAKE_SETUP_AAX_DIR_PREPAPRE += aax_dir_prepare
+        for (setup_data, QMAKE_SETUP_AAX_DIR_PREPAPRE) {
+            for (setup_file, $${setup_data}.files) {
+                create_setup.depends += $${setup_file}
+                for (setup_path, $${setup_data}.path ) {
+                    !equals(AAXBUNDLE_PREPARE_CMD,"") {
+                        AAXBUNDLE_PREPARE_CMD += &&
+                    }
+                    AAXBUNDLE_PREPARE_CMD += IF NOT EXIST $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/$${setup_path}/$${AAXPLUGIN_ARCH})) mkdir $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/$${setup_path}/$${AAXPLUGIN_ARCH}))
+                    AAXBUNDLE_PREPARE_CMD += && copy /Y $${setup_file} $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/)) >NUL
+                    AAXBUNDLE_PREPARE_CMD += && attrib -r $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}))
+                    #AAXBUNDLE_PREPARE_CMD += attrib -h -r -s %OutDir%\..\..\desktop.ini
+                    AAXBUNDLE_PREPARE_CMD += && echo [.ShellClassInfo] > $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/desktop.ini))
+                    AAXBUNDLE_PREPARE_CMD += && echo IconResource=PlugIn.ico,0 >> $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/desktop.ini))
+                    AAXBUNDLE_PREPARE_CMD += && echo ;For compatibility with Windows XP >> $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/desktop.ini))
+                    AAXBUNDLE_PREPARE_CMD += && echo IconFile=PlugIn.ico >> $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/desktop.ini))
+                    AAXBUNDLE_PREPARE_CMD += && echo IconIndex=0 >> $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/desktop.ini))
+                    AAXBUNDLE_PREPARE_CMD += && attrib +h +r +s $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/PlugIn.ico))
+                    AAXBUNDLE_PREPARE_CMD += && attrib +h +r +s $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/desktop.ini))
+                    AAXBUNDLE_PREPARE_CMD += && attrib +r $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}))
+                }
+            }
+        }
+
+        # Copy binary to output dir
+        for (setup_binary, QMAKE_SETUP_BINARY) {
+            for (setup_file, $${setup_binary}.files) {
+                for (setup_path, $${setup_binary}.path ) {
+                    !equals(AAXBUNDLE_PREPARE_CMD,"") {
+                        AAXBUNDLE_PREPARE_CMD += &&
+                    }
+                    AAXBUNDLE_PREPARE_CMD += copy /Y $${setup_file} $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/$${setup_path}/$${AAXPLUGIN_ARCH}/$${TARGET}$${PLUGIN_EXTENSION}))
+                }
+            }
+        }
+
+        # Copy ressources to output dir
+        !isEmpty(SETUP_COPYDIR) {
+            aax_pluginconfig.path = Contents
+            aax_pluginconfig.files = $${SETUP_COPYDIR}
+            QMAKE_SETUP_CONFIG += aax_pluginconfig
+
+            for (setup_binary, QMAKE_SETUP_CONFIG) {
+                for (setup_file, $${setup_binary}.files) {
+                    for (setup_path, $${setup_binary}.path ) {
+                        !equals(AAXBUNDLE_PREPARE_CMD,"") {
+                            AAXBUNDLE_PREPARE_CMD += &&
+                        }
+                        AAXBUNDLE_PREPARE_CMD += $$QMAKE_COPY_DIR $${SETUP_COPYDIR} $$shell_quote($$shell_path($${TARGET}$${PLUGIN_EXTENSION}/$${setup_path}/$${AAXPLUGIN_ARCH}))
+                    }
+                }
+            }
+        }
+
+        # manage clean
+        AAXBUNDLE_PACKAGE_CLEAN_CMD = IF EXIST $${TARGET}$${PLUGIN_EXTENSION} rmdir /S /Q $${TARGET}$${PLUGIN_EXTENSION}
+        bcom_component_aaxbundle_clean.commands = $${AAXBUNDLE_PACKAGE_CLEAN_CMD}
+
+        bcom_component_aaxbundle_prepare.commands = $${AAXBUNDLE_PREPARE_CMD}
+        bcom_component_aaxbundle_prepare.depends += bcom_component_aaxbundle_clean $(TARGET)
+        create_bundle.depends += bcom_component_aaxbundle_prepare
+
+        # nsis parameters
+        isEmpty(SETUP_INSTALLDIR) {
+            SETUP_INSTALLDIR_VALUE=$$shell_quote($$shell_path($$(PROGRAMW6432)/Common Files/Avid/Audio/Plug-Ins/))
+        }
+        SETUP_AAX_SUFFIX = AAX
+    }
+
+    # VST plugin
+    contains(PLUGIN_EXTENSION,.dll) {
+        # nsis parameters
+        SETUP_COPYDIR_VALUE = $$SETUP_COPYDIR
+    }
+
+    # Nsis management
+    SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
+    SETUP_COPYFILENAME=$${TARGET}$${PLUGIN_EXTENSION}   # is a directory
+    SETUP_PRODUCTNAME_VALUE = $$shell_quote($${SETUP_PRODUCTNAME} $${SETUP_AAX_SUFFIX})
+
+    NSISCOMMAND = $$shell_quote($$shell_path($${MAKENSIS_COMMAND})) \
+                                /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME_VALUE} /DSETUP_FILENAME=$${SETUP_FILENAME}$${SETUP_AAX_SUFFIX} \
+                                /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID}$${SETUP_AAX_SUFFIX} \
+                                /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR_VALUE}
+
+    if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
+        NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}
+    }
+
+    !isEmpty(SETUP_SUBINSTALLDIR) {
+        NSISCOMMAND += /DSETUP_SUBINSTALLDIR=$${SETUP_SUBINSTALLDIR}
+    }
+    !isEmpty(SETUP_COPYDIR_VALUE) {
+        NSISCOMMAND += /DSETUP_COPYDIR=$${SETUP_COPYDIR_VALUE}
+    }
+
+    NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${SETUP_FILEPFX}$${SETUP_FILENAME}$${SETUP_AAX_SUFFIX}.exe))) \
+                   $$shell_quote($$shell_path($$PWD/nsis/Setup.nsi))
+
+    # manage setup
+    !equals(NSIS_PACKAGE_CMD,"") {
+        NSIS_PACKAGE_CMD += &&
+    }
+    NSIS_PACKAGE_CMD += $${NSISCOMMAND}
 }
-!isEmpty(SETUP_COPYDIR) {
-    NSISCOMMAND += /DSETUP_COPYDIR=$${SETUP_COPYDIR}
-}
 
-NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${SETUP_FILEPFX}$${SETUP_FILENAME}.exe))) \
-               $$shell_quote($$shell_path($$PWD/nsis/Setup.nsi))
-
-
-
-create_bundle.commands = $$NSISCOMMAND
+create_bundle.commands = $${NSIS_PACKAGE_CMD}
 #create_bundle.depends = all install
-QMAKE_EXTRA_TARGETS  += create_bundle
-
-
-
+QMAKE_EXTRA_TARGETS  += bcom_component_aaxbundle_clean bcom_component_aaxbundle_prepare create_bundle
