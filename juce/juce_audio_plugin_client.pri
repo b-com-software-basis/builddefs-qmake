@@ -65,7 +65,7 @@ contains(QMAKE_JUCEAUDIOCONFIG,juceAU) {
 }
 
 macx {
-    include (audio_unit.pri)
+    include (../macx/audio_unit.pri)
     contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
         QMAKE_BUNDLE_EXTENSION_LIST += .aaxplugin
     }
