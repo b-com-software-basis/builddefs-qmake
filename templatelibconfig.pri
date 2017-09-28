@@ -61,6 +61,12 @@ win32 {
     LIBPREFIX = ''
     DYNLIBEXT = dll
     LIBEXT = lib
+
+    # Define macro for handling __declspec(dllexport) for current build target
+    !staticlib {
+        DEFINES += $${TARGET}_API_DLLEXPORT
+    }
+
     # do not add version to target name for shared link mode
     CONFIG += skip_target_version_ext
 
