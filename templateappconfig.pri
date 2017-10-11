@@ -1,5 +1,8 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
+# Detect build toolchain and define BCOM_TARGET_ARCH
+include(bcom_arch_define.pri)
+
 # Include extended compiler rules
 include (bcom_compiler_specs.prf)
 
@@ -15,11 +18,9 @@ CONFIG(release,debug|release) {
 }
 
 unix {
-#    target.path = /usr/lib
-#    INSTALLS += target
-#    LIBPREFIX = lib
-#    DYNLIBEXT = so
-#    LIBEXT = a
+    LIBPREFIX = lib
+    DYNLIBEXT = so
+    LIBEXT = a
 }
 
 macx {
@@ -41,7 +42,7 @@ win32 {
     LIBPREFIX = ''
     DYNLIBEXT = dll
     LIBEXT = lib
-	
+
     # qmake processing only 1 time (http://stackoverflow.com/questions/17360553/qmake-processes-my-pro-file-three-times-instead-of-one)
     CONFIG -= debug_and_release
 

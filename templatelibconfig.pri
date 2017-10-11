@@ -1,8 +1,21 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 # Check input parameters existence
+!defined(FRAMEWORK,var) {
+    error("FRAMEWORK must be defined before templatelibconfig.pri inclusion. A typical definition is FRAMEWORK = \$\$TARGET.")
+}
+
+!defined(INSTALLSUBDIR,var) {
+    error("INSTALLSUBDIR must be defined before templatelibconfig.pri inclusion. INSTALLSUBDIR is mandatory and accept two values : bcomBuild or thirdParties. A typical definition is INSTALLSUBDIR = bcomBuild.")
+}
+
+!contains(INSTALLSUBDIR,bcomBuild):!contains(INSTALLSUBDIR,thirdParties) {
+    error("INSTALLSUBDIR is defined with the $$INSTALLSUBDIR unsupported value. Supported values are : bcomBuild or thirdParties")
+}
+
 !defined(PROJECTDEPLOYDIR,var) {
-    error("PROJECTDEPLOYDIR must be defined before templatelibconfig.pri inclusion. A typical definition is $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}.")
+    warning("PROJECTDEPLOYDIR may be defined before templatelibconfig.pri inclusion => Defaulting PROJECTDEPLOYDIR to $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}. ")
+    PROJECTDEPLOYDIR = $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}
 }
 
 # Detect build toolchain and define BCOM_TARGET_ARCH
