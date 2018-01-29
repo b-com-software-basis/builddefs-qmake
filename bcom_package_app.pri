@@ -4,5 +4,5 @@ macx{
 }
 
 win32 {
-    include (win32/packageappbundle.pri)
+    # include (win32/packageappbundle.pri)
 }
