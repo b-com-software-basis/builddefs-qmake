@@ -12,7 +12,7 @@ include(juce_gui_extra.pri)
     warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
 }
 
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
+JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
 
 QMAKE_JUCEMODULENAME=juce_opengl
 
@@ -27,7 +27,7 @@ QMAKE_JUCEMODULENAME=juce_opengl
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/modules/juce_opengl/juce_opengl.cpp
+		$${JUCEPATH}/juce_opengl/juce_opengl.cpp
         macx {
             LIBS += -framework OpenGL
         }

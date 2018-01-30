@@ -3,13 +3,16 @@
 #Note (QT Creator Bug ?): files shown in the project tree are NOT the files used for compiling
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
+#Inclusion of other modules must occur FIRST !
+include(juce_events.pri)
+
 # Check input parameters existence - libs absolute path
 !defined(_BCOM_LIBS_ROOT_,var) {
     _BCOM_LIBS_ROOT_ = $$_PRO_FILE_PWD_
     warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
 }
 
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
+JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
 
 QMAKE_JUCEMODULENAME=juce_data_structures
 
@@ -24,5 +27,5 @@ QMAKE_JUCEMODULENAME=juce_data_structures
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/modules/juce_data_structures/juce_data_structures.cpp
+		$${JUCEPATH}/juce_data_structures/juce_data_structures.cpp
 }

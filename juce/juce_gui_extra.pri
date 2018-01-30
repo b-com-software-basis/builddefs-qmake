@@ -12,7 +12,7 @@ include(juce_gui_basics.pri)
     warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
 }
 
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
+JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
 
 QMAKE_JUCEMODULENAME=juce_gui_extra
 
@@ -27,7 +27,7 @@ QMAKE_JUCEMODULENAME=juce_gui_extra
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/modules/juce_gui_extra/juce_gui_extra.cpp
+		$${JUCEPATH}/juce_gui_extra/juce_gui_extra.cpp
         macx {
             LIBS += -framework IOKit
             LIBS += -framework WebKit

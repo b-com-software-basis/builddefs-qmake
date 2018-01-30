@@ -4,7 +4,6 @@
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
 #Inclusion of other modules must occur FIRST !
-include(juce_core.pri)
 include(juce_events.pri)
 
 # Check input parameters existence - libs absolute path
@@ -13,7 +12,7 @@ include(juce_events.pri)
     warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
 }
 
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
+JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
 
 QMAKE_JUCEMODULENAME=juce_graphics
 
@@ -28,7 +27,7 @@ QMAKE_JUCEMODULENAME=juce_graphics
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/modules/juce_graphics/juce_graphics.cpp
+		$${JUCEPATH}/juce_graphics/juce_graphics.cpp
         macx {
             LIBS += -framework Cocoa
             LIBS += -framework QuartzCore

@@ -13,7 +13,7 @@ include(juce_graphics.pri)
     warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
 }
 
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
+JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
 
 QMAKE_JUCEMODULENAME=juce_gui_basics
 
@@ -28,5 +28,5 @@ QMAKE_JUCEMODULENAME=juce_gui_basics
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/modules/juce_gui_basics/juce_gui_basics.cpp
+		$${JUCEPATH}/juce_gui_basics/juce_gui_basics.cpp
 }

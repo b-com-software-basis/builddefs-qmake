@@ -4,10 +4,7 @@
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
 #Inclusion of other modules must occur FIRST !
-include(juce_gui_extra.pri)
-include(juce_audio_basics.pri)
 include(juce_audio_formats.pri)
-include(juce_audio_processors.pri)
 
 # Check input parameters existence - libs absolute path
 !defined(_BCOM_LIBS_ROOT_,var) {
@@ -17,7 +14,7 @@ include(juce_audio_processors.pri)
 
 JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
 
-QMAKE_JUCEMODULENAME=juce_audio_utils
+QMAKE_JUCEMODULENAME=juce_dsp
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
 	message("Including " $${QMAKE_JUCEMODULENAME})
@@ -30,5 +27,5 @@ QMAKE_JUCEMODULENAME=juce_audio_utils
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/juce_audio_utils/juce_audio_utils.cpp
+		$${JUCEPATH}/juce_dsp/juce_dsp.cpp
 }

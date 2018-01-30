@@ -4,9 +4,15 @@
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
 #Inclusion of other modules must occur FIRST !
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_graphics.pri)
+include(juce_graphics.pri)
 
-JUCEPATH=$$_PRO_FILE_PWD_/libs/Juce
+# Check input parameters existence - libs absolute path
+!defined(_BCOM_LIBS_ROOT_,var) {
+    _BCOM_LIBS_ROOT_ = $$_PRO_FILE_PWD_
+    warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
+}
+
+JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
 
 QMAKE_JUCEMODULENAME=juce_box2d
 
@@ -21,5 +27,5 @@ QMAKE_JUCEMODULENAME=juce_box2d
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/modules/juce_box2d/juce_box2d.cpp
+		$${JUCEPATH}/juce_box2d/juce_box2d.cpp
 }
