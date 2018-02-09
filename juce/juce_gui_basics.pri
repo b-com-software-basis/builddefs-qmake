@@ -7,14 +7,6 @@
 include(juce_data_structures.pri)
 include(juce_graphics.pri)
 
-# Check input parameters existence - libs absolute path
-!defined(_BCOM_LIBS_ROOT_,var) {
-    _BCOM_LIBS_ROOT_ = $$_PRO_FILE_PWD_
-    warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
-}
-
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
-
 QMAKE_JUCEMODULENAME=juce_gui_basics
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
