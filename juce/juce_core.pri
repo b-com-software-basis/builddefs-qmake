@@ -2,8 +2,6 @@
 
 include(qmake_juce_defines.pri)
 
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce/modules
-
 QMAKE_JUCEMODULENAME=juce_core
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {

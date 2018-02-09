@@ -64,7 +64,7 @@ contains(QMAKE_JUCEAUDIOCONFIG,juceAUv3) {
 macx {
     include (../macx/audio_unit.pri)
     contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/AAX/juce_AAX_Wrapper.mm
+        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/AAX/juce_AAX_Wrapper.cpp
         QMAKE_BUNDLE_EXTENSION_LIST += .aaxplugin
     }
 
@@ -86,7 +86,7 @@ macx {
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/VST3/juce_VST3_Wrapper.mm
+        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/VST3/juce_VST3_Wrapper.cpp
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST|juceVST3) {
