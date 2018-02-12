@@ -9,15 +9,27 @@ include(juce_gui_extra.pri)
 QMAKE_JUCEMODULENAME=juce_video
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-	message("Including " $${QMAKE_JUCEMODULENAME})
-	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
+    message("Including " $${QMAKE_JUCEMODULENAME})
+    QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+    DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-	!contains(INCLUDEPATH,$${JUCEPATH}) {
-		INCLUDEPATH += $${JUCEPATH}
-	}
+    !contains(INCLUDEPATH,$${JUCEPATH}) {
+        INCLUDEPATH += $${JUCEPATH}
+    }
 
-	# Common sources
-	SOURCES += \
-		$${JUCEPATH}/juce_video/juce_video.cpp
+    # Common sources
+    SOURCES += \
+            $${JUCEPATH}/juce_video/juce_video.cpp
+
+    macx {
+        !contains(LIBS,"AVKit") {
+            LIBS += -framework AVKit
+        }
+        !contains(LIBS,"AVFoundation") {
+            LIBS += -framework AVFoundation
+        }
+        !contains(LIBS,"CoreMedia") {
+            LIBS += -framework CoreMedia
+        }
+    }
 }

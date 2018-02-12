@@ -11,12 +11,12 @@ include(juce_audio_processors.pri)
 QMAKE_JUCEMODULENAME=juce_audio_plugin_client
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-	message("Including " $${QMAKE_JUCEMODULENAME})
-	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
+        message("Including " $${QMAKE_JUCEMODULENAME})
+        QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+        DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-	!contains(INCLUDEPATH,$${JUCEPATH}) {
-		INCLUDEPATH += $${JUCEPATH}
+        !contains(INCLUDEPATH,$${JUCEPATH}) {
+                INCLUDEPATH += $${JUCEPATH}
 }
 
 contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
@@ -35,12 +35,6 @@ contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
     JUCE_PLUGIN_BUILD_VST3=0
 }
 
-contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
-    JUCE_PLUGIN_BUILD_AAX=1
-    SOURCES += $${JUCEPATH}/juce_audio_plugin_client/AAX/juce_AAX_Wrapper.cpp
-} else {
-    JUCE_PLUGIN_BUILD_AAX=0
-}
 
 contains(QMAKE_JUCEAUDIOCONFIG,juceRTAS) {
     JUCE_PLUGIN_BUILD_RTAS=1
@@ -61,35 +55,38 @@ contains(QMAKE_JUCEAUDIOCONFIG,juceAUv3) {
     JUCE_PLUGIN_BUILD_AUV3=0
 }
 
+ contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
+        JUCE_PLUGIN_BUILD_AAX=1
+    } else {
+        JUCE_PLUGIN_BUILD_AAX=0
+    }
+
 macx {
-    include (../macx/audio_unit.pri)
     contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/AAX/juce_AAX_Wrapper.cpp
+        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AAX.mm
         QMAKE_BUNDLE_EXTENSION_LIST += .aaxplugin
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceAU) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/AU/juce_AU_Wrapper.mm
+        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU_1.mm
+        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU_2.mm
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceAUv3) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/AU/juce_AUv3_Wrapper.mm
+        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AUv3.mm
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceAU|juceAUv3) {
-        BCOM_REZ_FILES += $${JUCEPATH}/juce_audio_plugin_client/AU/AU_Resources.r
+        !contains(LIBS,"AudioUnit") {
+            LIBS += -framework AudioUnit
+        }
+
+        BCOM_REZ_FILES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU.r
         QMAKE_BUNDLE_EXTENSION_LIST += .component
     }
 
-    contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/VST/juce_VST_Wrapper.mm
-    }
-
-    contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/VST3/juce_VST3_Wrapper.cpp
-    }
-
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST|juceVST3) {
+        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_VST_utils.mm
         QMAKE_BUNDLE_EXTENSION_LIST += .vst
     }
 
@@ -98,8 +95,10 @@ macx {
 
 win32 {
     contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
+        SOURCES += $${JUCEPATH}/juce_audio_plugin_client/AAX/juce_AAX_Wrapper.cpp
         QMAKE_PLUGIN_EXTENSION_LIST += .aaxplugin
     }
+    
     contains(QMAKE_JUCEAUDIOCONFIG,juceAU|juceVST|juceVST3) {
         QMAKE_PLUGIN_EXTENSION_LIST += .dll
     }

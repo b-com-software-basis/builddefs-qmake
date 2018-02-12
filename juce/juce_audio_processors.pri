@@ -10,16 +10,28 @@ include(juce_gui_basics.pri)
 QMAKE_JUCEMODULENAME=juce_audio_processors
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-	message("Including " $${QMAKE_JUCEMODULENAME})
-	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
+    message("Including " $${QMAKE_JUCEMODULENAME})
+    QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+    DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-	!contains(INCLUDEPATH,$${JUCEPATH}) {
-		INCLUDEPATH += $${JUCEPATH}
-	}
+    !contains(INCLUDEPATH,$${JUCEPATH}) {
+        INCLUDEPATH += $${JUCEPATH}
+    }
 
 
-	# Common sources
-	SOURCES += \
-                $${JUCEPATH}/juce_audio_processors/juce_audio_processors.cpp
+    # Common sources
+    SOURCES += \
+            $${JUCEPATH}/juce_audio_processors/juce_audio_processors.cpp
+
+    macx {
+        !contains(LIBS,"AudioToolbox") {
+            LIBS += -framework AudioToolbox
+        }
+        !contains(LIBS,"CoreAudio") {
+            LIBS += -framework CoreAudio
+        }
+        !contains(LIBS,"CoreMIDI") {
+            LIBS += -framework CoreMIDI
+        }
+    }
 }

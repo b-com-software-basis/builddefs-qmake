@@ -9,19 +9,23 @@ include(juce_events.pri)
 QMAKE_JUCEMODULENAME=juce_graphics
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-	message("Including " $${QMAKE_JUCEMODULENAME})
-	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
+    message("Including " $${QMAKE_JUCEMODULENAME})
+    QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+    DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-	!contains(INCLUDEPATH,$${JUCEPATH}) {
-		INCLUDEPATH += $${JUCEPATH}
-	}
+    !contains(INCLUDEPATH,$${JUCEPATH}) {
+        INCLUDEPATH += $${JUCEPATH}
+    }
 
-	# Common sources
-	SOURCES += \
-		$${JUCEPATH}/juce_graphics/juce_graphics.cpp
-        macx {
+    # Common sources
+    SOURCES += \
+            $${JUCEPATH}/juce_graphics/juce_graphics.cpp
+    macx {
+        !contains(LIBS,"Cocoa") {
             LIBS += -framework Cocoa
+        }
+        !contains(LIBS,"QuartzCore") {
             LIBS += -framework QuartzCore
         }
+    }
 }

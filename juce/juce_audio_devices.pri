@@ -21,4 +21,16 @@ QMAKE_JUCEMODULENAME=juce_audio_devices
     # Common sources
     SOURCES += \
         $${JUCEPATH}/juce_audio_devices/juce_audio_devices.cpp
+
+    macx {
+        !contains(LIBS,"AudioToolbox") {
+            LIBS += -framework AudioToolbox
+        }
+        !contains(LIBS,"CoreAudio") {
+            LIBS += -framework CoreAudio
+        }
+        !contains(LIBS,"CoreMIDI") {
+            LIBS += -framework CoreMIDI
+        }
+    }
 }

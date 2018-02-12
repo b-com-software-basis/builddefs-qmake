@@ -12,15 +12,21 @@ include(juce_audio_processors.pri)
 QMAKE_JUCEMODULENAME=juce_audio_utils
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-	message("Including " $${QMAKE_JUCEMODULENAME})
-	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
+    message("Including " $${QMAKE_JUCEMODULENAME})
+    QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+    DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-	!contains(INCLUDEPATH,$${JUCEPATH}) {
-		INCLUDEPATH += $${JUCEPATH}
-	}
+    !contains(INCLUDEPATH,$${JUCEPATH}) {
+        INCLUDEPATH += $${JUCEPATH}
+    }
 
-	# Common sources
-	SOURCES += \
-		$${JUCEPATH}/juce_audio_utils/juce_audio_utils.cpp
+    # Common sources
+    SOURCES += \
+            $${JUCEPATH}/juce_audio_utils/juce_audio_utils.cpp
+
+    macx {
+        !contains(LIBS,"DiscRecording") {
+            LIBS += -framework DiscRecording
+        }
+    }
 }

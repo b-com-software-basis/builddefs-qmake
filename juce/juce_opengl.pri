@@ -9,18 +9,21 @@ include(juce_gui_extra.pri)
 QMAKE_JUCEMODULENAME=juce_opengl
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-	message("Including " $${QMAKE_JUCEMODULENAME})
-	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
+    message("Including " $${QMAKE_JUCEMODULENAME})
+    QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+    DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-	!contains(INCLUDEPATH,$${JUCEPATH}) {
-		INCLUDEPATH += $${JUCEPATH}
-	}
+    !contains(INCLUDEPATH,$${JUCEPATH}) {
+        INCLUDEPATH += $${JUCEPATH}
+    }
 
-	# Common sources
-	SOURCES += \
-		$${JUCEPATH}/juce_opengl/juce_opengl.cpp
-        macx {
+    # Common sources
+    SOURCES += \
+            $${JUCEPATH}/juce_opengl/juce_opengl.cpp
+
+    macx {
+        !contains(LIBS,"OpenGL") {
             LIBS += -framework OpenGL
         }
+    }
 }
