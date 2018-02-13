@@ -6,16 +6,6 @@
 #Inclusion of other modules must occur FIRST !
 include(juce_events.pri)
 include(juce_audio_basics.pri)
-include(juce_audio_formats.pri)
-
-# Check input parameters existence - libs absolute path
-!defined(_BCOM_LIBS_ROOT_,var) {
-    _BCOM_LIBS_ROOT_ = $$_PRO_FILE_PWD_
-    warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
-}
-
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
-
 
 QMAKE_JUCEMODULENAME=juce_audio_devices
 
@@ -30,5 +20,17 @@ QMAKE_JUCEMODULENAME=juce_audio_devices
 
     # Common sources
     SOURCES += \
-        $${JUCEPATH}/modules/juce_audio_devices/juce_audio_devices.cpp
+        $${JUCEPATH}/juce_audio_devices/juce_audio_devices.cpp
+
+    macx {
+        !contains(LIBS,"AudioToolbox") {
+            LIBS += -framework AudioToolbox
+        }
+        !contains(LIBS,"CoreAudio") {
+            LIBS += -framework CoreAudio
+        }
+        !contains(LIBS,"CoreMIDI") {
+            LIBS += -framework CoreMIDI
+        }
+    }
 }

@@ -4,9 +4,7 @@
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
 #Inclusion of other modules must occur FIRST !
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_graphics.pri)
-
-JUCEPATH=$$_PRO_FILE_PWD_/libs/Juce
+include(juce_graphics.pri)
 
 QMAKE_JUCEMODULENAME=juce_box2d
 
@@ -21,5 +19,5 @@ QMAKE_JUCEMODULENAME=juce_box2d
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/modules/juce_box2d/juce_box2d.cpp
+		$${JUCEPATH}/juce_box2d/juce_box2d.cpp
 }

@@ -4,9 +4,7 @@
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
 #Inclusion of other modules must occur FIRST !
-include($$_PRO_FILE_PWD_/builddefs/qmake/juce/juce_core.pri)
-
-JUCEPATH=$$_PRO_FILE_PWD_/libs/Juce
+include(juce_core.pri)
 
 QMAKE_JUCEMODULENAME=juce_cryptography
 
@@ -21,5 +19,5 @@ QMAKE_JUCEMODULENAME=juce_cryptography
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/modules/juce_cryptography/juce_cryptography.cpp
+		$${JUCEPATH}/juce_cryptography/juce_cryptography.cpp
 }

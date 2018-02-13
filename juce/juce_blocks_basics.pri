@@ -4,9 +4,9 @@
 #The variable $$SOURCES contains the good files' subset and is correctly forwarded to the Makefile
 
 #Inclusion of other modules must occur FIRST !
-include(juce_gui_basics.pri)
+include(juce_audio_devices.pri)
 
-QMAKE_JUCEMODULENAME=juce_browser_plugin_client
+QMAKE_JUCEMODULENAME=juce_blocks_basics
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
 	message("Including " $${QMAKE_JUCEMODULENAME})
@@ -19,5 +19,5 @@ QMAKE_JUCEMODULENAME=juce_browser_plugin_client
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/juce_browser_plugin_client/juce_browser_plugin.cpp
+		$${JUCEPATH}/juce_blocks_basics/juce_blocks_basics.cpp
 }

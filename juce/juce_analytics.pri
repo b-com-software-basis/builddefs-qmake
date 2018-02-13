@@ -6,7 +6,7 @@
 #Inclusion of other modules must occur FIRST !
 include(juce_gui_basics.pri)
 
-QMAKE_JUCEMODULENAME=juce_browser_plugin_client
+QMAKE_JUCEMODULENAME=juce_analytics
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
 	message("Including " $${QMAKE_JUCEMODULENAME})
@@ -19,5 +19,5 @@ QMAKE_JUCEMODULENAME=juce_browser_plugin_client
 
 	# Common sources
 	SOURCES += \
-		$${JUCEPATH}/juce_browser_plugin_client/juce_browser_plugin.cpp
+		$${JUCEPATH}/juce_analytics/juce_analytics.cpp
 }

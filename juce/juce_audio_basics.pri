@@ -6,29 +6,24 @@
 #Inclusion of other modules must occur FIRST !
 include(juce_core.pri)
 
-# Check input parameters existence - libs absolute path
-!defined(_BCOM_LIBS_ROOT_,var) {
-    _BCOM_LIBS_ROOT_ = $$_PRO_FILE_PWD_
-    warning("_BCOM_LIBS_ROOT_ is not defined : libs absolute path defaults to [$$_PRO_FILE_PWD_] value")
-}
-
-JUCEPATH=$${_BCOM_LIBS_ROOT_}/libs/Juce
-
 QMAKE_JUCEMODULENAME=juce_audio_basics
 
 !contains(QMAKE_JUCEMODULECONFIG,$${QMAKE_JUCEMODULENAME}) {
-	message("Including " $${QMAKE_JUCEMODULENAME})
-	QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
-	DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
+    message("Including " $${QMAKE_JUCEMODULENAME})
+    QMAKE_JUCEMODULECONFIG += $${QMAKE_JUCEMODULENAME}
+    DEFINES += JUCE_MODULE_AVAILABLE_$${QMAKE_JUCEMODULENAME}=1
 
-	!contains(INCLUDEPATH,$${JUCEPATH}) {
-		INCLUDEPATH += $${JUCEPATH}
-	}
+    !contains(INCLUDEPATH,$${JUCEPATH}) {
+            INCLUDEPATH += $${JUCEPATH}
+    }
 
-	# Common sources
-	SOURCES += \
-		$${JUCEPATH}/modules/juce_audio_basics/juce_audio_basics.cpp
-        macx {
+    # Common sources
+    SOURCES += \
+            $${JUCEPATH}/juce_audio_basics/juce_audio_basics.cpp
+
+    macx {
+        !contains(LIBS,"Accelerate") {
             LIBS += -framework Accelerate
         }
+    }
 }
