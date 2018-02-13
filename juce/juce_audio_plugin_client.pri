@@ -99,8 +99,12 @@ win32 {
         QMAKE_PLUGIN_EXTENSION_LIST += .aaxplugin
     }
     
-    contains(QMAKE_JUCEAUDIOCONFIG,juceAU|juceVST|juceVST3) {
+    contains(QMAKE_JUCEAUDIOCONFIG,juceAU|juceVST) {
         QMAKE_PLUGIN_EXTENSION_LIST += .dll
+    }
+
+    contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
+        QMAKE_PLUGIN_EXTENSION_LIST += .vst3
     }
 }
 
