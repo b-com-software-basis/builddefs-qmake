@@ -55,7 +55,7 @@ isEmpty(MAKENSIS_COMMAND) {
 for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
 
     #init unused value
-    SETUP_AAX_SUFFIX =
+    SETUP_SUFFIX =
     SETUP_COPYDIR_VALUE =
     # saved default values (vst)
     isEmpty(SETUP_INSTALLDIR) {
@@ -142,11 +142,18 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
         isEmpty(SETUP_INSTALLDIR) {
             SETUP_INSTALLDIR_VALUE=$$shell_quote($$shell_path($$(PROGRAMW6432)/Common Files/Avid/Audio/Plug-Ins/))
         }
-        SETUP_AAX_SUFFIX = AAX
+        SETUP_SUFFIX = AAX
+    }
+
+    contains(PLUGIN_EXTENSION,.vst3) {
+        VST3_PREPARE_CMD += copy /Y $${TARGET}.$${DYNLIBEXT} $${TARGET}$${PLUGIN_EXTENSION}
+        bcom_component_vst3bundle_prepare.commands = $${VST3_PREPARE_CMD}
+        create_bundle.depends += bcom_component_vst3bundle_prepare
+        SETUP_SUFFIX = VST3
     }
 
     # VST plugin
-    contains(PLUGIN_EXTENSION,.dll) {
+    contains(PLUGIN_EXTENSION,.dll|.vst3) {
         # nsis parameters
         SETUP_COPYDIR_VALUE = $$SETUP_COPYDIR
     }
@@ -154,11 +161,11 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
     # Nsis management
     SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
     SETUP_COPYFILENAME=$${TARGET}$${PLUGIN_EXTENSION}   # is a directory
-    SETUP_PRODUCTNAME_VALUE = $$shell_quote($${SETUP_PRODUCTNAME} $${SETUP_AAX_SUFFIX})
+    SETUP_PRODUCTNAME_VALUE = $$shell_quote($${SETUP_PRODUCTNAME} $${SETUP_SUFFIX})
 
     NSISCOMMAND = $$shell_quote($$shell_path($${MAKENSIS_COMMAND})) \
-                                /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME_VALUE} /DSETUP_FILENAME=$${SETUP_FILENAME}$${SETUP_AAX_SUFFIX} \
-                                /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID}$${SETUP_AAX_SUFFIX} \
+                                /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME_VALUE} /DSETUP_FILENAME=$${SETUP_FILENAME}$${SETUP_SUFFIX} \
+                                /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID}$${SETUP_SUFFIX} \
                                 /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR_VALUE}
 
     if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
@@ -172,7 +179,7 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
         NSISCOMMAND += /DSETUP_COPYDIR=$${SETUP_COPYDIR_VALUE}
     }
 
-    NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${SETUP_FILEPFX}$${SETUP_FILENAME}$${SETUP_AAX_SUFFIX}.exe))) \
+    NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${SETUP_FILEPFX}$${SETUP_FILENAME}$${SETUP_SUFFIX}.exe))) \
                    $$shell_quote($$shell_path($$PWD/nsis/Setup.nsi))
 
     # manage setup
@@ -184,4 +191,4 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
 
 create_bundle.commands = $${NSIS_PACKAGE_CMD}
 #create_bundle.depends = all install
-QMAKE_EXTRA_TARGETS  += bcom_component_aaxbundle_clean bcom_component_aaxbundle_prepare create_bundle
+QMAKE_EXTRA_TARGETS  += bcom_component_aaxbundle_clean bcom_component_aaxbundle_prepare bcom_component_vst3bundle_prepare create_bundle
