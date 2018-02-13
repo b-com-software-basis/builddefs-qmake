@@ -87,7 +87,14 @@ macx {
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST|juceVST3) {
         BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_VST_utils.mm
-        QMAKE_BUNDLE_EXTENSION_LIST += .vst
+    }
+
+    contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
+        QMAKE_PLUGIN_EXTENSION_LIST += .vst
+    }
+
+    contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
+        QMAKE_PLUGIN_EXTENSION_LIST += .vst3
     }
 
     # message("Bundle extension list" $${QMAKE_BUNDLE_EXTENSION_LIST})
