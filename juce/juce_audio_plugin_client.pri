@@ -74,6 +74,11 @@ macx {
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceAUv3) {
         BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AUv3.mm
+        QMAKE_BUNDLE_EXTENSION_LIST += .appex
+    }
+
+    contains(QMAKE_JUCEAUDIOCONFIG,juceAU) {
+        QMAKE_BUNDLE_EXTENSION_LIST += .component
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceAU|juceAUv3) {
@@ -82,7 +87,7 @@ macx {
         }
 
         BCOM_REZ_FILES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU.r
-        QMAKE_BUNDLE_EXTENSION_LIST += .component
+        QMAKE_REZ_FLAGS= -F AudioUnit -F CoreServices -F CarbonCore -i /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST|juceVST3) {

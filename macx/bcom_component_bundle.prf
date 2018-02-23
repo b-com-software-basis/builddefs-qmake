@@ -1,32 +1,33 @@
 # Author(s) : Loic Touraine
 # Check resource compiled files existence
 
-!isEmpty(BCOM_REZ_COMPILED_FILES) {
-    component_resources.path = Contents/Resources
-    component_resources.files = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
-    component_resources.depends = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
-    QMAKE_BUNDLE_DATA += component_resources
-}
+MAC_PLUGINS_ROOT_PATH = $$(HOME)/Library/Audio/Plug-Ins
+include(bcom_plist_bundle.prf)
 
 for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
-    INFOPLIST_FILEPATH = $$_PRO_FILE_PWD_/$${QMAKE_INFO_PLIST}
-    INFOPLIST_BUNDLEPKGTYPE = BNDL
-    contains(BUNDLE_EXTENSION,.aaxplugin) {
-        INFOPLIST_BUNDLEPKGTYPE = TDMw
-    }
-    exists($${INFOPLIST_FILEPATH}) {
-        INFOPLIST_CONTENT = $$cat($${INFOPLIST_FILEPATH},lines)
-        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@EXECUTABLE@", $$TARGET)
-        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@SHORT_VERSION@", $$VERSION)
-        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@BUNDLEPKGTYPE@", $$INFOPLIST_BUNDLEPKGTYPE)
-        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@PLUGINCODE@", $$JUCEPLUGIN_PLUGINCODE)
-        write_file($$OUT_PWD/Info.plist$${BUNDLE_EXTENSION}, INFOPLIST_CONTENT)
-        QMAKE_DISTCLEAN += $$OUT_PWD/Info.plist$${BUNDLE_EXTENSION}
+    !equals(BUNDLE_INSTALL_CMD,"") {
+        BUNDLE_INSTALL_CMD += &&
     }
 
-    infoplist_resources.path = Contents
-    infoplist_resources.files = $$OUT_PWD/Info.plist$${BUNDLE_EXTENSION}
-    QMAKE_BUNDLE_DATA += infoplist_resources
+    equals(BUNDLE_EXTENSION,.aaxplugin) {
+        MAC_PLUGIN_SUBFOLDER = DigiDesign
+    }
+    equals(BUNDLE_EXTENSION,.vst) {
+        MAC_PLUGIN_SUBFOLDER = VST
+    }
+    equals(BUNDLE_EXTENSION,.vst3) {
+        MAC_PLUGIN_SUBFOLDER = VST3
+    }
+    equals(BUNDLE_EXTENSION,.component)|equals(BUNDLE_EXTENSION,.appex) {
+        MAC_PLUGIN_SUBFOLDER = Components
+        bcom_component_bundle_prepare.depends += $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
+        component_resources.path = Contents/Resources
+        component_resources.files = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
+        component_resources.depends = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
+        QMAKE_BUNDLE_DATA += component_resources
+    }
+
+    BUNDLE_INSTALL_CMD += cp -rf $${TARGET}$${BUNDLE_EXTENSION} $${MAC_PLUGINS_ROOT_PATH}/$${MAC_PLUGIN_SUBFOLDER}
 
     for (bundle_data, QMAKE_BUNDLE_DATA) {
         for (bundle_file, $${bundle_data}.files) {
@@ -41,7 +42,7 @@ for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
                 BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}
                 # Handle Info.plist
                 contains(bundle_data,infoplist_resources) {
-                    BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}/Info.plist
+                    BUNDLE_PACKAGE_CMD += cp -f $$OUT_PWD/Info$${BUNDLE_EXTENSION}.plist $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}/Info.plist
                 }
                 # Standard copy for all other files except Info.plist
                 !contains(bundle_data,infoplist_resources) {
@@ -80,7 +81,11 @@ bcom_component_bundle_prepare.depends += bcom_component_bundle_clean
 create_bundle.commands = $$BUNDLE_PACKAGE_CMD
 create_bundle.depends += bcom_component_bundle_prepare $(TARGET)
 
+install_bundle.commands = $$BUNDLE_INSTALL_CMD
+install_bundle.depends += create_bundle $(TARGET)
+
+
 #QMAKE doesn't manage adding targets from inference rules : we need to explicitly declare each target even when they are dependent on each other
-QMAKE_EXTRA_TARGETS += bcom_component_bundle_clean bcom_component_bundle_prepare create_bundle
+QMAKE_EXTRA_TARGETS += bcom_component_bundle_clean bcom_component_bundle_prepare create_bundle install_bundle
 #NOTE: DO NOT PUT bcom_component_bundle in POST or PRE_TARGETDEPS as it will create a circular dependent upon $(TARGET) and will result in the build of the target AFTER the bcom_component_bundle target
 #which gives an error (the target to copy doesn't exists)
