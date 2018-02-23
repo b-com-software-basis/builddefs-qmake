@@ -1,0 +1,6 @@
+Builddefs-qmake documentation 
+
+== Bundle
+== Audio plugins specific files/variables
+JUCEPLUGIN ...
+PRODUCTNAME, PRODUCTNAME_SHORT vs TARGET
