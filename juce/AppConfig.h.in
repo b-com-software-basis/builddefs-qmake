@@ -399,6 +399,7 @@
 #endif
 #ifndef  JucePlugin_IAAName
  #define JucePlugin_IAAName                "@JUCEPLUGIN_NAME@"
+#endif
 #ifndef  JucePlugin_MaxNumInputChannels
  #define JucePlugin_MaxNumInputChannels    25
 #endif

@@ -2,7 +2,8 @@
 
 
 for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
-    INFOPLIST_FILEPATH = $$_PRO_FILE_PWD_/$${QMAKE_INFO_PLIST}
+    message("Preparing Info.plist file for $${BUNDLE_EXTENSION} plugin format")
+    INFOPLIST_FILEPATH = Info.plist
     INFOPLIST_BUNDLEPKGTYPE = BNDL
     INFOPLIST_BUNDLEPKGSIGN = ????
     equals(BUNDLE_EXTENSION,.aaxplugin) {
@@ -19,6 +20,10 @@ for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
             AUV3TAGS += "<string>$${TAG}</string>"
         }
     }
+    OUTPUTPKGINFO_CONTENT = $${INFOPLIST_BUNDLEPKGTYPE}$${INFOPLIST_BUNDLEPKGSIGN}
+    write_file($$OUT_PWD/PkgInfo$${BUNDLE_EXTENSION}.txt, OUTPUTPKGINFO_CONTENT)
+
+    QMAKE_DISTCLEAN += $$OUT_PWD/PkgInfo$${BUNDLE_EXTENSION}.txt
 
     OUTPUTPLIST_CONTENT = ""
     exists($${INFOPLIST_FILEPATH}) {
@@ -72,8 +77,4 @@ for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
         write_file($$OUT_PWD/Info$${BUNDLE_EXTENSION}.plist, OUTPUTPLIST_CONTENT)
         QMAKE_DISTCLEAN += $$OUT_PWD/Info$${BUNDLE_EXTENSION}.plist
     }
-
-    infoplist_resources.path = Contents
-    infoplist_resources.files = $$OUT_PWD/Info$${BUNDLE_EXTENSION}.plist
-    QMAKE_BUNDLE_DATA += infoplist_resources
 }

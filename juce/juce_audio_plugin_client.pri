@@ -95,11 +95,11 @@ macx {
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
-        QMAKE_PLUGIN_EXTENSION_LIST += .vst
+        QMAKE_BUNDLE_EXTENSION_LIST += .vst
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST3) {
-        QMAKE_PLUGIN_EXTENSION_LIST += .vst3
+        QMAKE_BUNDLE_EXTENSION_LIST += .vst3
     }
 
     # message("Bundle extension list" $${QMAKE_BUNDLE_EXTENSION_LIST})

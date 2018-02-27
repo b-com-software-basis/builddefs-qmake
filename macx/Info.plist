@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+<!-- AUV3 -->   <key>NSExtension</key>
+<!-- AUV3 -->   <dict>
+<!-- AUV3 -->      <key>NSExtensionPrincipalClass</key>
+<!-- AUV3 -->      <string>@AUV3PRINCIPALCLASS@</string>
+<!-- AUV3 -->      <key>NSExtensionPointIdentifier</key>
+<!-- AUV3 -->      <string>com.apple.AudioUnit-UI</string>
+<!-- AUV3 -->      <key>NSExtensionAttributes</key>
+<!-- AUV3 -->      <dict>
+<!-- AUCOMP -->       <key>AudioComponents</key>
+<!-- AUCOMP -->       <array>
+<!-- AUCOMP -->         <dict>
+<!-- AUCOMP -->           <key>description</key>
+<!-- AUCOMP -->           <string>@AUDESCRIPTION@</string>
+<!-- AUCOMP -->           <key>factoryFunction</key>
+<!-- AUCOMP -->           <string>@AUFACTORYFUNCTION@</string>
+<!-- AUCOMP -->           <key>manufacturer</key>
+<!-- AUCOMP -->           <string>@MANUFACTURERCODE@</string>
+<!-- AUCOMP -->           <key>name</key>
+<!-- AUCOMP -->           <string>@AUNAME@</string>
+<!-- AUCOMP -->           <key>type</key>
+<!-- AUCOMP -->           <string>@AUTYPE@</string>
+<!-- AUCOMP -->           <key>subtype</key>
+<!-- AUCOMP -->           <string>@PLUGINCODE@</string>
+<!-- AUCOMP -->           <key>version</key>
+<!-- AUCOMP -->           <integer>65536</integer>
+<!-- AUCOMP -->         </dict>
+<!-- AUCOMP -->       </array>
+<!-- AUV3 -->           <key>sandboxSafe</key>
+<!-- AUV3 -->           <true/>
+<!-- AUV3 -->           <key>tags</key>
+<!-- AUV3 -->           <array>
+<!-- AUV3 -->            @AUV3TAGS@
+<!-- AUV3 -->          </array>
+<!-- AUV3 -->     </dict>
+<!-- AUV3 -->   </dict>
+    <key>CFBundleExecutable</key>
+    <string>@EXECUTABLE@</string>
+    <key>CFBundleIconFile</key>
+    <string></string>
+    <key>CFBundleIdentifier</key>
+    <string>com.bcom.@PRODUCTNAME@</string>
+    <key>CFBundleName</key>
+    <string>@EXECUTABLE@</string>
+    <key>CFBundleDisplayName</key>
+    <string>@EXECUTABLE@</string>
+    <key>CFBundlePackageType</key>
+    <string>@BUNDLEPKGTYPE@</string>
+    <key>CFBundleSignature</key>
+    <string>@BUNDLEPKGSIGN@</string>
+    <key>CFBundleShortVersionString</key>
+    <string>@SHORT_VERSION@</string>
+    <key>CFBundleVersion</key>
+    <string>@SHORT_VERSION@</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>b&lt;&gt;com</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+  </dict>
+</plist>
+

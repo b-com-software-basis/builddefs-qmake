@@ -5,10 +5,6 @@ MAC_PLUGINS_ROOT_PATH = $$(HOME)/Library/Audio/Plug-Ins
 include(bcom_plist_bundle.prf)
 
 for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
-    !equals(BUNDLE_INSTALL_CMD,"") {
-        BUNDLE_INSTALL_CMD += &&
-    }
-
     equals(BUNDLE_EXTENSION,.aaxplugin) {
         MAC_PLUGIN_SUBFOLDER = DigiDesign
     }
@@ -27,7 +23,26 @@ for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
         QMAKE_BUNDLE_DATA += component_resources
     }
 
+    !equals(BUNDLE_INSTALL_CMD,"") {
+        BUNDLE_INSTALL_CMD += &&
+    }
     BUNDLE_INSTALL_CMD += cp -rf $${TARGET}$${BUNDLE_EXTENSION} $${MAC_PLUGINS_ROOT_PATH}/$${MAC_PLUGIN_SUBFOLDER}
+
+    !equals(BUNDLE_UNINSTALL_CMD,"") {
+        BUNDLE_UNINSTALL_CMD += &&
+    }
+    BUNDLE_UNINSTALL_CMD += rm -rf $${MAC_PLUGINS_ROOT_PATH}/$${MAC_PLUGIN_SUBFOLDER}/$${TARGET}$${BUNDLE_EXTENSION}
+
+    !equals(BUNDLE_PREPARE_CMD,"") {
+        BUNDLE_PREPARE_CMD += &&
+    }
+    BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${BUNDLE_EXTENSION}/Contents
+
+    !equals(BUNDLE_PACKAGE_CMD,"") {
+        BUNDLE_PACKAGE_CMD += &&
+    }
+    BUNDLE_PACKAGE_CMD += cp -f $$OUT_PWD/PkgInfo$${BUNDLE_EXTENSION}.txt $${TARGET}$${BUNDLE_EXTENSION}/Contents/PkgInfo
+    BUNDLE_PACKAGE_CMD += && cp -f $$OUT_PWD/Info$${BUNDLE_EXTENSION}.plist $${TARGET}$${BUNDLE_EXTENSION}/Contents/Info.plist
 
     for (bundle_data, QMAKE_BUNDLE_DATA) {
         for (bundle_file, $${bundle_data}.files) {
@@ -41,13 +56,8 @@ for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
                 }
                 BUNDLE_PREPARE_CMD += mkdir -p $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}
                 # Handle Info.plist
-                contains(bundle_data,infoplist_resources) {
-                    BUNDLE_PACKAGE_CMD += cp -f $$OUT_PWD/Info$${BUNDLE_EXTENSION}.plist $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}/Info.plist
-                }
-                # Standard copy for all other files except Info.plist
-                !contains(bundle_data,infoplist_resources) {
-                    BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}/
-                }
+
+                BUNDLE_PACKAGE_CMD += cp -f $${bundle_file} $${TARGET}$${BUNDLE_EXTENSION}/$${bundle_path}/
             }
         }
     }
@@ -84,8 +94,12 @@ create_bundle.depends += bcom_component_bundle_prepare $(TARGET)
 install_bundle.commands = $$BUNDLE_INSTALL_CMD
 install_bundle.depends += create_bundle $(TARGET)
 
+uninstall_bundle.commands = $$BUNDLE_UNINSTALL_CMD
+
+
 
 #QMAKE doesn't manage adding targets from inference rules : we need to explicitly declare each target even when they are dependent on each other
-QMAKE_EXTRA_TARGETS += bcom_component_bundle_clean bcom_component_bundle_prepare create_bundle install_bundle
+QMAKE_EXTRA_TARGETS += bcom_component_bundle_clean bcom_component_bundle_prepare create_bundle install_bundle uninstall_bundle
+
 #NOTE: DO NOT PUT bcom_component_bundle in POST or PRE_TARGETDEPS as it will create a circular dependent upon $(TARGET) and will result in the build of the target AFTER the bcom_component_bundle target
 #which gives an error (the target to copy doesn't exists)
