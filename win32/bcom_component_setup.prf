@@ -179,7 +179,19 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
         NSISCOMMAND += /DSETUP_COPYDIR=$${SETUP_COPYDIR_VALUE}
     }
 
-    NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${SETUP_FILEPFX}$${SETUP_FILENAME}$${SETUP_SUFFIX}.exe))) \
+    # remove/replace forbidden chars
+    NSISSETUP_FILEPFX = $$replace(SETUP_FILEPFX, "<>", "-")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "<", "")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, ">", "")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "/", "")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "\\", "")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, ":", "")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "*", "")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "\?", "")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "\"", "")
+    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "|", "")
+
+    NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${NSISSETUP_FILEPFX}$${SETUP_FILENAME}$${SETUP_SUFFIX}.exe))) \
                    $$shell_quote($$shell_path($$PWD/nsis/Setup.nsi))
 
     # manage setup
