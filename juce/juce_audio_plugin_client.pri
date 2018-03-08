@@ -17,7 +17,8 @@ QMAKE_JUCEMODULENAME=juce_audio_plugin_client
 
         !contains(INCLUDEPATH,$${JUCEPATH}) {
                 INCLUDEPATH += $${JUCEPATH}
-}
+        }
+
 
 contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {
     JUCE_PLUGIN_BUILD_VST=1
@@ -63,17 +64,17 @@ contains(QMAKE_JUCEAUDIOCONFIG,juceAUv3) {
 
 macx {
     contains(QMAKE_JUCEAUDIOCONFIG,juceAAX) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AAX.mm
+        OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AAX.mm
         QMAKE_BUNDLE_EXTENSION_LIST += .aaxplugin
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceAU) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU_1.mm
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU_2.mm
+        OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU_1.mm
+        OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU_2.mm
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceAUv3) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AUv3.mm
+        OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AUv3.mm
         QMAKE_BUNDLE_EXTENSION_LIST += .appex
     }
 
@@ -91,7 +92,7 @@ macx {
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST|juceVST3) {
-        BCOM_OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_VST_utils.mm
+        OBJECTIVE_SOURCES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_VST_utils.mm
     }
 
     contains(QMAKE_JUCEAUDIOCONFIG,juceVST) {

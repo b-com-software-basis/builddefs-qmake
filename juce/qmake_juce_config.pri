@@ -64,15 +64,15 @@ JUCEPLUGIN_AUSUBTYPE=$${JUCEPLUGIN_PLUGINCODE}
 JUCEPLUGIN_AUEXPORTPREFIX=$${JUCEPLUGIN_PROJECTNAME}AU
 JUCEPLUGIN_AUEXPORTPREFIXQUOTED="$${JUCEPLUGIN_PROJECTNAME}AU"
 
-exists($$_PRO_FILE_PWD_/includes/JuceHeader.h):exists(AppConfig.h.in) {
+exists(JuceHeader.h):exists(AppConfig.h.in) {
     HEADERS += \
-        includes/JuceHeader.h \
+        builddefs/qmake/juce/JuceHeader.h \
         builddefs/qmake/juce/AppConfig.h.in \
         $$OUT_PWD/AppConfig.h
 }
 
-!exists($$_PRO_FILE_PWD_/includes/JuceHeader.h)|!exists(AppConfig.h.in) {
-    error("Missing includes/JuceHeader.h and/or builddefs/qmake/juce/AppConfig.h.in files")
+!exists(JuceHeader.h)|!exists(AppConfig.h.in) {
+    error("Missing builddefs/qmake/juce/JuceHeader.h and/or builddefs/qmake/juce/AppConfig.h.in files")
 }
 
 exists($$_PRO_FILE_PWD_/includes/BinaryData.h):exists($$_PRO_FILE_PWD_/src/BinaryData.cpp) {
@@ -108,4 +108,13 @@ exists($${APPCONFIG_FILEPATH}) {
     write_file($$OUT_PWD/AppConfig.h, APPCONFIG_IN_CONTENT)
     QMAKE_DISTCLEAN += $$OUT_PWD/AppConfig.h
 }
+
+JUCEHEADER_FILEPATH=JuceHeader.h
+exists($${JUCEHEADER_FILEPATH}) {
+    JUCEHEADER_CONTENT = $$cat($${JUCEHEADER_FILEPATH},lines)
+    write_file($$OUT_PWD/JuceHeader.h, JUCEHEADER_CONTENT)
+    QMAKE_DISTCLEAN += $$OUT_PWD/JuceHeader.h
+}
+INCLUDEPATH += $$OUT_PWD
+
 
