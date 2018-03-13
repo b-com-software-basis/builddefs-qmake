@@ -56,7 +56,7 @@
 ;Run the uninstaller
 uninst:
   ClearErrors
-  ExecWait '$R0' ;Do not copy the uninstaller to a temp file
+  ExecWait '$R0 /S' ;Do not copy the uninstaller to a temp file
  
   IfErrors no_remove_uninstaller done
     ;You can either use Delete /REBOOTOK in the uninstaller or add some code
