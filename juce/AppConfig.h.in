@@ -352,7 +352,7 @@
 
 #if JucePlugin_Build_AAX==1
     #ifndef  JucePlugin_AAXIdentifier
-     #define JucePlugin_AAXIdentifier          com.bcom.RenderHoa2Spk
+     #define JucePlugin_AAXIdentifier          @JUCEPLUGIN_AAXIDENTIFIER@
     #endif
     #ifndef  JucePlugin_AAXManufacturerCode
      #define JucePlugin_AAXManufacturerCode    JucePlugin_ManufacturerCode
