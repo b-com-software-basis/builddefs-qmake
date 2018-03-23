@@ -388,7 +388,7 @@
     #define JucePlugin_AAX_Ambix1InputStemFormat_For_Chan4 1   // use stem format ambiXo1 (instead of Quad) for 4-channel input
     #endif
     #ifndef  JucePlugin_PreferredChannelConfigurations_AAX
-    #define JucePlugin_PreferredChannelConfigurations_AAX  {16,2},{16,4},{16,5},{16,7},{16,9},{9,2},{9,4},{9,5},{9,7},{9,9},{4,2},{4,4},{4,5},{4,7},{4,9}
+    #define JucePlugin_PreferredChannelConfigurations_AAX  @JUCEPLUGIN_PREFERREDCHANNELCONFIGURATIONS_AAX@
     #endif
 #endif
 #ifndef  JucePlugin_IAAType
@@ -401,11 +401,11 @@
  #define JucePlugin_IAAName                "@JUCEPLUGIN_NAME@"
 #endif
 #ifndef  JucePlugin_MaxNumInputChannels
- #define JucePlugin_MaxNumInputChannels    25
+ #define JucePlugin_MaxNumInputChannels    @JUCEPLUGIN_MAXNUMINPUTCHANNELS@
 #endif
 #ifndef  JucePlugin_MaxNumOutputChannels
- #define JucePlugin_MaxNumOutputChannels   32
+ #define JucePlugin_MaxNumOutputChannels   @JUCEPLUGIN_MAXNUMOUTPUTCHANNELS@
 #endif
 #ifndef  JucePlugin_PreferredChannelConfigurations
- #define JucePlugin_PreferredChannelConfigurations  {25,32},{16,32},{9,32},{4,32}
+ #define JucePlugin_PreferredChannelConfigurations  @JUCEPLUGIN_PREFERREDCHANNELCONFIGURATIONS@
 #endif

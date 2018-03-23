@@ -8,6 +8,12 @@ VERSION
 
 include template*.pri file (after TARGET, FRAMEWORK, INSTALLSUBDIR, VERSION declarations)
 
+== Package metadata
+A manifest folder is created in the target package.
+It contains the following files :
+- .compiler_platform : the supported compiler/platform version
+- .compiler_version : the compiler used to build
+- .compiler_options : the compiler options
 
 == Product information
 Defined in _ProductConfig.pri local project file
