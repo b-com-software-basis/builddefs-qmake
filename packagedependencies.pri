@@ -27,9 +27,15 @@ packagedepsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
 win32 {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
 }
-
+# Common unix platform (macx, linux...)
+unix {
+    packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
+}
 macx {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+}
+linux {
+    packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
 }
 
 BCOMPFX = bcom-
@@ -148,8 +154,14 @@ defined(PROJECTDEPLOYDIR,var) {
     win32:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-win.txt
     }
-    macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
+    unix:exists($$_PRO_FILE_PWD_/packagedependencies-unix.txt) {
+        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
+    }
+	macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+    }
+	linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
+        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
         package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
