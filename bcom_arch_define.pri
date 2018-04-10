@@ -38,6 +38,41 @@ isEmpty(BCOM_TARGET_PLATFORM) {
         BCOM_TARGET_PLATFORM = macx-$$basename(QMAKE_CC)
     }
     win32 {
-        BCOM_TARGET_PLATFORM = win-$$basename(QMAKE_CC)
+        !defined(QMAKE_MSC_VER,var) {
+            !defined (MSVC_VER, var) {
+                error("Unable to find msvc version : Use minimum Qt 5.6 version.")
+            } else {
+                BCOM_COMPILER_VER = $$MSVC_VER
+            }
+        } else {
+            # msvc version : https://stackoverflow.com/questions/70013/how-to-detect-if-im-compiling-code-with-visual-studio-2008
+            greaterThan(QMAKE_MSC_VER, 1499) {
+                # Visual Studio 2008 (9.0) / Visual C++ 15.0 and up
+                BCOM_COMPILER_VER = 9.0
+            }
+            greaterThan(QMAKE_MSC_VER, 1599) {
+                # Visual Studio 2010 (10.0) / Visual C++ 16.0 and up
+                BCOM_COMPILER_VER = 10.0
+            }
+            greaterThan(QMAKE_MSC_VER, 1699) {
+                # Visual Studio 2012 (11.0) / Visual C++ 17.0 and up
+                BCOM_COMPILER_VER = 11.0
+            }
+            greaterThan(QMAKE_MSC_VER, 1799) {
+                # Visual Studio 2013 (12.0) / Visual C++ 18.0 and up
+                BCOM_COMPILER_VER = 12.0
+            }
+            greaterThan(QMAKE_MSC_VER, 1899) {
+                # Visual Studio 2015 (14.0) / Visual C++ 19.0 and up
+                BCOM_COMPILER_VER = 14.0
+            }
+            greaterThan(QMAKE_MSC_VER, 1909) {
+                # Visual Studio 2017 (14.x with x >= 1) / Visual C++ 19.10 and up
+                # Note : msvc version set to 14.1 for Visual Studio 2017 in order to separate version from msvc 2015!
+                BCOM_COMPILER_VER = 14.1
+            }
+        }
+		# note : when icl is used with msvc, the most important is the msvc compiler version!
+        BCOM_TARGET_PLATFORM = win-$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
     }
 }
