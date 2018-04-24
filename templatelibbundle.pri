@@ -30,3 +30,5 @@ win32 {
     bcom_component_binary.files = $${TARGET}.$${DYNLIBEXT}
     QMAKE_SETUP_BINARY += bcom_component_binary
 }
+
+include (bcom_bundle_rules.prf)
