@@ -40,6 +40,7 @@ linux {
 
 BCOMPFX = bcom-
 bFoundAtLeastOneStaticDep = 0
+BCOMDEPSINCLUDEPATH=""
 
 for(depfile, packagedepsfiles) {
     exists($${depfile}) {
@@ -61,7 +62,12 @@ for(depfile, packagedepsfiles) {
                 }
             }
 
-            deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+            deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+            !exists($${deployFolder}) {
+                warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                warning("Defaulting search folder to " $${deployFolder})
+            }
             pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
             !exists($${pkgCfgFilePath}) {
                 # No specific .pc file for debug mode :
@@ -70,7 +76,8 @@ for(depfile, packagedepsfiles) {
             }
             !exists($${pkgCfgFilePath}) {# default behavior
                 message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values (check your config if it should exists)")
-                QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+               # QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+                BCOMDEPSINCLUDEPATH += $${deployFolder}/interfaces
                 equals(pkgLinkModeOverride,"static") {
                     LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
                     bFoundAtLeastOneStaticDep = 1
@@ -98,10 +105,12 @@ for(depfile, packagedepsfiles) {
                 }
                # message("pkg-config variables for includes : " $$pkgCfgVars)
                # message("pkg-config variables for libs : " $$pkgCfgLibVars)
-                QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+                BCOMDEPSINCLUDEPATH += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+               # QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
                 LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
             }
         }
+        QMAKE_CXXFLAGS += $${BCOMDEPSINCLUDEPATH}
         message("")
         message("----------------- $${depfile} " process result :" -----------------" )
         message("--> [INFO] QMAKE_CXXFLAGS : ")

@@ -13,13 +13,13 @@
     error("INSTALLSUBDIR is defined with the $$INSTALLSUBDIR unsupported value. Supported values are : bcomBuild or thirdParties")
 }
 
-!defined(PROJECTDEPLOYDIR,var) {
-    warning("PROJECTDEPLOYDIR may be defined before templatelibconfig.pri inclusion => Defaulting PROJECTDEPLOYDIR to $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}. ")
-    PROJECTDEPLOYDIR = $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}
-}
-
-# Detect build toolchain and define BCOM_TARGET_ARCH
+# Detect build toolchain, define BCOM_TARGET_ARCH and BCOM_TARGET_PLATFORM
 include(bcom_arch_define.pri)
+
+!defined(PROJECTDEPLOYDIR,var) {
+    warning("PROJECTDEPLOYDIR may be defined before templatelibconfig.pri inclusion => Defaulting PROJECTDEPLOYDIR to $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}. ")
+    PROJECTDEPLOYDIR = $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}
+}
 
 # Include extended compiler rules
 include (bcom_compiler_specs.prf)
