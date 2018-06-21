@@ -21,10 +21,10 @@ include(bcom_arch_define.pri)
     PROJECTDEPLOYDIR = $$(BCOMDEVROOT)/$${INSTALLSUBDIR}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}
 }
 
+TEMPLATE = lib
+
 # Include extended compiler rules
 include (bcom_compiler_specs.prf)
-
-TEMPLATE = lib
 
 staticlib {
     LINKMODE = static

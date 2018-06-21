@@ -75,4 +75,5 @@ isEmpty(BCOM_TARGET_PLATFORM) {
 		# note : when icl is used with msvc, the most important is the msvc compiler version!
         BCOM_TARGET_PLATFORM = win-$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
     }
+    write_file($${OUT_PWD}/.compiler_platform, BCOM_TARGET_PLATFORM)
 }
