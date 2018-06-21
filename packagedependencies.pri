@@ -27,13 +27,20 @@ packagedepsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
 win32 {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
 }
-
+# Common unix platform (macx, linux...)
+unix {
+    packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
+}
 macx {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+}
+linux {
+    packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
 }
 
 BCOMPFX = bcom-
 bFoundAtLeastOneStaticDep = 0
+BCOMDEPSINCLUDEPATH=""
 
 for(depfile, packagedepsfiles) {
     exists($${depfile}) {
@@ -55,7 +62,12 @@ for(depfile, packagedepsfiles) {
                 }
             }
 
-            deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+            deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+            !exists($${deployFolder}) {
+                warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                warning("Defaulting search folder to " $${deployFolder})
+            }
             pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
             !exists($${pkgCfgFilePath}) {
                 # No specific .pc file for debug mode :
@@ -64,7 +76,8 @@ for(depfile, packagedepsfiles) {
             }
             !exists($${pkgCfgFilePath}) {# default behavior
                 message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values (check your config if it should exists)")
-                QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+               # QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+                BCOMDEPSINCLUDEPATH += $${deployFolder}/interfaces
                 equals(pkgLinkModeOverride,"static") {
                     LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
                     bFoundAtLeastOneStaticDep = 1
@@ -92,10 +105,12 @@ for(depfile, packagedepsfiles) {
                 }
                # message("pkg-config variables for includes : " $$pkgCfgVars)
                # message("pkg-config variables for libs : " $$pkgCfgLibVars)
-                QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+                BCOMDEPSINCLUDEPATH += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+               # QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
                 LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
             }
         }
+        QMAKE_CXXFLAGS += $${BCOMDEPSINCLUDEPATH}
         message("")
         message("----------------- $${depfile} " process result :" -----------------" )
         message("--> [INFO] QMAKE_CXXFLAGS : ")
@@ -148,8 +163,14 @@ defined(PROJECTDEPLOYDIR,var) {
     win32:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-win.txt
     }
-    macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
+    unix:exists($$_PRO_FILE_PWD_/packagedependencies-unix.txt) {
+        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
+    }
+	macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+    }
+	linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
+        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
         package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc

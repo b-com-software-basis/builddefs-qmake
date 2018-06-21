@@ -1,0 +1,80 @@
+# Author(s) : Loic Touraine
+
+
+for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
+    message("Preparing Info.plist file for $${BUNDLE_EXTENSION} plugin format")
+    INFOPLIST_FILEPATH = Info.plist
+    INFOPLIST_BUNDLEPKGTYPE = BNDL
+    INFOPLIST_BUNDLEPKGSIGN = ????
+    equals(BUNDLE_EXTENSION,.aaxplugin) {
+        INFOPLIST_BUNDLEPKGTYPE = TDMw
+        INFOPLIST_BUNDLEPKGSIGN = PTul
+    }
+    equals(BUNDLE_EXTENSION,.component) {
+        AUFACTORYFUNCTION = "$${JUCEPLUGIN_AUEXPORTPREFIX}Factory"
+    }
+    equals(BUNDLE_EXTENSION,.appex) {
+        AUFACTORYFUNCTION = "$${JUCEPLUGIN_AUEXPORTPREFIX}FactoryAUv3"
+        INFOPLIST_BUNDLEPKGTYPE = XPC!
+        for (TAG, JUCEPLUGIN_AUV3TAGS) {
+            AUV3TAGS += "<string>$${TAG}</string>"
+        }
+    }
+    OUTPUTPKGINFO_CONTENT = $${INFOPLIST_BUNDLEPKGTYPE}$${INFOPLIST_BUNDLEPKGSIGN}
+    write_file($$OUT_PWD/PkgInfo$${BUNDLE_EXTENSION}.txt, OUTPUTPKGINFO_CONTENT)
+
+    QMAKE_DISTCLEAN += $$OUT_PWD/PkgInfo$${BUNDLE_EXTENSION}.txt
+
+    OUTPUTPLIST_CONTENT = ""
+    exists($${INFOPLIST_FILEPATH}) {
+        PLIST_MANUFACTURER = $$replace(PRODUCT_MANUFACTURER, "<", "&lt;")
+        PLIST_MANUFACTURER = $$replace(PLIST_MANUFACTURER, ">", "&gt;")
+        PLIST_PRODUCT_NAME = $$replace(PRODUCT_NAME, "<", "&lt;")
+        PLIST_PRODUCT_NAME = $$replace(PLIST_PRODUCT_NAME, ">", "&gt;")
+        PLIST_PRODUCT_DESCRIPTION = $$replace(PRODUCT_DESCRIPTION, "<", "&lt;")
+        PLIST_PRODUCT_DESCRIPTION = $$replace(PLIST_PRODUCT_DESCRIPTION, ">", "&gt;")
+
+
+        INFOPLIST_CONTENT = $$cat($${INFOPLIST_FILEPATH},lines)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@EXECUTABLE@", $$TARGET)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@PRODUCTNAME@", $${PLIST_PRODUCT_NAME})
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@BUNDLEPKGTYPE@", $$INFOPLIST_BUNDLEPKGTYPE)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@BUNDLEPKGSIGN@", $$INFOPLIST_BUNDLEPKGSIGN)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@SHORT_VERSION@", $$VERSION)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@PLUGINCODE@", $$JUCEPLUGIN_PLUGINCODE)
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@AUNAME@", $${PLIST_MANUFACTURER} ": " $${PLIST_PRODUCT_NAME})
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@AUTYPE@", $${JUCEPLUGIN_AUTYPE})
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@MANUFACTURERCODE@", $${PRODUCT_MANUFACTURERCODE})
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@AUDESCRIPTION@", $${PLIST_PRODUCT_DESCRIPTION})
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@AUFACTORYFUNCTION@", $${AUFACTORYFUNCTION})
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@AUV3PRINCIPALCLASS@", $${AUFACTORYFUNCTION})
+        INFOPLIST_CONTENT = $$replace(INFOPLIST_CONTENT, "@AUV3TAGS@", $${AUV3TAGS})
+
+        for (LINE, INFOPLIST_CONTENT) {
+            AULINE=$$LINE
+            AUV3LINE=$$LINE
+            AULINE ~= s/.*(<!-- AUCOMP -->)+.*/AU
+            AUV3LINE ~= s/.*(<!-- AUV3 -->)+.*/AUV3
+            # Common plist part for aax, vst, vst3, audio unit and audio unit V3
+            !equals(AULINE,AU):!equals(AUV3LINE,AUV3) {
+                OUTPUTPLIST_CONTENT += $$LINE
+            }
+
+            # Dedicated plist part for audio unit V3 application extension bundle
+            equals(BUNDLE_EXTENSION,.appex) {
+                !equals(AULINE,AU):equals(AUV3LINE,AUV3) {
+                    OUTPUTPLIST_CONTENT += $$replace(LINE,"<!-- AUV3 -->","")
+                }
+            }
+
+            # Dedicated plist part for both audio unit component and audio unit V3 application extension bundle
+            equals(BUNDLE_EXTENSION,.component)|equals(BUNDLE_EXTENSION,.appex) {
+                equals(AULINE,AU):!equals(AUV3LINE,AUV3) {
+                    OUTPUTPLIST_CONTENT += $$replace(LINE,"<!-- AUCOMP -->","")
+                }
+            }
+        }
+        write_file($$OUT_PWD/Info$${BUNDLE_EXTENSION}.plist, OUTPUTPLIST_CONTENT)
+        QMAKE_DISTCLEAN += $$OUT_PWD/Info$${BUNDLE_EXTENSION}.plist
+    }
+}

@@ -1,13 +1,13 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
+TEMPLATE = app
+CONFIG += app_bundle
+
 # Detect build toolchain and define BCOM_TARGET_ARCH
 include(bcom_arch_define.pri)
 
 # Include extended compiler rules
 include (bcom_compiler_specs.prf)
-
-TEMPLATE = app
-CONFIG += app_bundle
 
 CONFIG(debug,debug|release) {
     OUTPUTDIR = debug
