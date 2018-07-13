@@ -1,0 +1,56 @@
+Builddefs-qmake b<>com dependency system documentation 
+
+== Common project structure
+TARGET
+FRAMEWORK
+INSTALLSUBDIR
+VERSION
+
+include template*.pri file (after TARGET, FRAMEWORK, INSTALLSUBDIR, VERSION declarations)
+
+== Package metadata
+A manifest folder is created in the target package.
+It contains the following files :
+- .compiler_platform : the supported compiler/platform version
+- .compiler_version : the compiler used to build
+- .compiler_options : the compiler options
+
+== Product information
+Defined in _ProductConfig.pri local project file
+PRODUCT_NAME::
+PRODUCT_DESCRIPTION::
+PRODUCT_MANUFACTURER:: sample = b<>com
+PRODUCT_MANUFACTURERCODE:: = bCom
+PRODUCT_GUID:: example = 5855BF98-D32C-414C-BCA3-860BB8B4576E
+
+PRODUCT_VERSIONCODE:: =hexadecimal based versioning
+
+PRODUCT_VERSION:: derived from project $${VERSION}
+PRODUCT_VERSIONSTRING:: derived from project ="$${VERSION}"
+
+== Library Target
+
+== Application Target
+
+== Bundle/plugin Target
+
+== Audio plugins specific files/variables
+=== _JuceConfig.pri local project file
+Starts with _ProductConfig.pri inclusion
+# Declare which plugin format(s) to build
+QMAKE_JUCEAUDIOCONFIG:: defines the audio plugin formats to be built (sample : juceAU juceVST juceAAX juceVST3)
+Supported values:
+
+For each format declared in QMAKE_JUCEAUDIOCONFIG, the plugin category must be defined, for instance :
+JUCEPLUGIN_CATEGORY.juceAU = kAudioUnitType_Effect
+JUCEPLUGIN_CATEGORY.juceAUv3 = kAudioUnitType_Effect
+JUCEPLUGIN_CATEGORY.juceVST = kPlugCategSpacializer
+JUCEPLUGIN_CATEGORY.juceVST3 = kPlugCategSpacializer
+JUCEPLUGIN_CATEGORY.juceAAX = AAX_ePlugInCategory_SoundField
+JUCEPLUGIN_AUV3TAGS = Effects
+
+The plugin code is a 4 digit code and must be defined
+JUCEPLUGIN_PLUGINCODE="H2Sk"
+
+JUCEPLUGIN ...
+PRODUCTNAME, PRODUCTNAME_SHORT vs TARGET
