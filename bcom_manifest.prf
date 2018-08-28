@@ -1,4 +1,4 @@
-# Author(s) : Stephane Leduc
+# Author(s) : Loic Touraine, Stephane Leduc
 
 include(bcom_installpath_define.pri)
 
