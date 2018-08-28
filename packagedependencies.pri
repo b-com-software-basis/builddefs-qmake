@@ -26,6 +26,7 @@ CONFIG(release,debug|release) {
 packagedepsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
 win32 {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
+    vcpkgtriplet = x64-windows
 }
 # Common unix platform (macx, linux...)
 unix {
@@ -33,9 +34,11 @@ unix {
 }
 macx {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+    vcpkgtriplet = x64-osx
 }
 linux {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
+    vcpkgtriplet = x64-linux
 }
 
 BCOMPFX = bcom-
@@ -61,35 +64,25 @@ for(depfile, packagedepsfiles) {
                     pkgLinkModeOverride = $${DEPLINKMODE}
                 }
             }
-
-            deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
-            !exists($${deployFolder}) {
-                warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
-                warning("Defaulting search folder to " $${deployFolder})
-            }
-            pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
-            !exists($${pkgCfgFilePath}) {
-                # No specific .pc file for debug mode :
-                # this package is a bcom like standard package with no library debug suffix
-                pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
-            }
-            !exists($${pkgCfgFilePath}) {# default behavior
-                message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values (check your config if it should exists)")
-               # QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
-                BCOMDEPSINCLUDEPATH += $${deployFolder}/interfaces
-                equals(pkgLinkModeOverride,"static") {
-                    LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
-                    bFoundAtLeastOneStaticDep = 1
-                } else {
-                    LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR -l$${libName}
+            # VPCKG package handling
+            equals(pkgCategory,"vcpkg") {
+                deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/packages/$${pkgName}_$${vcpkgtriplet}
+                !exists($${deployFolder}) {
+                    error("No VPCKG package at " $${BCdeployFolderOM_TARGET_PLATFORM})
                 }
-
-            } else {
+                LIBFOLDER=lib
+                equals(OUTPUTDIR,"debug") {
+                    LIBFOLDER="debug/lib"
+                }
+                pkgCfgFilePath = $${deployFolder}/$${LIBFOLDER}/pkgconfig/$${libName}.pc
+                !exists($${pkgCfgFilePath}) {# error
+                    error("--> [ERROR] " $${pkgCfgFilePath} " doesn't exists for VCPKG package " $${pkgName}_$${vcpkgtriplet})
+                }
                 message("--> [INFO] "  $${pkgCfgFilePath} "exists")
-                pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                pkgCfgVars = --define-variable=prefix=$${deployFolder}
                 pkgCfgVars += --define-variable=lext=$${LIBEXT}
-                pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                pkgCfgVars += --define-variable=libdir=$${deployFolder}/$${LIBFOLDER}
+
                 !win32 {
                     pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
                 }
@@ -97,18 +90,63 @@ for(depfile, packagedepsfiles) {
                     pkgCfgVars += --define-variable=pfx=$$shell_quote("\'\'")
                 }
                 pkgCfgLibVars = $$pkgCfgVars
-                equals(pkgLinkModeOverride,"static") {
-                    pkgCfgLibVars += --libs-only-other --static
-                    bFoundAtLeastOneStaticDep = 1
-                } else {
-                    pkgCfgLibVars += --libs
+                #static build is not provided for all packages in vcpkg : TODO : howto handle ?
+                #equals(pkgLinkModeOverride,"static") {
+                #    pkgCfgLibVars += --libs-only-other --static
+                #    bFoundAtLeastOneStaticDep = 1
+                #} else {
+                pkgCfgLibVars += --libs
+                #}
+            } else {
+                # custom built package handling
+                deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                !exists($${deployFolder}) {
+                    warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                    deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                    warning("Defaulting search folder to " $${deployFolder})
                 }
-               # message("pkg-config variables for includes : " $$pkgCfgVars)
-               # message("pkg-config variables for libs : " $$pkgCfgLibVars)
-                BCOMDEPSINCLUDEPATH += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
-               # QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
-                LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+                pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
+                !exists($${pkgCfgFilePath}) {
+                    # No specific .pc file for debug mode :
+                    # this package is a bcom like standard package with no library debug suffix
+                    pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
+                }
+                !exists($${pkgCfgFilePath}) {# default behavior
+                    message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values (check your config if it should exists)")
+                   # QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+                    BCOMDEPSINCLUDEPATH += $${deployFolder}/interfaces
+                    equals(pkgLinkModeOverride,"static") {
+                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
+                        bFoundAtLeastOneStaticDep = 1
+                    } else {
+                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR -l$${libName}
+                    }
+
+                } else {
+                    message("--> [INFO] "  $${pkgCfgFilePath} "exists")
+                    pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                    pkgCfgVars += --define-variable=lext=$${LIBEXT}
+                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                    !win32 {
+                        pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
+                    }
+                    else {
+                        pkgCfgVars += --define-variable=pfx=$$shell_quote("\'\'")
+                    }
+                    pkgCfgLibVars = $$pkgCfgVars
+                    equals(pkgLinkModeOverride,"static") {
+                        pkgCfgLibVars += --libs-only-other --static
+                        bFoundAtLeastOneStaticDep = 1
+                    } else {
+                        pkgCfgLibVars += --libs
+                    }
+                }
             }
+            # message("pkg-config variables for includes : " $$pkgCfgVars)
+            # message("pkg-config variables for libs : " $$pkgCfgLibVars)
+            BCOMDEPSINCLUDEPATH += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+            # QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+            LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
         }
         QMAKE_CXXFLAGS += $${BCOMDEPSINCLUDEPATH}
         message("")
