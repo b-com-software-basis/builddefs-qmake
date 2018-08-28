@@ -1,0 +1,12 @@
+# Author(s) : Loic Touraine, Stephane Leduc
+
+include(bcom_installpath_define.pri)
+
+BCOM_TARGET_MANIFEST=$${TARGET}-$${VERSION}.manifest
+
+write_file($${OUT_PWD}/$${BCOM_TARGET_MANIFEST}, BCOM_TARGET_PLATFORM)
+QMAKE_DISTCLEAN += $${OUT_PWD}/$${BCOM_TARGET_MANIFEST}
+
+install_manifest.path = $${PROJECTDEPLOYDIR}
+install_manifest.files = $$files($${OUT_PWD}/$${BCOM_TARGET_MANIFEST})
+INSTALLS += install_manifest
