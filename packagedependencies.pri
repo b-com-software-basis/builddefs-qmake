@@ -45,6 +45,101 @@ BCOMPFX = bcom-
 bFoundAtLeastOneStaticDep = 0
 BCOMDEPSINCLUDEPATH=""
 
+defineReplace(populateSubDependencies) {
+    packageDepsFilesList = $$ARGS
+    for(depfile, packageDepsFilesList) {
+        exists($${depfile}) {
+            baseDepFile = $$basename(depfile)
+            message("----------------- Parsing sub-dependencies from " $${depfile} " -----------------" )
+            dependencies = $$cat($${depfile})
+            for(var, dependencies) {
+                dependencyPkgDepFiles=""
+                dependencyMetaInf = $$split(var, |)
+                pkgName = $$member(dependencyMetaInf,0)
+                pkgVersion = $$member(dependencyMetaInf,1)
+                libName = $$member(dependencyMetaInf,2)
+                pkgCategory = $$member(dependencyMetaInf,3)
+                pkgRepoUrl = $$member(dependencyMetaInf,4)
+                pkgLinkModeOverride = $$member(dependencyMetaInf,5)
+                deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                write_file($$OUT_PWD/$${TARGET}-$${baseDepFile},var,append)
+                !exists($${deployFolder}) {
+                    warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                    deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                    warning("Defaulting search folder to " $${deployFolder})
+                }
+                !exists($${deployFolder}) {
+                    error("No package found at " $${deployFolder})
+                }
+                exists($${deployFolder}/packagedependencies.txt) {
+                    dependencyPkgDepFiles+=$${deployFolder}/packagedependencies.txt
+                }
+                win32 {
+                    exists($${deployFolder}/packagedependencies-win.txt) {
+                         dependencyPkgDepFiles += $${deployFolder}/packagedependencies-win.txt
+                    }
+                }
+                # Common unix platform (macx, linux...)
+                unix {
+                    exists($${deployFolder}/packagedependencies-unix.txt) {
+                        dependencyPkgDepFiles += $${deployFolder}/packagedependencies-unix.txt
+                    }
+                }
+                macx {
+                    exists($${deployFolder}/packagedependencies-mac.txt) {
+                        dependencyPkgDepFiles += $${deployFolder}/packagedependencies-mac.txt
+                    }
+                }
+                linux {
+                    exists($${deployFolder}/packagedependencies-linux.txt) {
+                         dependencyPkgDepFiles += $${deployFolder}/packagedependencies-linux.txt
+                    }
+                }
+                outPackageDeps += $${dependencyPkgDepFiles}
+            }
+            isEmpty(outPackageDeps) {
+                message("----------------- No sub-dependencies found -----------------")
+            } else {
+                message("----------------- Sub-dependencies found for " $${depfile} " :" )
+                message("           |====>"  $${outPackageDeps} )
+            }
+            message("")
+        }
+    }
+    return($${outPackageDeps})
+}
+
+contains(DEPENDENCIESCONFIG,recurse) {
+    # generate output files that will contain complete dependencies informations from recursion
+    for (depFile, packagedepsfiles) {
+        baseDepFile = $$basename(depFile)
+        write_file($$OUT_PWD/$${TARGET}-$${baseDepFile})
+        QMAKE_CLEAN += $$OUT_PWD/$${TARGET}-$${baseDepFile}
+    }
+
+    recursionLevels = 0 1 2 3 4 5 6 7 8 9
+    #    packagedepsfiles
+    subDeps = $$populateSubDependencies($${packagedepsfiles})
+     for (i, recursionLevels) {
+        !isEmpty(subDeps) {
+            packagedepsfiles += $${subDeps}
+	    subDeps = $$populateSubDependencies($${subDeps})
+	}
+    }
+
+    message("----------------- Complete dependencies list for project " $${TARGET} " :" )
+    targetDepFiles=$$files($$OUT_PWD/$${TARGET}-packagedependencies*.txt)
+    for (depfile, targetDepFiles) {
+        message( $${depfile} ":")
+        dependencies = $$cat($${depfile})
+        for(var, dependencies) {
+           message( $$var)
+        }
+    }
+    message("-------------------------------------------------------------------------------------")
+    message("")
+}
+
 for(depfile, packagedepsfiles) {
     exists($${depfile}) {
         message("----------------- Processing " $${depfile} " -----------------" )
