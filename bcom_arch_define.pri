@@ -1,5 +1,32 @@
 # Author(s) : Loic Touraine
 
+# For backward compatibility
+REMAKENDEPSROOTFOLDER=$$(BCOMDEVROOT)
+!isEmpty(REMAKENDEPSROOTFOLDER) {
+    REMAKENDEPSFOLDER=$${REMAKENDEPSROOTFOLDER}
+}
+else { #new remaken behavior
+    unix {
+        REMAKENDEPSROOTFOLDER=$$(HOME)
+    }
+
+    win32 {
+        REMAKENDEPSROOTFOLDER=$$(USERPROFILE)
+        isEmpty(REMAKENDEPSROOTFOLDER) {
+            REMAKENDEPSROOTFOLDER=shell_path($$(HOMEDRIVE)$$(HOMEPATH))
+        }
+    }
+
+    # Read REMAKENDEVPROP qmake property
+    REMAKENDEPSFOLDER=$$[REMAKENDEPSFOLDERPROP]
+
+    isEmpty(REMAKENDEPSFOLDER) { # REMAKENDEVPROP not defined in qmake's properties
+        message("NO REMAKENDEPSFOLDERPROP defined in qmake : setting REMAKENDEPSFOLDER to " $${REMAKENDEPSROOTFOLDER}/.remaken/packages)
+        REMAKENDEPSFOLDER=$${REMAKENDEPSROOTFOLDER}/.remaken/packages
+    }
+}
+message("REMAKENDEPSFOLDER Dependencies folder is set to " $${REMAKENDEPSFOLDER})
+
 # Define target architecture path depending on the build kit used if not overloaded in user's project file
 isEmpty(BCOM_TARGET_ARCH) {
   # Defaults to x86_64

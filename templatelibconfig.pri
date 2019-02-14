@@ -72,9 +72,10 @@ win32 {
     QMAKE_CXXFLAGS += /MP8
     QMAKE_CFLAGS += /MP8
 
-    # override qmake.conf that force MD also for static configurations
-    # could be override by dependencies link in packagedependencies.pri
-    staticlib {
+    # specify to use the static version of the windows runtime.
+    # this value must be used only for full static builds as since VS2017, mixing both static and dynamic runtimes at link time is prohibited.
+    # for mixed libraries link, let qmake set MD also for static configurations.
+    usestaticwinrt {
         QMAKE_CXXFLAGS_DEBUG += -MTd
         QMAKE_CXXFLAGS_DEBUG -= -MDd
         QMAKE_CFLAGS_DEBUG += -MTd

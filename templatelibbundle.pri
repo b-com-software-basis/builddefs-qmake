@@ -16,7 +16,7 @@ macx {
     QMAKE_CXXFLAGS += -Wno-exit-time-destructors -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter
     QMAKE_CXXFLAGS += -Wunused-variable -Wunused-value -Wno-empty-body -Wno-uninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants
     QMAKE_CXXFLAGS += -Wno-conversion -Wno-constant-conversion -Wno-int-conversion -Wno-bool-conversion -Wno-enum-conversion
-    QMAKE_CXXFLAGS += -Wno-shorten-64-to-32 -Wno-newline-eof -Wno-c++11-extensions
+    QMAKE_CXXFLAGS += -Wno-shorten-64-to-32 -Wno-newline-eof
     QMAKE_CXXFLAGS += -O0
 
     bcom_component_binary.path = Contents/MacOS
