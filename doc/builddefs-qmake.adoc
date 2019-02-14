@@ -33,6 +33,43 @@ PRODUCT_VERSIONSTRING:: derived from project ="$${VERSION}"
 == Application Target
 
 == Bundle/plugin Target
+== Dependencies declaration file
+For each project, a packagedependencies.txt file can be created in the root project folder.
+Each line follows the pattern :
+
+framework#channel|version|library name|identifier@repository_type|repository_url|options
+
+where repository_type is a value in:
+- b-com
+- github
+- vcpkg
+- conan
+- system
+
+when repository_type is not specified :
+- it defaults to b-com when identifier is either bcomBuild or thirdParties
+
+For other repository types (github, vcpkg, conan, system) when the identifier matches the repository type,
+the repository type reflects the identifier value - i.e. identifier = conan means repository_type is set to conan.
+
+when identifier is not specified :
+- @repository_type is mandatory
+
+when channel is not specified, it defaults to stable for conan dependencies. It is not used for other kind of repos.
+
+Sample repositories declarations :
+opencv|3.4.3|opencv|thirdParties|https://github.com/SolarFramework/binaries/releases/download
+xpcf|2.1.0|xpcf|bcomBuild|https://github.com/SolarFramework/binaries/releases/download
+spdlog|0.14.0|spdlog|thirdParties@b-com|https://github.com/SolarFramework/binaries/releases/download
+eigen|3.3.5|eigen|system|https://github.com/SolarFramework/binaries/releases/download
+fbow|0.0.1|fbow|vcpkg|https://github.com/SolarFramework/binaries/releases/download
+boost|1.68.0|boost|conan|https://github.com/SolarFramework/binaries/releases/download
+freeglut#testing|3.0.0|freeglut|user@conan|https://github.com/SolarFramework/binaries/releases/download
+
+github and b-com dependencies are installed using remaken packaging format through an url repository.
+system dependencies are installed using operating system dependent package manager (apt for linux debian and derivatives, brew for Mac OS X, chocolatey for windows...)
+conan dependencies are installed using packaging format with conan package manager
+vcpkg dependencies are installed using vcpkg packaging format with vcpkg package manager
 
 == Audio plugins specific files/variables
 === _JuceConfig.pri local project file

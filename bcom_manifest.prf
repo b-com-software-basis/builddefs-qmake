@@ -5,6 +5,14 @@ include(bcom_installpath_define.pri)
 BCOM_TARGET_MANIFEST=$${TARGET}-$${VERSION}.manifest
 
 write_file($${OUT_PWD}/$${BCOM_TARGET_MANIFEST}, BCOM_TARGET_PLATFORM)
+win32 {
+    usestaticwinrt {
+        WINRTFLAG="runtime=staticCRT"
+    } else {
+        WINRTFLAG="runtime=dynamicCRT"
+    }
+    write_file($${OUT_PWD}/$${BCOM_TARGET_MANIFEST}, WINRTFLAG, append)
+}
 QMAKE_DISTCLEAN += $${OUT_PWD}/$${BCOM_TARGET_MANIFEST}
 
 install_manifest.path = $${PROJECTDEPLOYDIR}

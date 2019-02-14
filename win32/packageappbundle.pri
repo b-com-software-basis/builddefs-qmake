@@ -49,7 +49,7 @@ for(depfile, packagedepsfiles) {
 
             message($${libName} " is used with " $${pkgLinkModeOverride} linkmode)
             win32:equals(pkgLinkModeOverride, "shared") {
-                deployFolder=$$(BCOMDEVROOT)/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
                 pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
                 !exists($${pkgCfgFilePath}) {# default behavior
                     message($${pkgCfgFilePath} "doesn't exist - take default behavior")
