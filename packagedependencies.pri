@@ -62,7 +62,7 @@ defineReplace(populateSubDependencies) {
                 pkgCategory = $$member(dependencyMetaInf,3)
                 pkgRepoUrl = $$member(dependencyMetaInf,4)
                 pkgLinkModeOverride = $$member(dependencyMetaInf,5)
-                pkgToolOptions = $$member(dependencyMetaInf,6)
+                pkgCommandOptions = $$member(dependencyMetaInf,6)
                 deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                 write_file($$OUT_PWD/$${TARGET}-$${baseDepFile},var,append)
                 !exists($${deployFolder}) {
@@ -166,13 +166,14 @@ for(depfile, packagedepsfiles) {
             } else {
                equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"thirdParties") {
                     pkgRepoType = "b-com"
-                }  # otherwise pkgRepoType = pkgCategory 
+                }  # otherwise pkgRepoType = pkgCategory
             }
             pkgUrl=$$member(dependencyMetaInf,4)
             pkgLinkModeOverride = $$member(dependencyMetaInf,5)
+            pkgCommandOptions = $$member(dependencyMetaInf,6)
             message("--> [INFO] Processing dependency for "  $${pkgRepoType} " repository")
             # check pkgLinkModeOverride not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
-            equals(pkgLinkModeOverride,"") {
+            equals(pkgLinkModeOverride,"")|equals(pkgLinkModeOverride,"default") {
                 pkgLinkModeOverride = $${DEPLINKMODE}
             } else {
                 if (!equals(pkgLinkModeOverride,"static"):!equals(pkgLinkModeOverride,"shared"):!equals(pkgLinkModeOverride,"na")){
@@ -208,7 +209,7 @@ for(depfile, packagedepsfiles) {
                 pkgCfgLibVars = $$pkgCfgVars
                 #static build is not provided for all packages in vcpkg : TODO : howto handle ?
                 pkgCfgLibVars += --libs
-            } 
+            }
             equals(pkgRepoType,"system") {# local system package handling
                 pkgCfgFilePath = /usr/local/lib/pkgconfig/$${libName}.pc
                 !exists($${pkgCfgFilePath}) {# error
