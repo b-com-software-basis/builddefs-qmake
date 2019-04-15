@@ -1,4 +1,82 @@
-Builddefs-qmake b<>com dependency system documentation 
+Remaken meta-dependency tool documentation 
+
+= Remaken packaging structure
+
+== Package metadata
+An information file is created in the target package.
+The file is named [TARGET]-[VERSION]_remakeninfo.txt
+It contains the following informations :
+- platform : the supported compiler/platform version
+- cppstd : the c++ standard used
+- runtime : the runtime used (windows flag indicating whether the target uses the static or the dynamic runtime)
+
+== Dependencies declaration file
+For each project, a packagedependencies.txt file can be created in the root project folder.
+Each line follows the pattern :
+
+framework#channel|version|library name|identifier@repository_type|repository_url|link_mode|options
+
+where repository_type is a value in:
+- b-com
+- github
+- vcpkg
+- conan
+- system
+- path : local or network filesystem root path hosting the dependencies
+
+link_mode is an optional value in :
+- static
+- shared
+- default (inherits the project's link mode)
+- na (not applicable)
+
+When link_mode is not provided :
+- For remaken (b-com and github), system and vcpkg dependencies link_mode is set to "default"
+- For conan, link_mode is set to "na"
+
+(Conan note : link_mode is mandatory if the targeted dependency needs the option. When link_mode is not provided or is set to "na", it is not forwarded to conan, has some packages (typically header only libraries) don't define this option and setting the option leads to an error).
+
+when repository_type is not specified :
+- it defaults to b-com when identifier is either bcomBuild or thirdParties (and in this case, the identifier is also the destination subfolder where the dependencies are installed)
+
+- it defaults to system when identifier is one of yum, apt, pkgtool, pkgutil, brew, macports, pacman, choco, zypper
+
+For other repository types (github, vcpkg, conan, system) when the identifier matches the repository type,
+the repository type reflects the identifier value - i.e. identifier = conan means repository_type is set to conan.
+
+when identifier is not specified :
+- @repository_type is mandatory
+
+when channel is not specified, it defaults to stable for conan dependencies.
+For b-com and github repositories, channel can be a combination of values from the remaken packaging manifest. 
+It is not used for other kind of repos.
+
+options are directly forwarded to the underlying repository tool.
+Note : to provide specific options to dedicated system packaging tools, use one line for each specific tool describing the dependency. (once installed, system dependencies should not need specific options declarations during dependencies' parsing at project build stage. Hence the need for the below sample should be close to 0, except for packaging tools that build package upon install such as brew and macports and where build options can be provided).
+For instance :
+eigen|3.3.5|eigen|system|https://github.com/SolarFramework/binaries/releases/download
+eigen|3.3.5|eigen|brew@system|https://github.com/SolarFramework/binaries/releases/download|default|-y
+eigen|3.3.5|eigen|pkgtool@system|https://github.com/SolarFramework/binaries/releases/download|default|--S --noconfirm
+
+
+Sample repositories declarations :
+opencv|3.4.3|opencv|thirdParties|https://github.com/SolarFramework/binaries/releases/download
+xpcf|2.1.0|xpcf|bcomBuild|https://github.com/SolarFramework/binaries/releases/download|static|
+spdlog|0.14.0|spdlog|thirdParties@b-com|https://github.com/SolarFramework/binaries/releases/download
+eigen|3.3.5|eigen|system|https://github.com/SolarFramework/binaries/releases/download
+fbow|0.0.1|fbow|vcpkg|https://github.com/SolarFramework/binaries/releases/download
+boost|1.68.0|boost|conan|https://github.com/SolarFramework/binaries/releases/download
+freeglut#testing|3.0.0|freeglut|user@conan|https://github.com/SolarFramework/binaries/releases/download
+
+github, b-com and path dependencies are installed using remaken packaging format through an url or filesystem repository.
+system dependencies are installed using operating system dependent package manager (apt for linux debian and derivatives, brew for Mac OS X, chocolatey for windows...)
+conan dependencies are installed using packaging format with conan package manager
+vcpkg dependencies are installed using vcpkg packaging format with vcpkg package manager
+
+WARNING : using system without any OS option implies the current system the tool is run on.
+Moreover, some OSes don't have a package manager, hence don't rely on system for android cross-compilation for instance.
+
+= Qmake informations
 
 == Common project structure
 TARGET
@@ -7,13 +85,6 @@ INSTALLSUBDIR
 VERSION
 
 include template*.pri file (after TARGET, FRAMEWORK, INSTALLSUBDIR, VERSION declarations)
-
-== Package metadata
-A manifest folder is created in the target package.
-It contains the following files :
-- .compiler_platform : the supported compiler/platform version
-- .compiler_version : the compiler used to build
-- .compiler_options : the compiler options
 
 == Product information
 Defined in _ProductConfig.pri local project file
@@ -33,43 +104,6 @@ PRODUCT_VERSIONSTRING:: derived from project ="$${VERSION}"
 == Application Target
 
 == Bundle/plugin Target
-== Dependencies declaration file
-For each project, a packagedependencies.txt file can be created in the root project folder.
-Each line follows the pattern :
-
-framework#channel|version|library name|identifier@repository_type|repository_url|options
-
-where repository_type is a value in:
-- b-com
-- github
-- vcpkg
-- conan
-- system
-
-when repository_type is not specified :
-- it defaults to b-com when identifier is either bcomBuild or thirdParties
-
-For other repository types (github, vcpkg, conan, system) when the identifier matches the repository type,
-the repository type reflects the identifier value - i.e. identifier = conan means repository_type is set to conan.
-
-when identifier is not specified :
-- @repository_type is mandatory
-
-when channel is not specified, it defaults to stable for conan dependencies. It is not used for other kind of repos.
-
-Sample repositories declarations :
-opencv|3.4.3|opencv|thirdParties|https://github.com/SolarFramework/binaries/releases/download
-xpcf|2.1.0|xpcf|bcomBuild|https://github.com/SolarFramework/binaries/releases/download
-spdlog|0.14.0|spdlog|thirdParties@b-com|https://github.com/SolarFramework/binaries/releases/download
-eigen|3.3.5|eigen|system|https://github.com/SolarFramework/binaries/releases/download
-fbow|0.0.1|fbow|vcpkg|https://github.com/SolarFramework/binaries/releases/download
-boost|1.68.0|boost|conan|https://github.com/SolarFramework/binaries/releases/download
-freeglut#testing|3.0.0|freeglut|user@conan|https://github.com/SolarFramework/binaries/releases/download
-
-github and b-com dependencies are installed using remaken packaging format through an url repository.
-system dependencies are installed using operating system dependent package manager (apt for linux debian and derivatives, brew for Mac OS X, chocolatey for windows...)
-conan dependencies are installed using packaging format with conan package manager
-vcpkg dependencies are installed using vcpkg packaging format with vcpkg package manager
 
 == Audio plugins specific files/variables
 === _JuceConfig.pri local project file
@@ -91,3 +125,5 @@ JUCEPLUGIN_PLUGINCODE="H2Sk"
 
 JUCEPLUGIN ...
 PRODUCTNAME, PRODUCTNAME_SHORT vs TARGET
+
+= Cmake informations

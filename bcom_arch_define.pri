@@ -62,7 +62,7 @@ isEmpty(BCOM_TARGET_PLATFORM) {
         BCOM_TARGET_PLATFORM = linux-$$basename(QMAKE_CC)
     }
     macx {
-        BCOM_TARGET_PLATFORM = macx-$$basename(QMAKE_CC)
+        BCOM_TARGET_PLATFORM = mac-$$basename(QMAKE_CC)
     }
     win32 {
         !defined(QMAKE_MSC_VER,var) {
@@ -101,5 +101,18 @@ isEmpty(BCOM_TARGET_PLATFORM) {
         }
 		# note : when icl is used with msvc, the most important is the msvc compiler version!
         BCOM_TARGET_PLATFORM = win-$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
+    }
+}
+
+macx {
+    exists(/usr/local/opt/llvm):contains(CONFIG, use_brew_llvm) {
+        exists(/usr/local/opt/llvm/bin/clang):exists(/usr/local/opt/llvm/bin/clang++) {
+            QMAKE_CC=/usr/local/opt/llvm/bin/clang
+            QMAKE_CXX=/usr/local/opt/llvm/bin/clang++
+            QMAKE_CFLAGS += -I/usr/local/opt/llvm/include
+            QMAKE_CXXFLAGS += -I/usr/local/opt/llvm/include -I/usr/local/opt/llvm/include/c++/v1/
+            QMAKE_LINK=/usr/local/opt/llvm/bin/clang++
+            QMAKE_LFLAGS += -L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib
+        }
     }
 }
