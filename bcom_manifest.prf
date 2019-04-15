@@ -1,20 +1,35 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 include(bcom_installpath_define.pri)
+REMAKEN_INFO_SUFFIX=remakeninfo.txt
+REMAKEN_TARGET_INFO=$${TARGET}-$${VERSION}_$${REMAKEN_INFO_SUFFIX}
+PLATFORMFLAG="platform=$${BCOM_TARGET_PLATFORM}"
 
-BCOM_TARGET_MANIFEST=$${TARGET}-$${VERSION}.manifest
+write_file($${OUT_PWD}/$${REMAKEN_TARGET_INFO}, PLATFORMFLAG)
 
-write_file($${OUT_PWD}/$${BCOM_TARGET_MANIFEST}, BCOM_TARGET_PLATFORM)
+contains(CONFIG,c++11) {
+    CPPSTDFLAG="cppstd=11"
+}
+contains(CONFIG,c++14) {
+    CPPSTDFLAG="cppstd=14"
+}
+contains(CONFIG,c++1z)|contains(CONFIG,c++17) {
+    CPPSTDFLAG="cppstd=17"
+}
+write_file($${OUT_PWD}/$${REMAKEN_TARGET_INFO}, CPPSTDFLAG, append)
+
 win32 {
     usestaticwinrt {
         WINRTFLAG="runtime=staticCRT"
     } else {
         WINRTFLAG="runtime=dynamicCRT"
     }
-    write_file($${OUT_PWD}/$${BCOM_TARGET_MANIFEST}, WINRTFLAG, append)
+    write_file($${OUT_PWD}/$${REMAKEN_TARGET_INFO}, WINRTFLAG, append)
 }
-QMAKE_DISTCLEAN += $${OUT_PWD}/$${BCOM_TARGET_MANIFEST}
 
-install_manifest.path = $${PROJECTDEPLOYDIR}
-install_manifest.files = $$files($${OUT_PWD}/$${BCOM_TARGET_MANIFEST})
-INSTALLS += install_manifest
+
+QMAKE_DISTCLEAN += $${OUT_PWD}/$${REMAKEN_TARGET_INFO}
+
+install_remakeninfo.path = $${PROJECTDEPLOYDIR}
+install_remakeninfo.files = $$files($${OUT_PWD}/$${REMAKEN_TARGET_INFO})
+INSTALLS += install_remakeninfo

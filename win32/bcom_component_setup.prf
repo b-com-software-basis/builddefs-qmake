@@ -59,7 +59,7 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
     SETUP_COPYDIR_VALUE =
     # saved default values (vst)
     isEmpty(SETUP_INSTALLDIR) {
-        SETUP_INSTALLDIR_VALUE=$$shell_quote($$shell_path($$(PROGRAMW6432)/Steinberg/VSTPlugins/))
+		SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/common files/VST3/))
     }
 
     # AAX plugin
@@ -140,12 +140,15 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
 
         # nsis parameters
         isEmpty(SETUP_INSTALLDIR) {
-            SETUP_INSTALLDIR_VALUE=$$shell_quote($$shell_path($$(PROGRAMW6432)/Common Files/Avid/Audio/Plug-Ins/))
+            SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/Common Files/Avid/Audio/Plug-Ins/))
         }
         SETUP_SUFFIX = AAX
     }
 
     contains(PLUGIN_EXTENSION,.vst3) {
+        !equals(VST3_PREPARE_CMD,"") {
+            VST3_PREPARE_CMD += &&
+        }
         VST3_PREPARE_CMD += copy /Y $${TARGET}.$${DYNLIBEXT} $${TARGET}$${PLUGIN_EXTENSION}
         bcom_component_vst3bundle_prepare.commands = $${VST3_PREPARE_CMD}
         create_bundle.depends += bcom_component_vst3bundle_prepare
@@ -166,7 +169,7 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
     NSISCOMMAND = $$shell_quote($$shell_path($${MAKENSIS_COMMAND})) \
                                 /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME_VALUE} /DSETUP_FILENAME=$${SETUP_FILENAME}$${SETUP_SUFFIX} \
                                 /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID}$${SETUP_SUFFIX} \
-                                /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR_VALUE}
+                                /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR}
 
     if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
         NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}

@@ -62,6 +62,7 @@ defineReplace(populateSubDependencies) {
                 pkgCategory = $$member(dependencyMetaInf,3)
                 pkgRepoUrl = $$member(dependencyMetaInf,4)
                 pkgLinkModeOverride = $$member(dependencyMetaInf,5)
+                pkgToolOptions = $$member(dependencyMetaInf,6)
                 deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                 write_file($$OUT_PWD/$${TARGET}-$${baseDepFile},var,append)
                 !exists($${deployFolder}) {
@@ -174,7 +175,7 @@ for(depfile, packagedepsfiles) {
             equals(pkgLinkModeOverride,"") {
                 pkgLinkModeOverride = $${DEPLINKMODE}
             } else {
-                if (!equals(pkgLinkModeOverride,"static"):!equals(pkgLinkModeOverride,"shared")){
+                if (!equals(pkgLinkModeOverride,"static"):!equals(pkgLinkModeOverride,"shared"):!equals(pkgLinkModeOverride,"na")){
                     pkgLinkModeOverride = $${DEPLINKMODE}
                 }
             }
@@ -235,7 +236,9 @@ for(depfile, packagedepsfiles) {
                 equals(pkgLinkModeOverride,shared) {
                     sharedLinkMode = True
                 }
-                remakenConanOptions += $${pkgName}:shared=$${sharedLinkMode}
+                !equals(pkgLinkModeOverride,na) {
+                   remakenConanOptions += $${pkgName}:shared=$${sharedLinkMode}
+                }
             }
             equals(pkgRepoType,"b-com")|equals(pkgRepoType,"github") {
                 # custom built package handling
@@ -245,15 +248,15 @@ for(depfile, packagedepsfiles) {
                     deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
                     warning("Defaulting search folder to " $${deployFolder})
                 }
-                manifestFilePath = $${deployFolder}/$${libName}-$${pkgVersion}.manifest
-                !exists($${manifestFilePath}) {
-                    warning("No manifest file found for " $${libName}-$${pkgVersion}.manifest " found.")
+                remakenInfoFilePath = $${deployFolder}/$${libName}-$${pkgVersion}_$${REMAKEN_INFO_SUFFIX}
+                !exists($${remakenInfoFilePath}) {
+                    warning("No information file found for " $${libName}-$${pkgVersion}_$${REMAKEN_INFO_SUFFIX} " found.")
                     warning("Package "  $${pkgName} " was built with an older version of builddefs. Please upgrade the package builddefs' to the latest version ! ")
                 } else {
-                    message("--> [INFO] "  $${manifestFilePath} " exists : checking build consistency")
+                    message("--> [INFO] "  $${remakenInfoFilePath} " exists : checking build consistency")
                     win32 {
-                        MANIFESTFILE_CONTENT = $$cat($${manifestFilePath},lines)
-                        WINRT = $$find(MANIFESTFILE_CONTENT, runtime=.*)
+                        REMAKENINFOFILE_CONTENT = $$cat($${remakenInfoFilePath},lines)
+                        WINRT = $$find(REMAKENINFOFILE_CONTENT, runtime=.*)
                         usestaticwinrt {
                             contains(WINRT,.*dynamicCRT) {
                                 error("--> [ERROR] Inconsistent configuration :  it is prohibited to mix shared runtime linked dependency with the static windows runtime (prohibited since VS2017, bad practice before). Either remove 'usestaticwinrt' from your build configuration (remove the line 'CONFIG += usestaticwinrt') , or use a static runtime build of " $${pkgName})
@@ -354,9 +357,18 @@ exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
         CONANFILECONTENT+=$${option}
     }
     write_file($$_PRO_FILE_PWD_/build/conanfile.txt, CONANFILECONTENT)
-
+    contains(CONFIG,c++11) {
+        conanCppStd=11
+    }
+    contains(CONFIG,c++14) {
+        conanCppStd=14
+    }
+    contains(CONFIG,c++1z)|contains(CONFIG,c++17) {
+        conanCppStd=17
+    }
     CONFIG += conan_basic_setup
-    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -if $$_PRO_FILE_PWD_/build)
+#conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
+    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s cppstd=$$conanCppStd --build=missing -if $$_PRO_FILE_PWD_/build)
     include($$_PRO_FILE_PWD_/build/conanbuildinfo.pri)
 }
 
