@@ -9,14 +9,19 @@ include(bcom_arch_define.pri)
 }
 
 !defined(INSTALLSUBDIR,var) {
-    error("INSTALLSUBDIR must be defined before templatelibconfig.pri inclusion. INSTALLSUBDIR is mandatory and accept two values : bcomBuild or thirdParties. A typical definition is INSTALLSUBDIR = bcomBuild.")
+    warning("INSTALLSUBDIR can be defined before templatelibconfig.pri inclusion. INSTALLSUBDIR is optional and accept two values : bcomBuild or thirdParties. A typical definition is INSTALLSUBDIR = bcomBuild.")
 }
 
-!contains(INSTALLSUBDIR,bcomBuild):!contains(INSTALLSUBDIR,thirdParties) {
-    error("INSTALLSUBDIR is defined with the $$INSTALLSUBDIR unsupported value. Supported values are : bcomBuild or thirdParties")
+defined(INSTALLSUBDIR,var) {
+    !contains(INSTALLSUBDIR,bcomBuild):!contains(INSTALLSUBDIR,thirdParties) {
+        error("INSTALLSUBDIR is defined with the $$INSTALLSUBDIR unsupported value. Supported values are : bcomBuild or thirdParties")
+    }
 }
 
 !defined(PROJECTDEPLOYDIR,var) {
-    warning("PROJECTDEPLOYDIR may be defined before templatelibconfig.pri inclusion => Defaulting PROJECTDEPLOYDIR to $${REMAKENDEPSFOLDER}/$${INSTALLSUBDIR}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}. ")
-    PROJECTDEPLOYDIR = $${REMAKENDEPSFOLDER}/$${INSTALLSUBDIR}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}
+    PROJECTDEPLOYDIR = $${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}
+    defined(INSTALLSUBDIR,var) {
+        PROJECTDEPLOYDIR = $${REMAKENDEPSFOLDER}/$${INSTALLSUBDIR}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}
+    }
+    warning("PROJECTDEPLOYDIR may be defined before templatelibconfig.pri inclusion => Defaulting PROJECTDEPLOYDIR to $${PROJECTDEPLOYDIR}. ")
 }
