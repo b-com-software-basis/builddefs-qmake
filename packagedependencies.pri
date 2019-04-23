@@ -18,10 +18,12 @@ contains(DEPENDENCIESCONFIG,staticlib) {
 CONFIG(debug,debug|release) {
     OUTPUTDIR = debug
     DEBUGPFX = debug-
+    CONANBUILDTYPE = Debug
 }
 
 CONFIG(release,debug|release) {
     OUTPUTDIR = release
+    CONANBUILDTYPE = Release
 }
 
 packagedepsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
@@ -63,11 +65,17 @@ defineReplace(populateSubDependencies) {
                 pkgRepoUrl = $$member(dependencyMetaInf,4)
                 pkgLinkModeOverride = $$member(dependencyMetaInf,5)
                 pkgCommandOptions = $$member(dependencyMetaInf,6)
-                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                !equals(pkgCategory,$${pkgRepoType}) {
+                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                }
                 write_file($$OUT_PWD/$${TARGET}-$${baseDepFile},var,append)
                 !exists($${deployFolder}) {
                     warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
+                    !equals(pkgCategory,$${pkgRepoType}) {
+                         deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                    }
                     warning("Defaulting search folder to " $${deployFolder})
                 }
                 !exists($${deployFolder}) {
@@ -243,10 +251,16 @@ for(depfile, packagedepsfiles) {
             }
             equals(pkgRepoType,"b-com")|equals(pkgRepoType,"github") {
                 # custom built package handling
-                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                !equals(pkgCategory,$${pkgRepoType}) {
+                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                }
                 !exists($${deployFolder}) {
                     warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
+                    !equals(pkgCategory,$${pkgRepoType}) {
+                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                    }
                     warning("Defaulting search folder to " $${deployFolder})
                 }
                 remakenInfoFilePath = $${deployFolder}/$${libName}-$${pkgVersion}_$${REMAKEN_INFO_SUFFIX}
@@ -369,7 +383,7 @@ exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
     }
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s cppstd=$$conanCppStd --build=missing -if $$_PRO_FILE_PWD_/build)
+    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build)
     include($$_PRO_FILE_PWD_/build/conanbuildinfo.pri)
 }
 
