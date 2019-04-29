@@ -58,13 +58,38 @@ defineReplace(populateSubDependencies) {
             for(var, dependencies) {
                 dependencyPkgDepFiles=""
                 dependencyMetaInf = $$split(var, |)
-                pkgName = $$member(dependencyMetaInf,0)
+                pkgInformation = $$member(dependencyMetaInf,0)
+                pkgInfoList = $$split(pkgInformation, $$LITERAL_HASH)
+                pkgName = $$member(pkgInfoList,0)
+                pkgChannel = "stable"
+                equals(size(pkgInf),2) {
+                    pkgChannel = $$member(pkgInfoList,1)
+                }
                 pkgVersion = $$member(dependencyMetaInf,1)
                 libName = $$member(dependencyMetaInf,2)
-                pkgCategory = $$member(dependencyMetaInf,3)
-                pkgRepoUrl = $$member(dependencyMetaInf,4)
+                pkgTypeInformation = $$member(dependencyMetaInf,3)
+                pkgTypeInfoList = $$split(pkgTypeInformation, @)
+                pkgCategory = $$member(pkgTypeInfoList,0)
+                pkgRepoType = $${pkgCategory}
+                equals(size(pkgTypeInf),2) {
+                    pkgRepoType = $$member(pkgTypeInfoList,1)
+                } else {
+                   equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"thirdParties") {
+                        pkgRepoType = "artifactory"
+                    }  # otherwise pkgRepoType = pkgCategory
+                }
+                pkgUrl=$$member(dependencyMetaInf,4)
                 pkgLinkModeOverride = $$member(dependencyMetaInf,5)
                 pkgCommandOptions = $$member(dependencyMetaInf,6)
+                message("--> [INFO] Processing dependency for "  $${pkgRepoType} " repository")
+                # check pkgLinkModeOverride not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
+                equals(pkgLinkModeOverride,"")|equals(pkgLinkModeOverride,"default") {
+                    pkgLinkModeOverride = $${DEPLINKMODE}
+                } else {
+                    if (!equals(pkgLinkModeOverride,"static"):!equals(pkgLinkModeOverride,"shared"):!equals(pkgLinkModeOverride,"na")){
+                        pkgLinkModeOverride = $${DEPLINKMODE}
+                    }
+                }
                 deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                 !equals(pkgCategory,$${pkgRepoType}) {
                                 deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
@@ -74,7 +99,7 @@ defineReplace(populateSubDependencies) {
                     warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
                     deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
                     !equals(pkgCategory,$${pkgRepoType}) {
-                         deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
                     }
                     warning("Defaulting search folder to " $${deployFolder})
                 }
@@ -173,7 +198,7 @@ for(depfile, packagedepsfiles) {
                 pkgRepoType = $$member(pkgTypeInfoList,1)
             } else {
                equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"thirdParties") {
-                    pkgRepoType = "b-com"
+                    pkgRepoType = "artifactory"
                 }  # otherwise pkgRepoType = pkgCategory
             }
             pkgUrl=$$member(dependencyMetaInf,4)
@@ -249,7 +274,7 @@ for(depfile, packagedepsfiles) {
                    remakenConanOptions += $${pkgName}:shared=$${sharedLinkMode}
                 }
             }
-            equals(pkgRepoType,"b-com")|equals(pkgRepoType,"github") {
+            equals(pkgRepoType,"artifactory")|equals(pkgRepoType,"github")|equals(pkgRepoType,"nexus") {
                 # custom built package handling
                 deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                 !equals(pkgCategory,$${pkgRepoType}) {
