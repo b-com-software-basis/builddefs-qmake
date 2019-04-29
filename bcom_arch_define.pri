@@ -1,5 +1,6 @@
 # Author(s) : Loic Touraine
 
+REMAKEN_INFO_SUFFIX=remakeninfo.txt
 # For backward compatibility
 REMAKENDEPSROOTFOLDER=$$(BCOMDEVROOT)
 !isEmpty(REMAKENDEPSROOTFOLDER) {
