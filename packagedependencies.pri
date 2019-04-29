@@ -346,13 +346,13 @@ for(depfile, packagedepsfiles) {
                     }
                 }
             }
-	    equals(pkgRepoType,"b-com")|equals(pkgRepoType,"system") {
-            # message("pkg-config variables for includes : " $$pkgCfgVars)
-            # message("pkg-config variables for libs : " $$pkgCfgLibVars)
-            BCOMDEPSINCLUDEPATH += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
-            # QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
-            LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
-	    }
+    	    equals(pkgRepoType,"artifactory")|equals(pkgRepoType,"github")|equals(pkgRepoType,"nexus")|equals(pkgRepoType,"system") {
+                # message("pkg-config variables for includes : " $$pkgCfgVars)
+                # message("pkg-config variables for libs : " $$pkgCfgLibVars)
+                BCOMDEPSINCLUDEPATH += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+                # QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+                LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+    	    }
         }
         QMAKE_CXXFLAGS += $${BCOMDEPSINCLUDEPATH}
         message("|")
