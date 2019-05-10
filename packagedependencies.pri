@@ -408,7 +408,7 @@ exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
     }
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build)
+    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build)
     include($$_PRO_FILE_PWD_/build/conanbuildinfo.pri)
 }
 
