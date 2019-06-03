@@ -100,6 +100,11 @@ isEmpty(BCOM_TARGET_PLATFORM) {
                 BCOM_COMPILER_VER = 14.1
             }
         }
+        contains(CONFIG,c++14)|contains(CONFIG,c++1z)|contains(CONFIG,c++17)|contains(CONFIG,c++2a)|contains(CONFIG,c++20) {
+            contains(CONFIG,c++11) {
+                CONFIG -= c++11
+            }
+        }
 		# note : when icl is used with msvc, the most important is the msvc compiler version!
         BCOM_TARGET_PLATFORM = win-$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
     }

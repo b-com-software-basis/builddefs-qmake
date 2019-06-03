@@ -300,13 +300,20 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     }
     write_file($$_PRO_FILE_PWD_/build/conanfile.txt, CONANFILECONTENT)
     contains(CONFIG,c++11) {
-        conanCppStd=11
+        !msvc {
+            conanCppStd=11
+        } else {
+            error("Invalid setting for conan : compiler.cppstd supported values for msvc are 14, 17, 20")
+        }
     }
     contains(CONFIG,c++14) {
         conanCppStd=14
     }
     contains(CONFIG,c++1z)|contains(CONFIG,c++17) {
         conanCppStd=17
+    }
+    contains(CONFIG,c++2a)|contains(CONFIG,c++20) {
+        conanCppStd=20
     }
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
