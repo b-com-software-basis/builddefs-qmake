@@ -2,28 +2,28 @@
 
 REMAKEN_INFO_SUFFIX=remakeninfo.txt
 # For backward compatibility
-REMAKENDEPSROOTFOLDER=$$(BCOMDEVROOT)
+REMAKENDEPSROOTFOLDER = $$clean_path($$(BCOMDEVROOT))
 !isEmpty(REMAKENDEPSROOTFOLDER) {
-    REMAKENDEPSFOLDER=$${REMAKENDEPSROOTFOLDER}
+    REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER})
 }
 else { #new remaken behavior
     unix {
-        REMAKENDEPSROOTFOLDER=$$(HOME)
+        REMAKENDEPSROOTFOLDER = $$(HOME)
     }
 
     win32 {
-        REMAKENDEPSROOTFOLDER=$$(USERPROFILE)
+        REMAKENDEPSROOTFOLDER = $$clean_path($$(USERPROFILE))
         isEmpty(REMAKENDEPSROOTFOLDER) {
-            REMAKENDEPSROOTFOLDER=shell_path($$(HOMEDRIVE)$$(HOMEPATH))
+            REMAKENDEPSROOTFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
         }
     }
 
     # Read REMAKENDEVPROP qmake property
-    REMAKENDEPSFOLDER=$$[REMAKENDEPSFOLDERPROP]
+    REMAKENDEPSFOLDER = $$clean_path($$[REMAKENDEPSFOLDERPROP])
 
     isEmpty(REMAKENDEPSFOLDER) { # REMAKENDEVPROP not defined in qmake's properties
         message("NO REMAKENDEPSFOLDERPROP defined in qmake : setting REMAKENDEPSFOLDER to " $${REMAKENDEPSROOTFOLDER}/.remaken/packages)
-        REMAKENDEPSFOLDER=$${REMAKENDEPSROOTFOLDER}/.remaken/packages
+        REMAKENDEPSFOLDER = $${REMAKENDEPSROOTFOLDER}/.remaken/packages
     }
 }
 message("REMAKENDEPSFOLDER Dependencies folder is set to " $${REMAKENDEPSFOLDER})

@@ -1,6 +1,15 @@
-Remaken meta-dependency tool documentation 
+Remaken meta-dependency tool documentation
 
 = Remaken packaging structure
+== Default behavior
+
+== Package tree
+package_name/package_version/
+package_name-package_version_remakeninfo.txt (or libname ??)
+bcom-package_name.pc (should be renamed to remaken-*.pc ?)
+interfaces/
+lib/[arch]/[mode]/[config]/
+
 
 == Package metadata
 An information file is created in the target package.
@@ -48,7 +57,7 @@ when identifier is not specified :
 - @repository_type is mandatory
 
 when channel is not specified, it defaults to stable for conan dependencies.
-For b-com and github repositories, channel can be a combination of values from the remaken packaging manifest. 
+For b-com and github repositories, channel can be a combination of values from the remaken packaging manifest.
 It is not used for other kind of repos.
 
 options are directly forwarded to the underlying repository tool.

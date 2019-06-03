@@ -6,8 +6,8 @@
     DEPENDENCIESCONFIG = sharedlib
 }
 
-# Detect build toolchain and define BCOM_TARGET_ARCH
-include(bcom_arch_define.pri)
+#include sub-dependencies recursion function
+include(populateSubDependencies.pri)
 
 contains(DEPENDENCIESCONFIG,staticlib) {
     DEPLINKMODE = static
@@ -48,107 +48,15 @@ BCOMPFX = bcom-
 bFoundAtLeastOneStaticDep = 0
 BCOMDEPSINCLUDEPATH=""
 
-defineReplace(populateSubDependencies) {
-    packageDepsFilesList = $$ARGS
-    for(depfile, packageDepsFilesList) {
-        exists($${depfile}) {
-            baseDepFile = $$basename(depfile)
-            message("----------------- Parsing sub-dependencies from " $${depfile} " -----------------" )
-            dependencies = $$cat($${depfile})
-            for(var, dependencies) {
-                dependencyPkgDepFiles=""
-                dependencyMetaInf = $$split(var, |)
-                pkgInformation = $$member(dependencyMetaInf,0)
-                pkgInfoList = $$split(pkgInformation, $$LITERAL_HASH)
-                pkgName = $$member(pkgInfoList,0)
-                pkgChannel = "stable"
-                equals(size(pkgInf),2) {
-                    pkgChannel = $$member(pkgInfoList,1)
-                }
-                pkgVersion = $$member(dependencyMetaInf,1)
-                libName = $$member(dependencyMetaInf,2)
-                pkgTypeInformation = $$member(dependencyMetaInf,3)
-                pkgTypeInfoList = $$split(pkgTypeInformation, @)
-                pkgCategory = $$member(pkgTypeInfoList,0)
-                pkgRepoType = $${pkgCategory}
-                equals(size(pkgTypeInf),2) {
-                    pkgRepoType = $$member(pkgTypeInfoList,1)
-                } else {
-                   equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"thirdParties") {
-                        pkgRepoType = "artifactory"
-                    }  # otherwise pkgRepoType = pkgCategory
-                }
-                pkgUrl=$$member(dependencyMetaInf,4)
-                pkgLinkModeOverride = $$member(dependencyMetaInf,5)
-                pkgCommandOptions = $$member(dependencyMetaInf,6)
-                message("--> [INFO] Processing dependency for "  $${pkgRepoType} " repository")
-                # check pkgLinkModeOverride not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
-                equals(pkgLinkModeOverride,"")|equals(pkgLinkModeOverride,"default") {
-                    pkgLinkModeOverride = $${DEPLINKMODE}
-                } else {
-                    if (!equals(pkgLinkModeOverride,"static"):!equals(pkgLinkModeOverride,"shared"):!equals(pkgLinkModeOverride,"na")){
-                        pkgLinkModeOverride = $${DEPLINKMODE}
-                    }
-                }
-                deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
-                !equals(pkgCategory,$${pkgRepoType}) {
-                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
-                }
-                write_file($$OUT_PWD/$${TARGET}-$${baseDepFile},var,append)
-                !exists($${deployFolder}) {
-                    warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
-                    !equals(pkgCategory,$${pkgRepoType}) {
-                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
-                    }
-                    warning("Defaulting search folder to " $${deployFolder})
-                }
-                !exists($${deployFolder}) {
-                    error("No package found at " $${deployFolder})
-                }
-                exists($${deployFolder}/packagedependencies.txt) {
-                    dependencyPkgDepFiles+=$${deployFolder}/packagedependencies.txt
-                }
-                win32 {
-                    exists($${deployFolder}/packagedependencies-win.txt) {
-                         dependencyPkgDepFiles += $${deployFolder}/packagedependencies-win.txt
-                    }
-                }
-                # Common unix platform (macx, linux...)
-                unix {
-                    exists($${deployFolder}/packagedependencies-unix.txt) {
-                        dependencyPkgDepFiles += $${deployFolder}/packagedependencies-unix.txt
-                    }
-                }
-                macx {
-                    exists($${deployFolder}/packagedependencies-mac.txt) {
-                        dependencyPkgDepFiles += $${deployFolder}/packagedependencies-mac.txt
-                    }
-                }
-                linux {
-                    exists($${deployFolder}/packagedependencies-linux.txt) {
-                         dependencyPkgDepFiles += $${deployFolder}/packagedependencies-linux.txt
-                    }
-                }
-                outPackageDeps += $${dependencyPkgDepFiles}
-            }
-            isEmpty(outPackageDeps) {
-                message("----------------- No sub-dependencies found -----------------")
-            } else {
-                message("----------------- Sub-dependencies found for " $${depfile} " :" )
-                message("           |====>"  $${outPackageDeps} )
-            }
-            message("")
-        }
-    }
-    return($${outPackageDeps})
-}
-
 contains(DEPENDENCIESCONFIG,recurse) {
     # generate output files that will contain complete dependencies informations from recursion
     for (depFile, packagedepsfiles) {
         baseDepFile = $$basename(depFile)
         write_file($$OUT_PWD/$${TARGET}-$${baseDepFile})
+        dependencies = $$cat($${depFile})
+        for(dependency, dependencies) {
+                write_file($$OUT_PWD/$${TARGET}-$${baseDepFile}, dependency, append)
+        }
         QMAKE_CLEAN += $$OUT_PWD/$${TARGET}-$${baseDepFile}
     }
 
@@ -172,7 +80,7 @@ contains(DEPENDENCIESCONFIG,recurse) {
         }
     }
     message("-------------------------------------------------------------------------------------")
-    message("")
+    message("|")
 }
 
 for(depfile, packagedepsfiles) {
@@ -183,41 +91,41 @@ for(depfile, packagedepsfiles) {
             dependencyMetaInf = $$split(var, |)
             pkgInformation = $$member(dependencyMetaInf,0)
             pkgInfoList = $$split(pkgInformation, $$LITERAL_HASH)
-            pkgName = $$member(pkgInfoList,0)
-            pkgChannel = "stable"
-            equals(size(pkgInf),2) {
-                pkgChannel = $$member(pkgInfoList,1)
+            pkg.name = $$member(pkgInfoList,0)
+            pkg.channel = "stable"
+            equals(size(pkgInfoList),2) {
+                pkg.channel = $$member(pkgInfoList,1)
             }
-            pkgVersion = $$member(dependencyMetaInf,1)
+            pkg.version = $$member(dependencyMetaInf,1)
             libName = $$member(dependencyMetaInf,2)
             pkgTypeInformation = $$member(dependencyMetaInf,3)
             pkgTypeInfoList = $$split(pkgTypeInformation, @)
-            pkgCategory = $$member(pkgTypeInfoList,0)
-            pkgRepoType = $${pkgCategory}
-            equals(size(pkgTypeInf),2) {
-                pkgRepoType = $$member(pkgTypeInfoList,1)
+            pkg.identifier = $$member(pkgTypeInfoList,0)
+            pkg.repoType = $${pkg.identifier}
+            equals(size(pkgTypeInfoList),2) {
+                pkg.repoType = $$member(pkgTypeInfoList,1)
             } else {
-               equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"thirdParties") {
-                    pkgRepoType = "artifactory"
-                }  # otherwise pkgRepoType = pkgCategory
+               equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                    pkg.repoType = "artifactory"
+                }  # otherwise pkg.repoType = pkg.identifier
             }
-            pkgUrl=$$member(dependencyMetaInf,4)
-            pkgLinkModeOverride = $$member(dependencyMetaInf,5)
-            pkgCommandOptions = $$member(dependencyMetaInf,6)
-            message("--> [INFO] Processing dependency for "  $${pkgRepoType} " repository")
-            # check pkgLinkModeOverride not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
-            equals(pkgLinkModeOverride,"")|equals(pkgLinkModeOverride,"default") {
-                pkgLinkModeOverride = $${DEPLINKMODE}
+            pkg.repoUrl=$$member(dependencyMetaInf,4)
+            pkg.linkMode = $$member(dependencyMetaInf,5)
+            pkg.toolOptions = $$member(dependencyMetaInf,6)
+            message("--> [INFO] Processing dependency for "  $${pkg.repoType} " repository")
+            # check pkg.linkMode not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
+            equals(pkg.linkMode,"")|equals(pkg.linkMode,"default") {
+                pkg.linkMode = $${DEPLINKMODE}
             } else {
-                if (!equals(pkgLinkModeOverride,"static"):!equals(pkgLinkModeOverride,"shared"):!equals(pkgLinkModeOverride,"na")){
-                    pkgLinkModeOverride = $${DEPLINKMODE}
+                if (!equals(pkg.linkMode,"static"):!equals(pkg.linkMode,"shared"):!equals(pkg.linkMode,"na")){
+                    pkg.linkMode = $${DEPLINKMODE}
                 }
             }
             # VPCKG package handling
-            equals(pkgRepoType,"vcpkg") {
-                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgRepoType}/packages/$${pkgName}_$${vcpkgtriplet}
+            equals(pkg.repoType,"vcpkg") {
+                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.repoType}/packages/$${pkg.name}_$${vcpkgtriplet}
                 !exists($${deployFolder}) {
-                    error("No VPCKG package at "  $${REMAKENDEPSFOLDER}/$${pkgRepoType}/packages/$${pkgName}_$${vcpkgtriplet})
+                    error("No VPCKG package at "  $${REMAKENDEPSFOLDER}/$${pkg.repoType}/packages/$${pkg.name}_$${vcpkgtriplet})
                 }
                 # TODO : check package version with installed one !
                 LIBFOLDER=lib
@@ -226,7 +134,7 @@ for(depfile, packagedepsfiles) {
                 }
                 pkgCfgFilePath = $${deployFolder}/$${LIBFOLDER}/pkgconfig/$${libName}.pc
                 !exists($${pkgCfgFilePath}) {# error
-                    error("--> [ERROR] " $${pkgCfgFilePath} " doesn't exists for VCPKG package " $${pkgName}_$${vcpkgtriplet})
+                    error("--> [ERROR] " $${pkgCfgFilePath} " doesn't exists for VCPKG package " $${pkg.name}_$${vcpkgtriplet})
                 }
                 message("--> [INFO] "  $${pkgCfgFilePath} "exists")
                 pkgCfgVars = --define-variable=prefix=$${deployFolder}
@@ -243,7 +151,7 @@ for(depfile, packagedepsfiles) {
                 #static build is not provided for all packages in vcpkg : TODO : howto handle ?
                 pkgCfgLibVars += --libs
             }
-            equals(pkgRepoType,"system") {# local system package handling
+            equals(pkg.repoType,"system") {# local system package handling
                 pkgCfgFilePath = /usr/local/lib/pkgconfig/$${libName}.pc
                 !exists($${pkgCfgFilePath}) {# error
                     pkgCfgFilePath = /usr/lib/pkgconfig/$${libName}.pc
@@ -252,10 +160,10 @@ for(depfile, packagedepsfiles) {
                     }
                 }
                 message("--> [INFO] "  $${pkgCfgFilePath} " exists")
-                message("--> [INFO] checking local version for package "  $${libName} " : expected version =" $${pkgVersion})
-                localPkgVersion = $$system(pkg-config --modversion $${libName})
-                !equals(pkgVersion,$${localPkgVersion}) {
-                     error("--> [ERROR] expected version for " $${libName} " is " $${pkgVersion} ": system's package version is " $${localPkgVersion})
+                message("--> [INFO] checking local version for package "  $${libName} " : expected version =" $${pkg.version})
+                localpkg.version = $$system(pkg-config --modversion $${libName})
+                !equals(pkg.version,$${localpkg.version}) {
+                     error("--> [ERROR] expected version for " $${libName} " is " $${pkg.version} ": system's package version is " $${localpkg.version})
                 } else {
                 message("  |---> [OK] package expected version and local version matched")
                 }
@@ -264,34 +172,34 @@ for(depfile, packagedepsfiles) {
                 #static build ?? debug builds ???
                 pkgCfgLibVars = "--libs $${libName}"
             }
-            equals(pkgRepoType,"conan") {# conan system package handling
-                remakenConanDeps += $${pkgName}/$${pkgVersion}@$${pkgCategory}/$${pkgChannel}
+            equals(pkg.repoType,"conan") {# conan system package handling
+                remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
                 sharedLinkMode = False
-                equals(pkgLinkModeOverride,shared) {
+                equals(pkg.linkMode,shared) {
                     sharedLinkMode = True
                 }
-                !equals(pkgLinkModeOverride,na) {
-                   remakenConanOptions += $${pkgName}:shared=$${sharedLinkMode}
+                !equals(pkg.linkMode,na) {
+                   remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
                 }
             }
-            equals(pkgRepoType,"artifactory")|equals(pkgRepoType,"github")|equals(pkgRepoType,"nexus") {
+            equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
                 # custom built package handling
-                deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
-                !equals(pkgCategory,$${pkgRepoType}) {
-                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                !equals(pkg.identifier,$${pkg.repoType}) {
+                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                 }
                 !exists($${deployFolder}) {
                     warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
-                    !equals(pkgCategory,$${pkgRepoType}) {
-                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
+                    !equals(pkg.identifier,$${pkg.repoType}) {
+                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
                     }
                     warning("Defaulting search folder to " $${deployFolder})
                 }
-                remakenInfoFilePath = $${deployFolder}/$${libName}-$${pkgVersion}_$${REMAKEN_INFO_SUFFIX}
+                remakenInfoFilePath = $${deployFolder}/$${libName}-$${pkg.version}_$${REMAKEN_INFO_SUFFIX}
                 !exists($${remakenInfoFilePath}) {
-                    warning("No information file found for " $${libName}-$${pkgVersion}_$${REMAKEN_INFO_SUFFIX} " found.")
-                    warning("Package "  $${pkgName} " was built with an older version of builddefs. Please upgrade the package builddefs' to the latest version ! ")
+                    warning("No information file found for " $${libName}-$${pkg.version}_$${REMAKEN_INFO_SUFFIX} " found.")
+                    warning("Package "  $${pkg.name} " was built with an older version of builddefs. Please upgrade the package builddefs' to the latest version ! ")
                 } else {
                     message("--> [INFO] "  $${remakenInfoFilePath} " exists : checking build consistency")
                     win32 {
@@ -299,12 +207,12 @@ for(depfile, packagedepsfiles) {
                         WINRT = $$find(REMAKENINFOFILE_CONTENT, runtime=.*)
                         usestaticwinrt {
                             contains(WINRT,.*dynamicCRT) {
-                                error("--> [ERROR] Inconsistent configuration :  it is prohibited to mix shared runtime linked dependency with the static windows runtime (prohibited since VS2017, bad practice before). Either remove 'usestaticwinrt' from your build configuration (remove the line 'CONFIG += usestaticwinrt') , or use a static runtime build of " $${pkgName})
+                                error("--> [ERROR] Inconsistent configuration :  it is prohibited to mix shared runtime linked dependency with the static windows runtime (prohibited since VS2017, bad practice before). Either remove 'usestaticwinrt' from your build configuration (remove the line 'CONFIG += usestaticwinrt') , or use a static runtime build of " $${pkg.name})
                             }
                         }
                         else {
                             contains(WINRT,.*staticCRT) {
-                                error("--> [ERROR] Inconsistent configuration :  it is prohibited to mix static runtime linked dependency with the shared windows runtime (prohibited since VS2017, bad practice before). Either add 'usestaticwinrt' to your build configuration (add the line 'CONFIG += usestaticwinrt'), or use a dynamic runtime build of " $${pkgName})
+                                error("--> [ERROR] Inconsistent configuration :  it is prohibited to mix static runtime linked dependency with the shared windows runtime (prohibited since VS2017, bad practice before). Either add 'usestaticwinrt' to your build configuration (add the line 'CONFIG += usestaticwinrt'), or use a dynamic runtime build of " $${pkg.name})
                              }
                         }
                     }
@@ -319,7 +227,7 @@ for(depfile, packagedepsfiles) {
                     message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values (check your config if it should exists)")
                    # QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
                     BCOMDEPSINCLUDEPATH += $${deployFolder}/interfaces
-                    equals(pkgLinkModeOverride,"static") {
+                    equals(pkg.linkMode,"static") {
                         LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
                         bFoundAtLeastOneStaticDep = 1
                     } else {
@@ -328,9 +236,9 @@ for(depfile, packagedepsfiles) {
 
                 } else {
                     message("--> [INFO] "  $${pkgCfgFilePath} "exists")
-                    pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                    pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     pkgCfgVars += --define-variable=lext=$${LIBEXT}
-                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkgLinkModeOverride}/$$OUTPUTDIR
+                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     !win32 {
                         pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
                     }
@@ -338,7 +246,7 @@ for(depfile, packagedepsfiles) {
                         pkgCfgVars += --define-variable=pfx=$$shell_quote("\'\'")
                     }
                     pkgCfgLibVars = $$pkgCfgVars
-                    equals(pkgLinkModeOverride,"static") {
+                    equals(pkg.linkMode,"static") {
                         pkgCfgLibVars += --libs-only-other --static
                         bFoundAtLeastOneStaticDep = 1
                     } else {
@@ -346,7 +254,7 @@ for(depfile, packagedepsfiles) {
                     }
                 }
             }
-    	    equals(pkgRepoType,"artifactory")|equals(pkgRepoType,"github")|equals(pkgRepoType,"nexus")|equals(pkgRepoType,"system") {
+            equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
                 # message("pkg-config variables for includes : " $$pkgCfgVars)
                 # message("pkg-config variables for libs : " $$pkgCfgLibVars)
                 BCOMDEPSINCLUDEPATH += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
@@ -370,12 +278,6 @@ for(depfile, packagedepsfiles) {
 
 QMAKE_CFLAGS += $${QMAKE_CXXFLAGS}
 QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
-
-exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
-    templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in
-} else {
-    templatePkgConfigSrc=template-pkgconfig.pc.in
-}
 
 # Manage conan dependencies
 !isEmpty(remakenConanDeps) {
@@ -410,6 +312,12 @@ exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
     system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build)
     include($$_PRO_FILE_PWD_/build/conanbuildinfo.pri)
+}
+
+exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
+    templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in
+} else {
+    templatePkgConfigSrc=template-pkgconfig.pc.in
 }
 
 message("--> [INFO] using file "  $${templatePkgConfigSrc} " as pkgconfig template source")
