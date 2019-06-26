@@ -45,8 +45,6 @@ linux {
 }
 
 BCOMPFX = bcom-
-bFoundAtLeastOneStaticDep = 0
-BCOMDEPSINCLUDEPATH=""
 
 contains(DEPENDENCIESCONFIG,recurse) {
     # generate output files that will contain complete dependencies informations from recursion
@@ -61,13 +59,13 @@ contains(DEPENDENCIESCONFIG,recurse) {
     }
 
     recursionLevels = 0 1 2 3 4 5 6 7 8 9
-    #    packagedepsfiles
+    # packagedepsfiles
     subDeps = $$populateSubDependencies($${packagedepsfiles})
-     for (i, recursionLevels) {
+    for (i, recursionLevels) {
         !isEmpty(subDeps) {
             packagedepsfiles += $${subDeps}
-	    subDeps = $$populateSubDependencies($${subDeps})
-	}
+            subDeps = $$populateSubDependencies($${subDeps})
+        }
     }
 
     message("----------------- Complete dependencies list for project " $${TARGET} " :" )
@@ -112,7 +110,7 @@ for(depfile, packagedepsfiles) {
             pkg.repoUrl=$$member(dependencyMetaInf,4)
             pkg.linkMode = $$member(dependencyMetaInf,5)
             pkg.toolOptions = $$member(dependencyMetaInf,6)
-            message("--> [INFO] Processing dependency for "  $${pkg.repoType} " repository")
+            message("--> [INFO] Processing dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} repository")
             # check pkg.linkMode not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
             equals(pkg.linkMode,"")|equals(pkg.linkMode,"default") {
                 pkg.linkMode = $${DEPLINKMODE}
@@ -181,18 +179,22 @@ for(depfile, packagedepsfiles) {
                 !equals(pkg.linkMode,na) {
                    remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
                 }
+                conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
+                for (conanOption, conanOptions) {
+                    remakenConanOptions += $${pkg.name}:$${conanOption}
+                }
             }
             equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
                 # custom built package handling
                 deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                 !equals(pkg.identifier,$${pkg.repoType}) {
-                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                 }
                 !exists($${deployFolder}) {
                     warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
                     deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
                     !equals(pkg.identifier,$${pkg.repoType}) {
-                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
                     }
                     warning("Defaulting search folder to " $${deployFolder})
                 }
@@ -224,16 +226,20 @@ for(depfile, packagedepsfiles) {
                     pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
                 }
                 !exists($${pkgCfgFilePath}) {# default behavior
-                    message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values (check your config if it should exists)")
-                   # QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
-                    BCOMDEPSINCLUDEPATH += $${deployFolder}/interfaces
-                    equals(pkg.linkMode,"static") {
-                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
-                        bFoundAtLeastOneStaticDep = 1
-                    } else {
-                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$$OUTPUTDIR -l$${libName}
+                    message("--> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values")
+                    !exists($${deployFolder}/interfaces) {
+                        error("--> [ERROR] " $${deployFolder}/interfaces " doesn't exists for package " $${libName})
+                    }
+                    !exists($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}) {
+                        error("--> [ERROR] " $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
                     }
 
+                    QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+                    equals(pkg.linkMode,"static") {
+                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
+                    } else {
+                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
+                    }
                 } else {
                     message("--> [INFO] "  $${pkgCfgFilePath} "exists")
                     pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
@@ -248,21 +254,18 @@ for(depfile, packagedepsfiles) {
                     pkgCfgLibVars = $$pkgCfgVars
                     equals(pkg.linkMode,"static") {
                         pkgCfgLibVars += --libs-only-other --static
-                        bFoundAtLeastOneStaticDep = 1
                     } else {
                         pkgCfgLibVars += --libs
                     }
                 }
             }
             equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
-                # message("pkg-config variables for includes : " $$pkgCfgVars)
-                # message("pkg-config variables for libs : " $$pkgCfgLibVars)
-                BCOMDEPSINCLUDEPATH += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
-                # QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+                message("pkg-config variables for includes : " $$pkgCfgVars)
+                message("pkg-config variables for libs : " $$pkgCfgLibVars)
+                QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
                 LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
     	    }
         }
-        QMAKE_CXXFLAGS += $${BCOMDEPSINCLUDEPATH}
         message("|")
         message("----------------- $${depfile} " process result :" -----------------" )
         message("--> [INFO] QMAKE_CXXFLAGS : ")
@@ -348,10 +351,10 @@ defined(PROJECTDEPLOYDIR,var) {
     unix:exists($$_PRO_FILE_PWD_/packagedependencies-unix.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
     }
-	macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
+        macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
     }
-	linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
+        linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {

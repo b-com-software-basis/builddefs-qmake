@@ -1,0 +1,66 @@
+# Author(s) : Stephane Leduc
+
+include (bcom_check_setup.pri)
+
+COPYLOGO_CLEAN_CMD = IF EXIST $${OUT_PWD}/logo.ico rm -rf $${OUT_PWD}/logo.ico
+bcom_copylogo_clean.commands = $${COPYLOGO_CLEAN_CMD}
+
+bcom_copylogo_prepare.commands = copy $$shell_quote($$shell_path($${SETUP_ICO_FILE})) $$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
+bcom_copylogo_prepare.depends += bcom_copylogo_clean $(TARGET)
+create_setup.depends += bcom_copylogo_prepare
+SETUP_ICO_FILE=$$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
+
+contains (CONFIG, app_setup)
+{
+    # saved default values (vst)
+    isEmpty(SETUP_INSTALLDIR) {
+        SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/))
+    }
+
+    # Nsis management
+    SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
+    SETUP_COPYFILENAME=$${TARGET}.$${APPEXT}
+    SETUP_PRODUCTNAME_VALUE = $$shell_quote($${SETUP_PRODUCTNAME})
+
+    NSISCOMMAND = $$shell_quote($$shell_path($${MAKENSIS_COMMAND})) \
+                                /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME_VALUE} /DSETUP_FILENAME=$${SETUP_FILENAME} \
+                                /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID} \
+                                /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR} /DSETUP_ICO_FILE=$${SETUP_ICO_FILE} \
+                                /DSETUP_MANUFACTURER=$${SETUP_MANUFACTURER}
+
+    if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
+        NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}
+    }
+
+    !isEmpty(SETUP_SUBINSTALLDIR) {
+        NSISCOMMAND += /DSETUP_SUBINSTALLDIR=$${SETUP_SUBINSTALLDIR}
+    }
+    !isEmpty(SETUP_COPYDIR) {
+        NSISCOMMAND += /DSETUP_COPYDIR=$${SETUP_COPYDIR}
+    }
+
+    contains(SETUP_NSIS_INFO,CUSTOMIZE_ONINIT) {
+        NSISCOMMAND += /DCUSTOMIZE_ONINIT
+    }
+    contains(SETUP_NSIS_INFO,CUSTOMIZE_DISPLAY_PAGE_COMPONENTS) {
+        NSISCOMMAND += /DCUSTOMIZE_DISPLAY_PAGE_COMPONENTS
+    }
+    contains(SETUP_NSIS_INFO,CUSTOMIZE_ADDTOPATH) {
+        NSISCOMMAND += /DCUSTOMIZE_ADDTOPATH
+    }
+
+    NSISSETUP_FILEPFX = $$nsisReplaceSpecialCharacter($${SETUP_FILEPFX})
+    NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${NSISSETUP_FILEPFX}$${SETUP_FILENAME}.exe))) \
+                   $$shell_quote($$shell_path($$OUT_PWD/Setup.nsi))
+
+    # manage setup
+    !equals(NSIS_PACKAGE_CMD,"") {
+        NSIS_PACKAGE_CMD += &&
+    }
+    NSIS_PACKAGE_CMD += $${NSISCOMMAND}
+}
+
+create_setup.commands = $${NSIS_PACKAGE_CMD}
+#create_setup.depends = all install
+QMAKE_EXTRA_TARGETS  += bcom_copylogo_clean bcom_copylogo_prepare create_setup
+

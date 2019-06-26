@@ -5,6 +5,5 @@ macx{
 }
 
 win32 {
-    include (win32/bcom_component_setup.prf)
+    include (win32/bcom_component_bundle_setup.prf)
 }
-

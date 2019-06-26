@@ -1,0 +1,9 @@
+# Author(s) : Loic Touraine & Stephane Leduc
+
+macx{
+    # TODO
+}
+
+win32 {
+    include (win32/bcom_component_app_setup.prf)
+}

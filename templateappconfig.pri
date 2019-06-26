@@ -1,7 +1,6 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 TEMPLATE = app
-CONFIG += app_bundle
 
 # Detect build toolchain and define BCOM_TARGET_ARCH
 include(bcom_arch_define.pri)
@@ -42,6 +41,7 @@ win32 {
     LIBPREFIX = ''
     DYNLIBEXT = dll
     LIBEXT = lib
+    APPEXT = exe
 
     # qmake processing only 1 time (http://stackoverflow.com/questions/17360553/qmake-processes-my-pro-file-three-times-instead-of-one)
     CONFIG -= debug_and_release
@@ -76,3 +76,8 @@ include (packagedependencies.pri)
 
 # Add post build copy of dependencies with application
 include (bcom_package_app.pri)
+
+# manage setup creation
+contains (CONFIG, app_setup) {
+    include (bcom_app_rules.prf)
+}

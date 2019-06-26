@@ -1,4 +1,4 @@
-Section "AddRemoveProgramRegistry"
+Section "-hidden AddProgramRegistry"
   ${GetTime} "" "L" $0 $1 $2 $3 $4 $5 $6
   
   SetRegView 64
@@ -6,7 +6,7 @@ Section "AddRemoveProgramRegistry"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$AppGuid" "DisplayName" "$AppName"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$AppGuid" "DisplayVersion" "$AppVersion"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$AppGuid" "UninstallString" "$SetupInstallDir\$UnInstallName.exe"
-  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$AppGuid" "Publisher" "B<>COM"
+  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$AppGuid" "Publisher" "$AppManufacturer"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$AppGuid" "InstallLocation" "$SetupInstallDir"
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$AppGuid" "MajorVersion" 0x00000001
   WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$AppGuid" "MinorVersion" 0x00000000

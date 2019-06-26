@@ -1,65 +1,27 @@
 # Author(s) : Stephane Leduc
-# NOTE : paramteres and sample values for each param
 
-# Product name - withou quote (added after in this script)
-#SETUP_PRODUCTNAME=b<>com *Ultra plugin* BinauralVirtualComponents
+include (bcom_check_setup.pri)
 
-# Setup file prefix (used only for nsis OutFile param)
-#SETUP_FILEPFX=Setup_b-com_
+COPYLOGO_CLEAN_CMD = IF EXIST $${OUT_PWD}/logo.ico rm -rf $${OUT_PWD}/logo.ico
+bcom_copylogo_clean.commands = $${COPYLOGO_CLEAN_CMD}
 
-# Setup filename
-#SETUP_FILENAME=UltraPlugin_BinauralVirtualComponents
+bcom_copylogo_prepare.commands = copy $$shell_quote($$shell_path($${SETUP_ICO_FILE})) $$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
+bcom_copylogo_prepare.depends += bcom_copylogo_clean $(TARGET)
+create_bundle.depends += bcom_copylogo_prepare
+SETUP_ICO_FILE=$$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
 
-# Version
-#SETUP_VERSION=$${VERSION}
-
-# Unique setup guid (need to be changed!)
-#SETUP_GUID=1234
-
-# Install dir - can be defined for custom install or taken with default path for audio plugins
-#SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/Steinberg/VSTPlugins/))
-
-# Sub install dir (added to install dir) (OPTIONAL - value can be empty)
-#SETUP_SUBINSTALLDIR=bcom
-
-# Copy all contents of directory (OPTIONAL - values can be empty)
-#SETUP_COPYDIR=$$shell_quote($$shell_path($$_PRO_FILE_PWD_/config/BVC_minimal_config))
-
-
-# global defaults - detect nsis
-MAKENSIS_COMMAND = $$system(where makensis)
-isEmpty(MAKENSIS_COMMAND) {
-    PATH = $$clean_path($$getenv(PROGRAMFILES(X86))/NSIS/makensis.exe)
-    exists($${PATH}) {
-        MAKENSIS_COMMAND = $${PATH}
-    } else {
-        message("Unable to find NSIS application : check your windows NSIS installation")
-    }
-}
-
-# Check mandatory input parameters existence
-!defined(SETUP_PRODUCTNAME,var){
-    error("SETUP_PRODUCTNAME must be defined in _BundleConfig.pri")
-}
-!defined(SETUP_FILENAME,var){
-    error("SETUP_FILENAME must be defined in _BundleConfig.pri")
-}
-!defined(SETUP_VERSION,var){
-    error("SETUP_VERSION must be defined in _BundleConfig.pri")
-}
-!defined(SETUP_GUID,var){
-    error("SETUP_GUID must be defined in _BundleConfig.pri")
-}
+#init unused value
+SETUP_SUFFIX =
 
 # manage packaging according to plugin extension
 for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
 
-    #init unused value
+    #reset value for new plugin
     SETUP_SUFFIX =
     SETUP_COPYDIR_VALUE =
     # saved default values (vst)
     isEmpty(SETUP_INSTALLDIR) {
-		SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/common files/VST3/))
+        SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/Steinberg/VSTPlugins/))
     }
 
     # AAX plugin
@@ -146,9 +108,6 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
     }
 
     contains(PLUGIN_EXTENSION,.vst3) {
-        !equals(VST3_PREPARE_CMD,"") {
-            VST3_PREPARE_CMD += &&
-        }
         VST3_PREPARE_CMD += copy /Y $${TARGET}.$${DYNLIBEXT} $${TARGET}$${PLUGIN_EXTENSION}
         bcom_component_vst3bundle_prepare.commands = $${VST3_PREPARE_CMD}
         create_bundle.depends += bcom_component_vst3bundle_prepare
@@ -169,7 +128,8 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
     NSISCOMMAND = $$shell_quote($$shell_path($${MAKENSIS_COMMAND})) \
                                 /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME_VALUE} /DSETUP_FILENAME=$${SETUP_FILENAME}$${SETUP_SUFFIX} \
                                 /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID}$${SETUP_SUFFIX} \
-                                /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR}
+                                /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR} /DSETUP_ICO_FILE=$${SETUP_ICO_FILE} \
+                                /DSETUP_MANUFACTURER=$${SETUP_MANUFACTURER}
 
     if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
         NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}
@@ -182,20 +142,19 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
         NSISCOMMAND += /DSETUP_COPYDIR=$${SETUP_COPYDIR_VALUE}
     }
 
-    # remove/replace forbidden chars
-    NSISSETUP_FILEPFX = $$replace(SETUP_FILEPFX, "<>", "-")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "<", "")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, ">", "")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "/", "")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "\\", "")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, ":", "")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "*", "")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "\?", "")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "\"", "")
-    NSISSETUP_FILEPFX = $$replace(NSISSETUP_FILEPFX, "|", "")
+    contains(SETUP_NSIS_INFO,CUSTOMIZE_ONINIT) {
+        NSISCOMMAND += /DCUSTOMIZE_ONINIT
+    }
+    contains(SETUP_NSIS_INFO,CUSTOMIZE_DISPLAY_PAGE_COMPONENTS) {
+        NSISCOMMAND += /DCUSTOMIZE_DISPLAY_PAGE_COMPONENTS
+    }
+    contains(SETUP_NSIS_INFO,CUSTOMIZE_ADDTOPATH) {
+        NSISCOMMAND += /DCUSTOMIZE_ADDTOPATH
+    }
 
+    NSISSETUP_FILEPFX = $$nsisReplaceSpecialCharacter($${SETUP_FILEPFX})
     NSISCOMMAND += $$shell_quote(/XOutFile $$shell_quote($$shell_path($${OUT_PWD}/$${NSISSETUP_FILEPFX}$${SETUP_FILENAME}$${SETUP_SUFFIX}.exe))) \
-                   $$shell_quote($$shell_path($$PWD/nsis/Setup.nsi))
+                   $$shell_quote($$shell_path($$OUT_PWD/Setup.nsi))
 
     # manage setup
     !equals(NSIS_PACKAGE_CMD,"") {
@@ -206,4 +165,5 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
 
 create_bundle.commands = $${NSIS_PACKAGE_CMD}
 #create_bundle.depends = all install
-QMAKE_EXTRA_TARGETS  += bcom_component_aaxbundle_clean bcom_component_aaxbundle_prepare bcom_component_vst3bundle_prepare create_bundle
+QMAKE_EXTRA_TARGETS  += bcom_copylogo_clean bcom_copylogo_prepare bcom_component_aaxbundle_clean bcom_component_aaxbundle_prepare bcom_component_vst3bundle_prepare create_bundle
+

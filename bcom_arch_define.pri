@@ -2,31 +2,33 @@
 
 REMAKEN_INFO_SUFFIX=remakeninfo.txt
 # For backward compatibility
-REMAKENDEPSROOTFOLDER = $$clean_path($$(BCOMDEVROOT))
-!isEmpty(REMAKENDEPSROOTFOLDER) {
-    REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER})
-}
-else { #new remaken behavior
-    unix {
-        REMAKENDEPSROOTFOLDER = $$(HOME)
+isEmpty(REMAKENDEPSFOLDER) {
+    REMAKENDEPSROOTFOLDER = $$clean_path($$(BCOMDEVROOT))
+    !isEmpty(REMAKENDEPSROOTFOLDER) {
+        REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER})
     }
+    else { #new remaken behavior
+        unix {
+            REMAKENDEPSROOTFOLDER = $$(HOME)
+        }
 
-    win32 {
-        REMAKENDEPSROOTFOLDER = $$clean_path($$(USERPROFILE))
-        isEmpty(REMAKENDEPSROOTFOLDER) {
-            REMAKENDEPSROOTFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
+        win32 {
+            REMAKENDEPSROOTFOLDER = $$clean_path($$(USERPROFILE))
+            isEmpty(REMAKENDEPSROOTFOLDER) {
+                REMAKENDEPSROOTFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
+            }
+        }
+
+        # Read REMAKENDEVPROP qmake property
+        REMAKENDEPSFOLDER = $$clean_path($$[REMAKENDEPSFOLDERPROP])
+
+        isEmpty(REMAKENDEPSFOLDER) { # REMAKENDEVPROP not defined in qmake's properties
+            message("NO REMAKENDEPSFOLDERPROP defined in qmake : setting REMAKENDEPSFOLDER to " $${REMAKENDEPSROOTFOLDER}/.remaken/packages)
+            REMAKENDEPSFOLDER = $${REMAKENDEPSROOTFOLDER}/.remaken/packages
         }
     }
-
-    # Read REMAKENDEVPROP qmake property
-    REMAKENDEPSFOLDER = $$clean_path($$[REMAKENDEPSFOLDERPROP])
-
-    isEmpty(REMAKENDEPSFOLDER) { # REMAKENDEVPROP not defined in qmake's properties
-        message("NO REMAKENDEPSFOLDERPROP defined in qmake : setting REMAKENDEPSFOLDER to " $${REMAKENDEPSROOTFOLDER}/.remaken/packages)
-        REMAKENDEPSFOLDER = $${REMAKENDEPSROOTFOLDER}/.remaken/packages
-    }
+    message("REMAKENDEPSFOLDER Dependencies folder is set to " $${REMAKENDEPSFOLDER})
 }
-message("REMAKENDEPSFOLDER Dependencies folder is set to " $${REMAKENDEPSFOLDER})
 
 # Define target architecture path depending on the build kit used if not overloaded in user's project file
 isEmpty(BCOM_TARGET_ARCH) {
