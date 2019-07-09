@@ -8,7 +8,7 @@ defineReplace(populateSubDependencies) {
     for (depfile, packageDepsFilesList) {
         exists($${depfile}) {
             baseDepFile = $$basename(depfile)
-            message("----------------- Parsing sub-dependencies from " $${depfile} " -----------------" )
+            message("---- Parsing sub-dependencies from " $${depfile} " ----" )
             dependencies = $$cat($${depfile})
             for (dependency, dependencies) {
                 dependencyPkgDepFiles=""
@@ -33,9 +33,7 @@ defineReplace(populateSubDependencies) {
                         pkgRepoType = "artifactory"
                     }  # otherwise pkgRepoType = pkgCategory
                 }
-                !equals(pkgRepoType,"artifactory") : !equals(pkgRepoType,"github") : !equals(pkgRepoType,"nexus") {
-                    write_file($$OUT_PWD/$${TARGET}-$${baseDepFile},dependency,append)
-                } else {
+                equals(pkgRepoType,"artifactory") | equals(pkgRepoType,"github") | equals(pkgRepoType,"nexus") {
                     deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                     !equals(pkgCategory,$${pkgRepoType}) {
                         deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
@@ -78,12 +76,14 @@ defineReplace(populateSubDependencies) {
                     outPackageDeps += $${dependencyPkgDepFiles}
                 }
                 isEmpty(outPackageDeps) {
-                    message("----------------- No sub-dependencies found -----------------")
+                    message("    ---- No sub-dependencies found ----")
                 } else {
-                    message("----------------- Sub-dependencies found for " $${depfile} " :" )
-                    message("           |====>"  $${outPackageDeps} )
+                    message("    ---- Sub-dependencies found :" )
+                    for(var, outPackageDeps) {
+                       message("         ==>"  $${var} )
+                    }
                 }
-                message("|")
+                message(" ")
             }
         }
     }

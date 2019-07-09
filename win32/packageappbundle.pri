@@ -75,7 +75,7 @@ for(depfile, packagedepsfiles) {
                     QMAKE_POST_LINK += $${QMAKE_COPY} $$shell_quote($$shell_path($$system(pkg-config $$pkgCfgSharedLibVars $$pkgCfgFilePath))) $$shell_quote($$shell_path($$OUT_PWD/))
                 }
                 message("QMAKE_POST_LINK : " $${QMAKE_POST_LINK})
-                message("")
+                message(" ")
             }
         }
     } else {
