@@ -97,7 +97,8 @@ for(depfile, packagedepsfiles) {
             pkgInfoList = $$split(pkgInformation, $$LITERAL_HASH)
             pkg.name = $$member(pkgInfoList,0)
             pkg.channel = "stable"
-            equals(size(pkgInfoList),2) {
+            pkgInfoListSize = $$size(pkgInfoList)
+            equals(pkgInfoListSize,2) {
                 pkg.channel = $$member(pkgInfoList,1)
             }
             pkg.version = $$member(dependencyMetaInf,1)
@@ -106,7 +107,8 @@ for(depfile, packagedepsfiles) {
             pkgTypeInfoList = $$split(pkgTypeInformation, @)
             pkg.identifier = $$member(pkgTypeInfoList,0)
             pkg.repoType = $${pkg.identifier}
-            equals(size(pkgTypeInfoList),2) {
+            pkgTypeInfoListSize = $$size(pkgTypeInfoList)
+            equals(pkgTypeInfoListSize,2) {
                 pkg.repoType = $$member(pkgTypeInfoList,1)
             } else {
                equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
@@ -177,6 +179,7 @@ for(depfile, packagedepsfiles) {
                 pkgCfgLibVars = "--libs $${libName}"
             }
             equals(pkg.repoType,"conan") {# conan system package handling
+                message("    --> ["$${pkg.repoType}"] adding " $${pkg.name} " dependency")
                 remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
                 sharedLinkMode = False
                 equals(pkg.linkMode,shared) {

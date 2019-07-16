@@ -17,7 +17,8 @@ defineReplace(populateSubDependencies) {
                 pkgInfoList = $$split(pkgInformation, $$LITERAL_HASH)
                 pkgName = $$member(pkgInfoList,0)
                 pkgChannel = "stable"
-                equals(size(pkgInfoList),2) {
+                pkgInfoListSize = $$size(pkgInfoList)
+                equals(pkgInfoListSize,2) {
                     pkgChannel = $$member(pkgInfoList,1)
                 }
                 pkgVersion = $$member(dependencyMetaInf,1)
@@ -26,7 +27,8 @@ defineReplace(populateSubDependencies) {
                 pkgTypeInfoList = $$split(pkgTypeInformation, @)
                 pkgCategory = $$member(pkgTypeInfoList,0)
                 pkgRepoType = $${pkgCategory}
-                equals(size(pkgTypeInfoList),2) {
+                pkgTypeInfoListSize = $$size(pkgTypeInfoList)
+                equals(pkgTypeInfoListSize,2) {
                     pkgRepoType = $$member(pkgTypeInfoList,1)
                 } else {
                    equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"thirdParties") {
