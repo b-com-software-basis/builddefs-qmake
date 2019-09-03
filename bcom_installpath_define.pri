@@ -9,13 +9,7 @@ include(bcom_arch_define.pri)
 }
 
 !defined(INSTALLSUBDIR,var) {
-    warning("INSTALLSUBDIR can be defined before templatelibconfig.pri inclusion. INSTALLSUBDIR is optional and accept two values : bcomBuild or thirdParties. A typical definition is INSTALLSUBDIR = bcomBuild.")
-}
-
-defined(INSTALLSUBDIR,var) {
-    !contains(INSTALLSUBDIR,bcomBuild):!contains(INSTALLSUBDIR,thirdParties) {
-        error("INSTALLSUBDIR is defined with the $$INSTALLSUBDIR unsupported value. Supported values are : bcomBuild or thirdParties")
-    }
+    message("INSTALLSUBDIR can be defined before templatelibconfig.pri inclusion. INSTALLSUBDIR is optional. Values can be : build (own build), thirdParties... A typical definition is INSTALLSUBDIR = build.")
 }
 
 !defined(PROJECTDEPLOYDIR,var) {
