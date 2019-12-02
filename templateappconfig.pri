@@ -1,12 +1,26 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
-TEMPLATE = app
+FRAMEWORK = $$TARGET
 
-# Detect build toolchain and define BCOM_TARGET_ARCH
-include(bcom_arch_define.pri)
+# Manage install path
+include(bcom_installpath_define.pri)
+
+TEMPLATE = app
 
 # Include extended compiler rules
 include (bcom_compiler_specs.prf)
+
+# Check input parameters existence
+# Warning : app targetdeploydir depends on DEPENDENCIESCONFIG, and lib depends on CONFIG
+!defined(DEPENDENCIESCONFIG,var) {
+    warning("DEPENDENCIESCONFIG is not defined : defaulting to shared dependencies mode")
+    DEPENDENCIESCONFIG = sharedlib
+}
+contains(DEPENDENCIESCONFIG,staticlib)|contains(DEPENDENCIESCONFIG,static) {
+    LINKMODE = static
+} else {
+    LINKMODE = shared
+}
 
 CONFIG(debug,debug|release) {
     OUTPUTDIR = debug
@@ -14,6 +28,12 @@ CONFIG(debug,debug|release) {
 
 CONFIG(release,debug|release) {
     OUTPUTDIR = release
+}
+
+# manage default/custom install dir
+!defined(TARGETDEPLOYDIR,var) {
+    TARGETDEPLOYDIR = $${PROJECTDEPLOYDIR}/bin/$${BCOM_TARGET_ARCH}/$${LINKMODE}/$$OUTPUTDIR
+    warning("TARGETDEPLOYDIR may be defined before templateappconfig.pri inclusion => Defaulting TARGETDEPLOYDIR to $${TARGETDEPLOYDIR}. ")
 }
 
 unix {
@@ -43,8 +63,10 @@ win32 {
     LIBEXT = lib
     APPEXT = exe
 
-    # qmake processing only 1 time (http://stackoverflow.com/questions/17360553/qmake-processes-my-pro-file-three-times-instead-of-one)
-    CONFIG -= debug_and_release
+    !contains(PROJECTCONFIG,QTVS) {
+        # qmake processing only 1 time (http://stackoverflow.com/questions/17360553/qmake-processes-my-pro-file-three-times-instead-of-one)
+        CONFIG -= debug_and_release
+    }
 
     # multiprocessor build
     QMAKE_CXXFLAGS += /MP8
@@ -67,15 +89,28 @@ win32 {
     # RC informations
     QMAKE_TARGET_COMPANY=b<>com
     QMAKE_TARGET_DESCRIPTION=$$TARGET
-    QMAKE_TARGET_COPYRIGHT=Copyright (c) 2016 b-com
     QMAKE_TARGET_PRODUCT=$$TARGET
+
+    # manage copyright
+    QMAKE_TARGET_COPYRIGHT = $$PRODUCT_BRIEF_COPYRIGHT
+    isEmpty(QMAKE_TARGET_COPYRIGHT) {
+        year = $$system("echo %Date:~6,4%")
+        yearCheck = $$find(year, ^\d{4}$)
+        yearCheckSize = $$size(yearCheck)
+        !equals(yearCheckSize,1) {
+            YEAR = 2019 # default date
+        }
+        QMAKE_TARGET_COPYRIGHT=Copyright (c) $$year b-com
+    }
 }
+
+target.path = $${TARGETDEPLOYDIR}
+INSTALLS += target
 
 # Parse dependencies if any and fill CFLAGS,CXXFLAGS and LFLAGS
 include (packagedependencies.pri)
-
-# Add post build copy of dependencies with application
-include (bcom_package_app.pri)
+# remove .pc and packagedependencies.txt copy
+INSTALLS -= package_files
 
 # manage setup creation
 contains (CONFIG, app_setup) {

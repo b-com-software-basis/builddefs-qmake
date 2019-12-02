@@ -2,7 +2,7 @@
 
 include (bcom_check_setup.pri)
 
-COPYLOGO_CLEAN_CMD = IF EXIST $${OUT_PWD}/logo.ico rm -rf $${OUT_PWD}/logo.ico
+COPYLOGO_CLEAN_CMD = IF EXIST $${OUT_PWD}/logo.ico $$QMAKE_DEL_FILE /f $$shell_path($${OUT_PWD}/logo.ico)
 bcom_copylogo_clean.commands = $${COPYLOGO_CLEAN_CMD}
 
 bcom_copylogo_prepare.commands = copy $$shell_quote($$shell_path($${SETUP_ICO_FILE})) $$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
@@ -17,6 +17,8 @@ contains (CONFIG, app_setup)
         SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/))
     }
 
+    SETUP_PROJECT_PATH=$$shell_quote($$shell_path($$_PRO_FILE_PWD_))
+
     # Nsis management
     SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
     SETUP_COPYFILENAME=$${TARGET}.$${APPEXT}
@@ -26,7 +28,7 @@ contains (CONFIG, app_setup)
                                 /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME_VALUE} /DSETUP_FILENAME=$${SETUP_FILENAME} \
                                 /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID} \
                                 /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR} /DSETUP_ICO_FILE=$${SETUP_ICO_FILE} \
-                                /DSETUP_MANUFACTURER=$${SETUP_MANUFACTURER}
+                                /DSETUP_MANUFACTURER=$${SETUP_MANUFACTURER} /DSETUP_PROJECT_PATH=$${SETUP_PROJECT_PATH}
 
     if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
         NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}

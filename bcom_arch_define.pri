@@ -8,8 +8,20 @@ isEmpty(REMAKENDEPSFOLDER) {
         REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER})
     }
     else { #new remaken behavior
-        unix {
-            REMAKENDEPSROOTFOLDER = $$(HOME)
+        android {
+            # unix path
+            REMAKENDEPSROOTFOLDER = $$clean_path($$(HOME))
+            isEmpty(REMAKENDEPSROOTFOLDER) {
+                # windows path
+                REMAKENDEPSROOTFOLDER = $$clean_path($$(USERPROFILE))
+                isEmpty(REMAKENDEPSROOTFOLDER) {
+                    REMAKENDEPSROOTFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
+                }
+            }
+        }
+
+        unix:!android {
+            REMAKENDEPSROOTFOLDER = $$clean_path($$(HOME))
         }
 
         win32 {
@@ -17,6 +29,10 @@ isEmpty(REMAKENDEPSFOLDER) {
             isEmpty(REMAKENDEPSROOTFOLDER) {
                 REMAKENDEPSROOTFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
             }
+        }
+
+        isEmpty(REMAKENDEPSROOTFOLDER) {
+            error("[ERROR] REMAKENDEPSROOTFOLDER dependencies folder is empty. Please check your system environment path (HOME for unix, USERPROFILE for windows)")
         }
 
         # Read REMAKENDEVPROP qmake property

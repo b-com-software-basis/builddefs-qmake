@@ -6,10 +6,18 @@
     DEPENDENCIESCONFIG = sharedlib
 }
 
+# Check install_recurse parameters existence
+contains(DEPENDENCIESCONFIG,install_recurse) {
+    # add recurse mode if install_recurse defined
+    !contains(DEPENDENCIESCONFIG,recurse) {
+        DEPENDENCIESCONFIG += recurse
+    }
+}
+
 #include sub-dependencies recursion function
 include(populateSubDependencies.pri)
 
-contains(DEPENDENCIESCONFIG,staticlib) {
+contains(DEPENDENCIESCONFIG,staticlib)|contains(DEPENDENCIESCONFIG,static) {
     DEPLINKMODE = static
 } else {
     DEPLINKMODE = shared
@@ -46,7 +54,7 @@ linux {
 
 BCOMPFX = bcom-
 
-contains(DEPENDENCIESCONFIG,recurse) {
+contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
     message("----------------------------------------------------------------")
     message("---- Search recurse dependencies for project $${TARGET} :" )
     for (depFile, packagedepsfiles) {
@@ -69,7 +77,10 @@ contains(DEPENDENCIESCONFIG,recurse) {
         baseDepFile = $$basename(depFile)
         dependencies = $$cat($${depFile})
         for(dependency, dependencies) {
+            fileCurrentDependencies = $$cat($$OUT_PWD/$${TARGET}-$${baseDepFile})
+            !contains(fileCurrentDependencies, $$dependency) {
                 write_file($$OUT_PWD/$${TARGET}-$${baseDepFile}, dependency, append)
+            }
         }
         QMAKE_CLEAN += $$OUT_PWD/$${TARGET}-$${baseDepFile}
     }
@@ -188,11 +199,11 @@ for(depfile, packagedepsfiles) {
                 !equals(pkg.linkMode,na) {
                    remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
                 }
-                conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
-                for (conanOption, conanOptions) {
-                    remakenConanOptions += $${pkg.name}:$${conanOption}
+                    conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
+                    for (conanOption, conanOptions) {
+                        remakenConanOptions += $${pkg.name}:$${conanOption}
+                    }
                 }
-            }
             equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
                 # custom built package handling
                 deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}

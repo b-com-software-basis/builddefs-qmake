@@ -2,7 +2,7 @@
 
 include (bcom_check_setup.pri)
 
-COPYLOGO_CLEAN_CMD = IF EXIST $${OUT_PWD}/logo.ico rm -rf $${OUT_PWD}/logo.ico
+COPYLOGO_CLEAN_CMD = IF EXIST $${OUT_PWD}/logo.ico $$QMAKE_DEL_FILE /f $$shell_path($${OUT_PWD}/logo.ico)
 bcom_copylogo_clean.commands = $${COPYLOGO_CLEAN_CMD}
 
 bcom_copylogo_prepare.commands = copy $$shell_quote($$shell_path($${SETUP_ICO_FILE})) $$shell_quote($$shell_path($${OUT_PWD}/logo.ico))

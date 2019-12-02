@@ -93,6 +93,12 @@ win32 {
     QMAKE_TARGET_PRODUCT=$$TARGET
 }
 
+android {
+    # Disable default qmake management for installing android libraries
+    # cf https://martin.rpdev.net/2019/05/21/qt-for-android-installing-a-library-built-with-qmake-into-the-qt-directory.html
+    CONFIG -= android_install
+}
+
 target.path = $${TARGETDEPLOYDIR}
 INSTALLS += target
 
