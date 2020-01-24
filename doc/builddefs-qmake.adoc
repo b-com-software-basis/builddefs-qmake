@@ -23,7 +23,7 @@ It contains the following informations :
 For each project, a packagedependencies.txt file can be created in the root project folder.
 Each line follows the pattern :
 
-framework#channel|version|library name|identifier@repository_type|repository_url|link_mode|options
+framework#channel|version|library name [% condition1 [% condition2]]...|identifier@repository_type|repository_url|link_mode|options
 
 where repository_type is a value in:
 - b-com
@@ -32,6 +32,11 @@ where repository_type is a value in:
 - conan
 - system
 - path : local or network filesystem root path hosting the dependencies
+
+Conditions separated with % are compilation defined flags (i.e. -DCOMPILFLAG) used to toggle the dependency.
+It allows to build the package with several features enabled or not, and uses the underlying dependencies only when the feature is set.
+
+Conditions are set in the "library name" section, after the library name
 
 link_mode is an optional value in :
 - static

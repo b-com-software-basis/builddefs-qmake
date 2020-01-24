@@ -65,8 +65,10 @@ win32 {
     # do not add version to target name for shared link mode
     CONFIG += skip_target_version_ext
 
-    # qmake processing only 1 time (http://stackoverflow.com/questions/17360553/qmake-processes-my-pro-file-three-times-instead-of-one)
-    CONFIG -= debug_and_release
+    !contains(PROJECTCONFIG,QTVS) {
+        # qmake processing only 1 time (http://stackoverflow.com/questions/17360553/qmake-processes-my-pro-file-three-times-instead-of-one)
+        CONFIG -= debug_and_release
+    }
 
     # multiprocessor build
     QMAKE_CXXFLAGS += /MP8
