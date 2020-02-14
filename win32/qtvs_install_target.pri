@@ -18,10 +18,15 @@ contains (CONFIG, debug_and_release_target)
 
 # bat init
 contains(PROJECTCONFIG,QTVS) {
-    message("---------------------------------------------------")
-    message("---- Install $${TEMPLATE} (with Qt VS tools post build) ----" )
+    message(" ")
+    message("----------------------------------------------------------------")
+    message("STEP => INSTALL - Project prepare $${TEMPLATE} installation (with Qt VS tools post build)")
+    message("----------------------------------------------------------------")
+    message(" ")
 
     INSTALL_PROJECT_FILE=$$OUT_PWD/$${TARGET}-Install$${TEMPLATE}-$${OUTPUTDIR}.bat
+
+    message("---- generates $$INSTALL_PROJECT_FILE for msvc post Install  ----" )
 
     # bat header
     BAT_HEADER_COMMAND = "@echo off"
@@ -62,7 +67,7 @@ contains(PROJECTCONFIG,QTVS) {
         }
         QMAKE_POST_LINK += call $${INSTALL_PROJECT_FILE}
     }
-    message("---------------------------------------------------")
+    message("----------------------------------------------------------------")
 }
 
 

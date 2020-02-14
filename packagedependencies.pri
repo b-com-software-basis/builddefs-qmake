@@ -1,5 +1,9 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
+message(" ")
+message("----------------------------------------------------------------")
+message("STEP => BUILD - Project dependencies parsing")
+
 # Check input parameters existence
 !defined(DEPENDENCIESCONFIG,var) {
     warning("DEPENDENCIESCONFIG is not defined : defaulting to shared dependencies mode")
@@ -56,6 +60,8 @@ BCOMPFX = bcom-
 
 contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
     message("----------------------------------------------------------------")
+    message(" ")
+    message("----------------------------------------------------------------")
     message("---- Search recurse dependencies for project $${TARGET} :" )
     for (depFile, packagedepsfiles) {
         baseDepFile = $$basename(depFile)
@@ -98,6 +104,7 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
     message(" ")
 }
 
+message("----------------------------------------------------------------")
 for(depfile, packagedepsfiles) {
     !exists($${depfile}) {
         message("  -- No " $${depfile} " file to process for " $$TARGET)
@@ -144,37 +151,147 @@ for(depfile, packagedepsfiles) {
             pkgConditionsNotFullfilled = ""
             !isEmpty(pkgLibConditionList) {
                 message("  --> [INFO] Parsing $${pkg.name}_$${pkg.version} compilation flag definitions : $${pkgLibConditionList}")
+                builddefs_info.commands += $(info "Conditional dependencies defined in packagedependencies information files:")
                 for (condition,pkgLibConditionList) {
+                    builddefs_info.commands += $(info "       --> define -D$${condition} to use $${pkg.name} dependency")
                     #message("      --> [INFO] found condition $${condition}")
                     !contains(DEFINES, $${condition}) {
                         pkgConditionsNotFullfilled += $${condition}
                     }
                 }
+                builddefs_info.commands += $(info "")
             }
             !isEmpty (pkgConditionsNotFullfilled) {
                 message("  --> [INFO] Dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
             } else {
                 message("  ---- Processing dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} repository")
-                # VPCKG package handling
-                equals(pkg.repoType,"vcpkg") {
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.repoType}/packages/$${pkg.name}_$${vcpkgtriplet}
-                    !exists($${deployFolder}) {
-                        error("  --> [ERROR] No VPCKG package at " $${REMAKENDEPSFOLDER}/$${pkg.repoType}/packages/$${pkg.name}_$${vcpkgtriplet})
-                    }
-                    # TODO : check package version with installed one !
-                    LIBFOLDER=lib
-                    equals(OUTPUTDIR,"debug") {
-                        LIBFOLDER="debug/lib"
-                    }
-                    pkgCfgFilePath = $${deployFolder}/$${LIBFOLDER}/pkgconfig/$${libName}.pc
-                    !exists($${pkgCfgFilePath}) {# error
-                        error("  --> [ERROR] " $${pkgCfgFilePath} " doesn't exists for VCPKG package " $${pkg.name}_$${vcpkgtriplet})
-                    }
-                    message("    --> [INFO] " $${pkgCfgFilePath} "exists")
-                    pkgCfgVars = --define-variable=prefix=$${deployFolder}
-                    pkgCfgVars += --define-variable=lext=$${LIBEXT}
-                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/$${LIBFOLDER}
+            # VPCKG package handling
+            equals(pkg.repoType,"vcpkg") {
+                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.repoType}/packages/$${pkg.name}_$${vcpkgtriplet}
+                !exists($${deployFolder}) {
+                    error("  --> [ERROR] No VPCKG package at " $${REMAKENDEPSFOLDER}/$${pkg.repoType}/packages/$${pkg.name}_$${vcpkgtriplet})
+                }
+                # TODO : check package version with installed one !
+                LIBFOLDER=lib
+                equals(OUTPUTDIR,"debug") {
+                    LIBFOLDER="debug/lib"
+                }
+                pkgCfgFilePath = $${deployFolder}/$${LIBFOLDER}/pkgconfig/$${libName}.pc
+                !exists($${pkgCfgFilePath}) {# error
+                    error("  --> [ERROR] " $${pkgCfgFilePath} " doesn't exists for VCPKG package " $${pkg.name}_$${vcpkgtriplet})
+                }
+                message("    --> [INFO] " $${pkgCfgFilePath} "exists")
+                pkgCfgVars = --define-variable=prefix=$${deployFolder}
+                pkgCfgVars += --define-variable=lext=$${LIBEXT}
+                pkgCfgVars += --define-variable=libdir=$${deployFolder}/$${LIBFOLDER}
 
+                !win32 {
+                    pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
+                }
+                else {
+                    pkgCfgVars += --define-variable=pfx=$$shell_quote("\'\'")
+                }
+                pkgCfgLibVars = $$pkgCfgVars
+                #static build is not provided for all packages in vcpkg : TODO : howto handle ?
+                pkgCfgLibVars += --libs
+            }
+            equals(pkg.repoType,"system") {# local system package handling
+                pkgCfgFilePath = /usr/local/lib/pkgconfig/$${libName}.pc
+                !exists($${pkgCfgFilePath}) {# error
+                    pkgCfgFilePath = /usr/lib/pkgconfig/$${libName}.pc
+                    !exists($${pkgCfgFilePath}) {#
+                        error("  --> [ERROR] " $${pkgCfgFilePath} " doesn't exists for package " $${libName})
+                    }
+                }
+                message("    --> [INFO] "  $${pkgCfgFilePath} " exists")
+                message("    --> [INFO] checking local version for package "  $${libName} " : expected version =" $${pkg.version})
+                localpkg.version = $$system(pkg-config --modversion $${libName})
+                !equals(pkg.version,$${localpkg.version}) {
+                     error("    --> [ERROR] expected version for " $${libName} " is " $${pkg.version} ": system's package version is " $${localpkg.version})
+                } else {
+                message("    --> [OK] package expected version and local version matched")
+                }
+                pkgCfgVars = $${libName}
+                pkgCfgLibVars = $$pkgCfgVars
+                #static build ?? debug builds ???
+                pkgCfgLibVars = "--libs $${libName}"
+            }
+            equals(pkg.repoType,"conan") {# conan system package handling
+                message("    --> ["$${pkg.repoType}"] adding " $${pkg.name} " dependency")
+                remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
+                sharedLinkMode = False
+                equals(pkg.linkMode,shared) {
+                    sharedLinkMode = True
+                }
+                !equals(pkg.linkMode,na) {
+                   remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
+                }
+                    conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
+                    for (conanOption, conanOptions) {
+                        remakenConanOptions += $${pkg.name}:$${conanOption}
+                    }
+                }
+            equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
+                # custom built package handling
+                deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                !equals(pkg.identifier,$${pkg.repoType}) {
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                }
+                !exists($${deployFolder}) {
+                    warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
+                    !equals(pkg.identifier,$${pkg.repoType}) {
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                    }
+                    warning("Defaulting search folder to " $${deployFolder})
+                }
+                remakenInfoFilePath = $${deployFolder}/$${libName}-$${pkg.version}_$${REMAKEN_INFO_SUFFIX}
+                !exists($${remakenInfoFilePath}) {
+                    warning("No information file found for " $${libName}-$${pkg.version}_$${REMAKEN_INFO_SUFFIX} " found.")
+                    warning("Package "  $${pkg.name} " was built with an older version of builddefs. Please upgrade the package builddefs' to the latest version ! ")
+                } else {
+                    message("    --> [INFO] "  $${remakenInfoFilePath} " exists : checking build consistency")
+                    win32 {
+                        REMAKENINFOFILE_CONTENT = $$cat($${remakenInfoFilePath},lines)
+                        WINRT = $$find(REMAKENINFOFILE_CONTENT, runtime=.*)
+                        usestaticwinrt {
+                            contains(WINRT,.*dynamicCRT) {
+                                error("    --> [ERROR] Inconsistent configuration :  it is prohibited to mix shared runtime linked dependency with the static windows runtime (prohibited since VS2017, bad practice before). Either remove 'usestaticwinrt' from your build configuration (remove the line 'CONFIG += usestaticwinrt') , or use a static runtime build of " $${pkg.name})
+                            }
+                        }
+                        else {
+                            contains(WINRT,.*staticCRT) {
+                                error("    --> [ERROR] Inconsistent configuration :  it is prohibited to mix static runtime linked dependency with the shared windows runtime (prohibited since VS2017, bad practice before). Either add 'usestaticwinrt' to your build configuration (add the line 'CONFIG += usestaticwinrt'), or use a dynamic runtime build of " $${pkg.name})
+                             }
+                        }
+                    }
+                }
+                pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
+                !exists($${pkgCfgFilePath}) {
+                    # No specific .pc file for debug mode :
+                    # this package is a bcom like standard package with no library debug suffix
+                    pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
+                }
+                !exists($${pkgCfgFilePath}) {# default behavior
+                    message("    --> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values")
+                    !exists($${deployFolder}/interfaces) {
+                        error("    --> [ERROR] " $${deployFolder}/interfaces " doesn't exists for package " $${libName})
+                    }
+                    !exists($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}) {
+                        error("    --> [ERROR] " $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
+                    }
+
+                    QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+                    equals(pkg.linkMode,"static") {
+                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
+                    } else {
+                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
+                    }
+                } else {
+                    message("    --> [INFO] "  $${pkgCfgFilePath} "exists")
+                    pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
+                    pkgCfgVars += --define-variable=lext=$${LIBEXT}
+                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     !win32 {
                         pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
                     }
@@ -182,129 +299,22 @@ for(depfile, packagedepsfiles) {
                         pkgCfgVars += --define-variable=pfx=$$shell_quote("\'\'")
                     }
                     pkgCfgLibVars = $$pkgCfgVars
-                    #static build is not provided for all packages in vcpkg : TODO : howto handle ?
-                    pkgCfgLibVars += --libs
-                }
-                equals(pkg.repoType,"system") {# local system package handling
-                    pkgCfgFilePath = /usr/local/lib/pkgconfig/$${libName}.pc
-                    !exists($${pkgCfgFilePath}) {# error
-                        pkgCfgFilePath = /usr/lib/pkgconfig/$${libName}.pc
-                        !exists($${pkgCfgFilePath}) {#
-                            error("  --> [ERROR] " $${pkgCfgFilePath} " doesn't exists for package " $${libName})
-                        }
-                    }
-                    message("    --> [INFO] "  $${pkgCfgFilePath} " exists")
-                    message("    --> [INFO] checking local version for package "  $${libName} " : expected version =" $${pkg.version})
-                    localpkg.version = $$system(pkg-config --modversion $${libName})
-                    !equals(pkg.version,$${localpkg.version}) {
-                         error("    --> [ERROR] expected version for " $${libName} " is " $${pkg.version} ": system's package version is " $${localpkg.version})
+                    equals(pkg.linkMode,"static") {
+                        pkgCfgLibVars += --libs-only-other --static
                     } else {
-                    message("    --> [OK] package expected version and local version matched")
-                    }
-                    pkgCfgVars = $${libName}
-                    pkgCfgLibVars = $$pkgCfgVars
-                    #static build ?? debug builds ???
-                    pkgCfgLibVars = "--libs $${libName}"
-                }
-                equals(pkg.repoType,"conan") {# conan system package handling
-                    message("    --> ["$${pkg.repoType}"] adding " $${pkg.name} " dependency")
-                    remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
-                    sharedLinkMode = False
-                    equals(pkg.linkMode,shared) {
-                        sharedLinkMode = True
-                    }
-                    !equals(pkg.linkMode,na) {
-                       remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
-                    }
-                        conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
-                        for (conanOption, conanOptions) {
-                            remakenConanOptions += $${pkg.name}:$${conanOption}
-                        }
-                    }
-                equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
-                    # custom built package handling
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
-                    !equals(pkg.identifier,$${pkg.repoType}) {
-                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
-                    }
-                    !exists($${deployFolder}) {
-                        warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
-                        !equals(pkg.identifier,$${pkg.repoType}) {
-                            deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
-                        }
-                        warning("Defaulting search folder to " $${deployFolder})
-                    }
-                    remakenInfoFilePath = $${deployFolder}/$${libName}-$${pkg.version}_$${REMAKEN_INFO_SUFFIX}
-                    !exists($${remakenInfoFilePath}) {
-                        warning("No information file found for " $${libName}-$${pkg.version}_$${REMAKEN_INFO_SUFFIX} " found.")
-                        warning("Package "  $${pkg.name} " was built with an older version of builddefs. Please upgrade the package builddefs' to the latest version ! ")
-                    } else {
-                        message("    --> [INFO] "  $${remakenInfoFilePath} " exists : checking build consistency")
-                        win32 {
-                            REMAKENINFOFILE_CONTENT = $$cat($${remakenInfoFilePath},lines)
-                            WINRT = $$find(REMAKENINFOFILE_CONTENT, runtime=.*)
-                            usestaticwinrt {
-                                contains(WINRT,.*dynamicCRT) {
-                                    error("    --> [ERROR] Inconsistent configuration :  it is prohibited to mix shared runtime linked dependency with the static windows runtime (prohibited since VS2017, bad practice before). Either remove 'usestaticwinrt' from your build configuration (remove the line 'CONFIG += usestaticwinrt') , or use a static runtime build of " $${pkg.name})
-                                }
-                            }
-                            else {
-                                contains(WINRT,.*staticCRT) {
-                                    error("    --> [ERROR] Inconsistent configuration :  it is prohibited to mix static runtime linked dependency with the shared windows runtime (prohibited since VS2017, bad practice before). Either add 'usestaticwinrt' to your build configuration (add the line 'CONFIG += usestaticwinrt'), or use a dynamic runtime build of " $${pkg.name})
-                                 }
-                            }
-                        }
-                    }
-                    pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
-                    !exists($${pkgCfgFilePath}) {
-                        # No specific .pc file for debug mode :
-                        # this package is a bcom like standard package with no library debug suffix
-                        pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
-                    }
-                    !exists($${pkgCfgFilePath}) {# default behavior
-                        message("    --> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values")
-                        !exists($${deployFolder}/interfaces) {
-                            error("    --> [ERROR] " $${deployFolder}/interfaces " doesn't exists for package " $${libName})
-                        }
-                        !exists($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}) {
-                            error("    --> [ERROR] " $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
-                        }
-
-                        QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
-                        equals(pkg.linkMode,"static") {
-                            LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
-                        } else {
-                            LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
-                        }
-                    } else {
-                        message("    --> [INFO] "  $${pkgCfgFilePath} "exists")
-                        pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
-                        pkgCfgVars += --define-variable=lext=$${LIBEXT}
-                        pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
-                        !win32 {
-                            pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
-                        }
-                        else {
-                            pkgCfgVars += --define-variable=pfx=$$shell_quote("\'\'")
-                        }
-                        pkgCfgLibVars = $$pkgCfgVars
-                        equals(pkg.linkMode,"static") {
-                            pkgCfgLibVars += --libs-only-other --static
-                        } else {
-                            pkgCfgLibVars += --libs
-                        }
+                        pkgCfgLibVars += --libs
                     }
                 }
-                equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
-                    message("    pkg-config variables for includes :")
-                    message("    $$pkgCfgVars")
-                    message("    pkg-config variables for libs :")
-                    message("    $$pkgCfgLibVars")
-                    QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
-                    LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
-                }
-                message(" ")
+            }
+            equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
+                message("    pkg-config variables for includes :")
+                message("    $$pkgCfgVars")
+                message("    pkg-config variables for libs :")
+                message("    $$pkgCfgLibVars")
+                QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+                LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+    	    }
+            message(" ")
             } # pkgConditionFullfilled
         } # end for loop
         message("---- process result for $${depfile} :")
@@ -401,3 +411,8 @@ defined(PROJECTDEPLOYDIR,var) {
     INSTALLS += package_files
 }
 message("----------------------------------------------------------------")
+
+# manage dependencies install
+contains(DEPENDENCIESCONFIG,install)|contains(DEPENDENCIESCONFIG,install_recurse) {
+    include (win32/install_dependencies.pri)
+}

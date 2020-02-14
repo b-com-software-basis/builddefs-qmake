@@ -19,7 +19,7 @@ defineReplace(ListSharedLibrairies) {
     sharedLibFiles=$$files($$1/*.$${DYNLIBEXT})
     !isEmpty(sharedLibFiles) {
         for (sharedLibFile, sharedLibFiles) {
-            contains(PROJECTCONFIG,QTVS) {
+            !isEmpty(INSTALL_DEPS_FILE) {
                 BAT_INSTALLDEPS_COMMAND = "$${REMAKEN_XCOPY} $$system_path($${sharedLibFile}) $$shell_quote($$shell_path($${DEPS_OUTPUTPATH}))"
                 write_file($${INSTALL_DEPS_FILE},BAT_INSTALLDEPS_COMMAND, append)
             }
@@ -34,7 +34,16 @@ defineReplace(ListSharedLibrairies) {
 # init target
 install_deps.files =
 
+message(" ")
 message("----------------------------------------------------------------")
+message("STEP => INSTALL - prepare dependencies installation")
+message("----------------------------------------------------------------")
+message(" ")
+
+!isEmpty(INSTALL_DEPS_FILE) {
+    message("---- generates $$INSTALL_DEPS_FILE for msvc post Install  ----" )
+}
+
 contains(DEPENDENCIESCONFIG,install_recurse) {
     #recursive dependencies parsing
     installdeps_depsfiles = $$packagedepsfiles    # used in packagedependencies.pri
@@ -62,7 +71,7 @@ exists($${ignorefile}) {
     message("  -- Search Ignore Dependencies in $${ignorefile} --" )
     ignoredeps = $$cat($${ignorefile})
     for(var, ignoredeps) {
-        message ($$var)
+        message ("    --> $$var ignored")
     }
 }
 
@@ -124,44 +133,44 @@ for(depfile, installdeps_depsfiles) {
             !isEmpty (pkgConditionsNotFullfilled) {
                 message("  --> [INFO] Dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
             } else {
-                # Artifactory dependencies
-                equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
-                    equals(pkg.linkMode, "shared") {
-                        !contains(ignoredeps, $${pkg.name}) {
-                            # custom built package handling
-                            deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
-                            !equals(pkg.identifier,$${pkg.repoType}) {
-                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
-                            }
-                            !exists($${deployFolder}) {
-                                warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
-                                !equals(pkg.identifier,$${pkg.repoType}) {
-                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
-                                }
-                                warning("Defaulting search folder to " $${deployFolder})
-                            }
-
-                            !exists($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/) {
-                                message("    --> [INFO] $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/ doesn't exists for package " $${libName})
-                            } else {
-                                install_deps.files += $$ListSharedLibrairies($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR)
-                            }
-                        } else {
-                            message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
+            # Artifactory dependencies
+            equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
+                equals(pkg.linkMode, "shared") {
+                    !contains(ignoredeps, $${pkg.name}) {
+                        # custom built package handling
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                        !equals(pkg.identifier,$${pkg.repoType}) {
+                            deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                         }
-                    }
-                }
-                equals(pkg.repoType,"conan") {# conan system package handling
-                    contains(ignoredeps, $${pkg.name}) {
-                        # list of ignored conan dependencies - used for install_recurse
-                        REMAKEN_IGNORE_CONAN_BINDIRS += CONAN_BINDIRS_$$upper($${pkg.name})
-                        message("    --> [INFO] Ignore install for $${pkg.name} dependency : $$eval(CONAN_BINDIRS_$$upper($${pkg.name}))")
+                        !exists($${deployFolder}) {
+                            warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                            deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
+                            !equals(pkg.identifier,$${pkg.repoType}) {
+                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                            }
+                            warning("Defaulting search folder to " $${deployFolder})
+                        }
+
+                        !exists($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/) {
+                            message("    --> [INFO] $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/ doesn't exists for package " $${libName})
+                        } else {
+                            install_deps.files += $$ListSharedLibrairies($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR)
+                        }
                     } else {
-                        # list of conan dependencies to install - used for install (not recurse)
-                        REMAKEN_CONAN_BINDIRS += $$eval(CONAN_BINDIRS_$$upper($${pkg.name}))
+                        message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
                     }
                 }
+            }
+            equals(pkg.repoType,"conan") {# conan system package handling
+                contains(ignoredeps, $${pkg.name}) {
+                    # list of ignored conan dependencies - used for install_recurse
+                    REMAKEN_IGNORE_CONAN_BINDIRS += CONAN_BINDIRS_$$upper($${pkg.name})
+                    message("    --> [INFO] Ignore install for $${pkg.name} dependency : $$eval(CONAN_BINDIRS_$$upper($${pkg.name}))")
+                } else {
+                    # list of conan dependencies to install - used for install (not recurse)
+                    REMAKEN_CONAN_BINDIRS += $$eval(CONAN_BINDIRS_$$upper($${pkg.name}))
+                }
+            }
             } # pkgConditionFullfilled
         } # end for loop
     }
@@ -187,7 +196,7 @@ exists($$_PRO_FILE_PWD_/build/conanbuildinfo.pri) {
 }
 
 # only for QT VS tools
-contains(PROJECTCONFIG,QTVS) {
+!isEmpty(INSTALL_DEPS_FILE) {
     QMAKE_DISTCLEAN += $${INSTALL_DEPS_FILE}
     exists($${INSTALL_DEPS_FILE}) {
         !equals(QMAKE_POST_LINK,"") {

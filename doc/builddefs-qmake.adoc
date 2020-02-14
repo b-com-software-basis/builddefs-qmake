@@ -93,12 +93,47 @@ Moreover, some OSes don't have a package manager, hence don't rely on system for
 = Qmake informations
 
 == Common project structure
-TARGET
-FRAMEWORK
-INSTALLSUBDIR
-VERSION
+TARGET : defines the project name, usually final binary name
+FRAMEWORK : defines a common package name for several libraries
+INSTALLSUBDIR : defines an install subdirectory for package home directory
+VERSION : defines version of the project
 
 include template*.pri file (after TARGET, FRAMEWORK, INSTALLSUBDIR, VERSION declarations)
+
+== define configuration
+
+CONFIG defines how to build the current target
+--> [static | staticlib] builds the target as a static library/application
+--> [shared | dll] builds the target as a static library/application
+
+DEPENDENCIESCONFIG defines how to search and which dependencies to use
+--> [sharedlib | shared] search and use dependencies as shared libraries
+--> [staticlib | static] search and use dependencies as static libraries
+--> [recursive | recurse] search dependencies recursively from other remaken packagedependencies information files
+--> [install] install first level shared dependencies with the target
+--> [install_recurse] search dependencies recursively (see [recursive]) and install all shared dependencies with the target
+
+== ignore dependencies install
+to ignore some specific dependencies install, define a 'packageignoreinstall.txt’ file in the root project folder.
+define each framework ignored (as defined in packagedependencies.txt) with the pattern :
+    framework1 framework2
+or
+    framework1 
+    framework2
+
+== Use project with Qt Vs Tools
+
+Qt Vs tools is a Visual Studio plugin for manage a qmake project in Visual Studio by generating a msvc project
+Information : https://doc.qt.io/qtvstools/index.html
+Download : https://download.qt.io/development_releases/vsaddin/
+
+define project for use with Qt Vs Tools :
+PROJECTCONFIG = QTVS
+allows to enable debug and release configurations, install of the package, DEPENDENCIESCONFIG flags 'install' or 'install_recurse' in msvc project generated 
+
+to manage 'install' or 'install_recurse' with QTVS, include remaken_install_target.pri at the end od the .pro file
+
+declare QTVS config before include template*.pri file
 
 == Product information
 Defined in _ProductConfig.pri local project file

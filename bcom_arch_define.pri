@@ -1,6 +1,8 @@
 # Author(s) : Loic Touraine
 
 REMAKEN_INFO_SUFFIX=remakeninfo.txt
+include(builddefs_info.pri)
+
 # For backward compatibility
 isEmpty(REMAKENDEPSFOLDER) {
     REMAKENDEPSROOTFOLDER = $$clean_path($$(BCOMDEVROOT))
