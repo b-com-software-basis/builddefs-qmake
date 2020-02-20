@@ -32,9 +32,11 @@
 #SETUP_MANUFACTURER=b<>com
 
 # SETUP_NSIS_INFO could be defined for contains
-    # CUSTOMIZE_ONINIT - (OPTIONAL) - could be defined for customize .onInit function
+    # CUSTOMIZE_ONINIT - (OPTIONAL) - could be defined for customize .onInit function with a custom CustomizeOnInit function
+    # CUSTOMIZE_UNONINIT - (OPTIONAL) - could be defined for customize un.onInit function with a custom CustomizeUnOnInit function
     # CUSTOMIZE_DISPLAY_PAGE_COMPONENTS - (OPTIONAL) - could be defined for display page components
     # CUSTOMIZE_ADDTOPATH - (OPTIONAL) - could be defined for add/remove binary file to system path
+    # CUSTOMIZE_ADD_CUSTOM_PAGE - (OPTIONAL) - coul be defined for add custom page(s) before install files page
 
 
 # global defaults - detect nsis
@@ -70,8 +72,12 @@ SETUP_ICO_FILE=$$PWD/nsis/logo.ico
 
 NSISFILE_CONTENT = $$cat($$PWD/nsis/Setup.nsi,lines)
 NSISFILE_CONTENT = $$replace(NSISFILE_CONTENT, "/\*@CUSTOM_NSIS_INCLUDE@\*/\"", "\"$$shell_path($$PWD/nsis/)")
-!isEmpty(SETUP_NSIS_CUSTOM_SECTION_FILEPATH):exists($$shell_quote($$shell_path($${SETUP_NSIS_CUSTOM_SECTION_FILEPATH}))) {
-    NSISFILE_CONTENT = $$replace(NSISFILE_CONTENT, ";@CUSTOM_NSIS_SCRIPT@", "!include \""$$shell_path($${SETUP_NSIS_CUSTOM_SECTION_FILEPATH})"\"")
+!isEmpty(SETUP_NSIS_CUSTOM_FILEPATH):exists($$shell_quote($$shell_path($${SETUP_NSIS_CUSTOM_FILEPATH}))) {
+    NSISFILE_CONTENT = $$replace(NSISFILE_CONTENT, ";@CUSTOM_NSIS_SCRIPT@", "!include \""$$shell_path($${SETUP_NSIS_CUSTOM_FILEPATH})"\"")
+}
+!isEmpty(SETUP_NSIS_CUSTOM_PAGE_DEFINITION_FILEPATH):exists($$shell_quote($$shell_path($${SETUP_NSIS_CUSTOM_PAGE_DEFINITION_FILEPATH}))) {
+    NSIS_ADD_CUSTOM_PAGE_CONTENT = $$cat($${SETUP_NSIS_CUSTOM_PAGE_DEFINITION_FILEPATH},lines)
+    NSISFILE_CONTENT = $$replace(NSISFILE_CONTENT, ";@CUSTOM_NSIS_ADD_CUSTOM_PAGE@", $${NSIS_ADD_CUSTOM_PAGE_CONTENT})
 }
 write_file($$OUT_PWD/Setup.nsi, NSISFILE_CONTENT)
 QMAKE_DISTCLEAN += $$OUT_PWD/Setup.nsi

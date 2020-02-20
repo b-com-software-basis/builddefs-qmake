@@ -40,6 +40,10 @@
   !insertmacro MUI_PAGE_COMPONENTS
 !endif
   
+!ifdef CUSTOMIZE_ADD_CUSTOM_PAGE
+	;@CUSTOM_NSIS_ADD_CUSTOM_PAGE@
+!endif
+
   !insertmacro MUI_PAGE_INSTFILES
 
   !insertmacro MUI_UNPAGE_CONFIRM
@@ -78,6 +82,12 @@ uninst:
   no_remove_uninstaller:
  
 done:
+FunctionEnd 
+
+Function un.onInit
+!ifdef CUSTOMIZE_UNONINIT
+  Call un.CustomizeUnOnInit
+!endif
 FunctionEnd 
 
 
