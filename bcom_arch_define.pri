@@ -3,37 +3,42 @@
 REMAKEN_INFO_SUFFIX=remakeninfo.txt
 include(builddefs_info.pri)
 
+android {
+    # unix path
+    USERHOMEFOLDER = $$clean_path($$(HOME))
+    isEmpty(USERHOMEFOLDER) {
+        # windows path
+        USERHOMEFOLDER = $$clean_path($$(USERPROFILE))
+        isEmpty(USERHOMEFOLDER) {
+            USERHOMEFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
+        }
+    }
+}
+
+unix:!android {
+    USERHOMEFOLDER = $$clean_path($$(HOME))
+}
+
+win32 {
+    USERHOMEFOLDER = $$clean_path($$(USERPROFILE))
+    isEmpty(USERHOMEFOLDER) {
+        USERHOMEFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
+    }
+}
+
 # For backward compatibility
 isEmpty(REMAKENDEPSFOLDER) {
-    REMAKENDEPSROOTFOLDER = $$clean_path($$(BCOMDEVROOT))
+    REMAKENDEPSROOTFOLDER = $$clean_path($$(REMAKEN_PKG_ROOT))
+    isEmpty(REMAKENDEPSROOTFOLDER) {
+        exists($${USERHOMEFOLDER}/.remaken/.packagespath) {
+            REMAKENDEPSROOTFOLDER = $$clean_path($$cat($${USERHOMEFOLDER}/.remaken/.packagespath))
+        }
+    }
     !isEmpty(REMAKENDEPSROOTFOLDER) {
-        REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER})
+        REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER}/packages)
     }
     else { #new remaken behavior
-        android {
-            # unix path
-            REMAKENDEPSROOTFOLDER = $$clean_path($$(HOME))
-            isEmpty(REMAKENDEPSROOTFOLDER) {
-                # windows path
-                REMAKENDEPSROOTFOLDER = $$clean_path($$(USERPROFILE))
-                isEmpty(REMAKENDEPSROOTFOLDER) {
-                    REMAKENDEPSROOTFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
-                }
-            }
-        }
-
-        unix:!android {
-            REMAKENDEPSROOTFOLDER = $$clean_path($$(HOME))
-        }
-
-        win32 {
-            REMAKENDEPSROOTFOLDER = $$clean_path($$(USERPROFILE))
-            isEmpty(REMAKENDEPSROOTFOLDER) {
-                REMAKENDEPSROOTFOLDER = $$clean_path($$(HOMEDRIVE)$$(HOMEPATH))
-            }
-        }
-
-        isEmpty(REMAKENDEPSROOTFOLDER) {
+        isEmpty(USERHOMEFOLDER) {
             error("[ERROR] REMAKENDEPSROOTFOLDER dependencies folder is empty. Please check your system environment path (HOME for unix, USERPROFILE for windows)")
         }
 
@@ -42,7 +47,7 @@ isEmpty(REMAKENDEPSFOLDER) {
 
         isEmpty(REMAKENDEPSFOLDER) { # REMAKENDEVPROP not defined in qmake's properties
             message("NO REMAKENDEPSFOLDERPROP defined in qmake : setting REMAKENDEPSFOLDER to " $${REMAKENDEPSROOTFOLDER}/.remaken/packages)
-            REMAKENDEPSFOLDER = $${REMAKENDEPSROOTFOLDER}/.remaken/packages
+            REMAKENDEPSFOLDER = $${USERHOMEFOLDER}/.remaken/packages
         }
     }
     message("REMAKENDEPSFOLDER Dependencies folder is set to " $${REMAKENDEPSFOLDER})
