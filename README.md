@@ -1,6 +1,23 @@
 # Builddefs-qmake documentation
 TODO
 
+## Using Buiddefs-qmake
+
+Install Qt Creator and from [https://www.qt.io/download](https://www.qt.io/download)
+
+### Linux
+
+TODO 
+
+### Windows
+
+- Install Nsis from [https://nsis.sourceforge.io/Main_Page](https://nsis.sourceforge.io/Main_Page)
+- Install Nsis Environment variable plugin from [https://nsis.sourceforge.io/EnVar_plug-in](https://nsis.sourceforge.io/EnVar_plug-in)
+
+### Mac Os
+
+TODO
+
 ## Packaging structure
 
 ### Default behavior
