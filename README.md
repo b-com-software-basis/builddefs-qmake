@@ -1,22 +1,22 @@
 # Builddefs-qmake documentation
-TODO
+```builddefs-qmake``` is a set of cross-platform rules based on [qmake](https://en.wikipedia.org/wiki/Qmake) used to provide homogeneous ```c++``` builds, ensuring build rules for ```shared libraries``` and ```executables``` are the same along the builds. It supports either ```dynamic``` or ```static``` libraries builds.
+
+It also provides binaries dependencies management from several package manager.
+
+The dependencies can be used from [vcpkg](https://github.com/microsoft/vcpkg), [conan](https://conan.io/), system package managers (such as apt, yum, [brew](https://brew.sh/), [chocolatey](https://chocolatey.org/), [scoop](https://scoop.sh/) ...) as long as the dependency provides a [pkg-config](https://www.freedesktop.org/wiki/Software/pkg-config/) file describing its include and link options.
+
+The rules use the various ```pkg-config``` files to feed the include and link flags, avoiding the need for the developer to maintain the flags in the project file.
+
+builddefs-qmake also support [remaken](https://github.com/b-com-software-basis/remaken) package format
 
 ## Using Buiddefs-qmake
 
-Install Qt Creator and from [https://www.qt.io/download](https://www.qt.io/download)
-
-### Linux
-
-TODO 
+Install [Qt Creator](https://www.qt.io/download)
 
 ### Windows
 
-- Install Nsis from [https://nsis.sourceforge.io/Main_Page](https://nsis.sourceforge.io/Main_Page)
-- Install Nsis Environment variable plugin from [https://nsis.sourceforge.io/EnVar_plug-in](https://nsis.sourceforge.io/EnVar_plug-in)
-
-### Mac Os
-
-TODO
+- Install [Nsis](https://nsis.sourceforge.io/Main_Page)
+- Install [Nsis Environment variable plugin](https://nsis.sourceforge.io/EnVar_plug-in)
 
 ## Packaging structure
 
