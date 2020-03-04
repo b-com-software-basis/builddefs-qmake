@@ -22,7 +22,9 @@ defineReplace(populateSubDependencies) {
                     pkgChannel = $$member(pkgInfoList,1)
                 }
                 pkgVersion = $$member(dependencyMetaInf,1)
-                libName = $$member(dependencyMetaInf,2)
+                pkgLibInformation = $$member(dependencyMetaInf,2)
+                pkgLibConditionList = $$split(pkgLibInformation, %)
+                libName = $$take_first(pkgLibConditionList)
                 pkgTypeInformation = $$member(dependencyMetaInf,3)
                 pkgTypeInfoList = $$split(pkgTypeInformation, @)
                 pkgCategory = $$member(pkgTypeInfoList,0)
@@ -35,57 +37,75 @@ defineReplace(populateSubDependencies) {
                         pkgRepoType = "artifactory"
                     }  # otherwise pkgRepoType = pkgCategory
                 }
-                equals(pkgRepoType,"artifactory") | equals(pkgRepoType,"github") | equals(pkgRepoType,"nexus") {
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
-                    !equals(pkgCategory,$${pkgRepoType}) {
-                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
-                    }
-                    !exists($${deployFolder}) {
-                        warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
-                        !equals(pkgCategory,$${pkgRepoType}) {
-                                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
-                        }
-                        warning("Defaulting search folder to " $${deployFolder})
-                    }
-                    !exists($${deployFolder}) {
-                        error("No package found at " $${deployFolder})
-                    }
-                    exists($${deployFolder}/packagedependencies.txt) {
-                        dependencyPkgDepFiles+=$${deployFolder}/packagedependencies.txt
-                    }
-                    win32 {
-                        exists($${deployFolder}/packagedependencies-win.txt) {
-                             dependencyPkgDepFiles += $${deployFolder}/packagedependencies-win.txt
+                pkgConditionsNotFullfilled = ""
+                !isEmpty(pkgLibConditionList) {
+                    message("  --> [INFO] Parsing $${pkgName}_$${pkgVersion} compilation flag definitions : $${pkgLibConditionList}")
+                    builddefs_info.commands += $(info "Conditional dependencies defined in packagedependencies information files:")
+                    for (condition,pkgLibConditionList) {
+                        builddefs_info.commands += $(info "       --> define -D$${condition} to use $${pkgName} dependency")
+                        #message("      --> [INFO] found condition $${condition}")
+                        !contains(DEFINES, $${condition}) {
+                            pkgConditionsNotFullfilled += $${condition}
                         }
                     }
-                    # Common unix platform (macx, linux...)
-                    unix {
-                        exists($${deployFolder}/packagedependencies-unix.txt) {
-                            dependencyPkgDepFiles += $${deployFolder}/packagedependencies-unix.txt
-                        }
-                    }
-                    macx {
-                        exists($${deployFolder}/packagedependencies-mac.txt) {
-                            dependencyPkgDepFiles += $${deployFolder}/packagedependencies-mac.txt
-                        }
-                    }
-                    linux {
-                        exists($${deployFolder}/packagedependencies-linux.txt) {
-                             dependencyPkgDepFiles += $${deployFolder}/packagedependencies-linux.txt
-                        }
-                    }
-                    outPackageDeps += $${dependencyPkgDepFiles}
+                    builddefs_info.commands += $(info "")
                 }
-                isEmpty(outPackageDeps) {
-                    message("    ---- No sub-dependencies found ----")
+                !isEmpty (pkgConditionsNotFullfilled) {
+                    message("  --> [INFO] Dependency $${pkgName}_$${pkgVersion}@$${pkgRepoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
                 } else {
-                    message("    ---- Sub-dependencies found :" )
-                    for(var, outPackageDeps) {
-                       message("         ==>"  $${var} )
+                    message("  ---- Processing dependency $${pkgName}_$${pkgVersion}@$${pkgRepoType} repository")
+                    equals(pkgRepoType,"artifactory") | equals(pkgRepoType,"github") | equals(pkgRepoType,"nexus") {
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                        !equals(pkgCategory,$${pkgRepoType}) {
+                            deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                        }
+                        !exists($${deployFolder}) {
+                            warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                            deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
+                            !equals(pkgCategory,$${pkgRepoType}) {
+                                            deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                            }
+                            warning("Defaulting search folder to " $${deployFolder})
+                        }
+                        !exists($${deployFolder}) {
+                            error("No package found at " $${deployFolder})
+                        }
+                        exists($${deployFolder}/packagedependencies.txt) {
+                            dependencyPkgDepFiles+=$${deployFolder}/packagedependencies.txt
+                        }
+                        win32 {
+                            exists($${deployFolder}/packagedependencies-win.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-win.txt
+                            }
+                        }
+                        # Common unix platform (macx, linux...)
+                        unix {
+                            exists($${deployFolder}/packagedependencies-unix.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-unix.txt
+                            }
+                        }
+                        macx {
+                            exists($${deployFolder}/packagedependencies-mac.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-mac.txt
+                            }
+                        }
+                        linux {
+                            exists($${deployFolder}/packagedependencies-linux.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-linux.txt
+                            }
+                        }
+                        outPackageDeps += $${dependencyPkgDepFiles}
                     }
+                    isEmpty(outPackageDeps) {
+                        message("    ---- No sub-dependencies found ----")
+                    } else {
+                        message("    ---- Sub-dependencies found :" )
+                        for(var, outPackageDeps) {
+                        message("         ==>"  $${var} )
+                        }
+                    }
+                    message(" ")
                 }
-                message(" ")
             }
         }
     }
