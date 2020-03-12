@@ -17,19 +17,16 @@ contains (CONFIG, app_setup)
         SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/))
     }
 
-    SETUP_PROJECT_PATH=$$shell_quote($$shell_path($$_PRO_FILE_PWD_))
-
     # Nsis management
-    SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
-    SETUP_COPYFILENAME=$${TARGET}.$${APPEXT}
-    SETUP_PRODUCTNAME_VALUE = $$shell_quote($${SETUP_PRODUCTNAME})
-
     NSISCOMMAND = $$shell_quote($$shell_path($${MAKENSIS_COMMAND})) \
-                                /DSETUP_PRODUCTNAME=$${SETUP_PRODUCTNAME_VALUE} /DSETUP_FILENAME=$${SETUP_FILENAME} \
+                                /DSETUP_PRODUCTNAME=$$shell_quote($${SETUP_PRODUCTNAME}) /DSETUP_FILENAME=$${SETUP_FILENAME} \
                                 /DSETUP_VERSION=$${SETUP_VERSION} /DSETUP_GUID=$${SETUP_GUID} \
                                 /DSETUP_INSTALLDIR=$${SETUP_INSTALLDIR} /DSETUP_ICO_FILE=$${SETUP_ICO_FILE} \
-                                /DSETUP_MANUFACTURER=$${SETUP_MANUFACTURER} /DSETUP_PROJECT_PATH=$${SETUP_PROJECT_PATH}
+                                /DSETUP_MANUFACTURER=$$shell_quote($${SETUP_MANUFACTURER}) /DSETUP_PROJECT_PATH=$$shell_quote($$shell_path($$_PRO_FILE_PWD_)) \
+                                /DSETUP_COPYRIGHT=$$shell_quote($${QMAKE_TARGET_COPYRIGHT})
 
+    SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
+    SETUP_COPYFILENAME=$${TARGET}.$${APPEXT}
     if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
         NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}
     }

@@ -13,8 +13,8 @@
 
 ;--------------------------------
 ;General
-
-  Name "${SETUP_PRODUCTNAME} Installer"
+  BrandingText "${SETUP_PRODUCTNAME} Setup ${SETUP_VERSION}"	
+  Name "${SETUP_PRODUCTNAME}"
   InstallDir "${SETUP_INSTALLDIR}"
   SetFont "Verdana" 9
    
@@ -24,7 +24,16 @@
   Var "UnInstallName"
   Var "SetupInstallDir"
   Var "AppManufacturer"
-
+  
+  VIAddVersionKey "ProductName" "${SETUP_PRODUCTNAME} Setup"
+  VIAddVersionKey "Comments" "${SETUP_PRODUCTNAME}"
+  VIAddVersionKey "CompanyName" "${SETUP_MANUFACTURER}"
+  VIAddVersionKey "LegalCopyright" "${SETUP_COPYRIGHT}"
+  VIAddVersionKey "FileDescription" "${SETUP_PRODUCTNAME} Setup"
+  VIAddVersionKey "FileVersion" "${SETUP_VERSION}"
+  VIAddVersionKey "ProductVersion" "${SETUP_VERSION}.0"
+  VIProductVersion "${SETUP_VERSION}.0"
+  
 ;--------------------------------
 ;Interface Settings
 

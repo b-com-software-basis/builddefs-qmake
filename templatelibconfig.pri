@@ -91,8 +91,19 @@ win32 {
     # RC informations
     QMAKE_TARGET_COMPANY=b<>com
     QMAKE_TARGET_DESCRIPTION=$$TARGET
-    QMAKE_TARGET_COPYRIGHT=Copyright (c) 2016 b-com
     QMAKE_TARGET_PRODUCT=$$TARGET
+
+    # manage copyright
+    QMAKE_TARGET_COPYRIGHT = $$PRODUCT_BRIEF_COPYRIGHT
+    isEmpty(QMAKE_TARGET_COPYRIGHT) {
+        year = $$system("echo %Date:~6,4%")
+        yearCheck = $$find(year, ^\d{4}$)
+        yearCheckSize = $$size(yearCheck)
+        !equals(yearCheckSize,1) {
+            YEAR = 2019 # default date
+        }
+        QMAKE_TARGET_COPYRIGHT=Copyright (c) $$year b<>com
+    }
 }
 
 android {

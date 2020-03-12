@@ -100,7 +100,7 @@ win32 {
         !equals(yearCheckSize,1) {
             YEAR = 2019 # default date
         }
-        QMAKE_TARGET_COPYRIGHT=Copyright (c) $$year b-com
+        QMAKE_TARGET_COPYRIGHT=Copyright (c) $$year b<>com
     }
 }
 
