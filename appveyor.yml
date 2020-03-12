@@ -1,0 +1,32 @@
+version: 1.0.{build}
+image:
+- Ubuntu1804
+- macOS-Mojave
+init:
+- sh: mkdir  $HOME/projects/qmakebin
+environment:
+  QTBRANCH: 5.15
+install:
+- sh: git clone -b $QTBRANCH https://github.com/qt/qtbase.git $HOME/projects/qtbase
+build_script:
+- sh: >-
+    cd $HOME/projects/qtbase && ./configure -opensource -confirm-license -no-opengl && cd -
+
+    cp -r $HOME/projects/qtbase/bin $HOME/projects/qmakebin/
+
+    cp -r $HOME/projects/qtbase/mkspecs $HOME/projects/qmakebin/
+
+    cd $HOME/projects && tar -zcvf qmakebin.tgz qmakebin && cd -
+
+    mv $HOME/projects/qmakebin.tgz $APPVEYOR_BUILD_FOLDER
+artifacts:
+- path: qmakebin.tgz
+  name: qmakebin
+deploy:
+- provider: GitHub
+  release: ${APPVEYOR_BUILD_WORKER_IMAGE}/qmake-latest
+  auth_token:
+    secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
+  artifact: qmakebin
+  on:
+    branch: master
