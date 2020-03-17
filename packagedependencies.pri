@@ -414,5 +414,5 @@ message("----------------------------------------------------------------")
 
 # manage dependencies install
 contains(DEPENDENCIESCONFIG,install)|contains(DEPENDENCIESCONFIG,install_recurse) {
-    include (win32/install_dependencies.pri)
+    include (install_dependencies.pri)
 }
