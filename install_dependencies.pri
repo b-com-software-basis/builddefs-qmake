@@ -7,26 +7,30 @@ REMAKEN_XCOPY= echo R | xcopy /Y /Q
 DEPS_OUTPUTPATH = $${TARGETDEPLOYDIR}/
 install_deps.path = $${TARGETDEPLOYDIR}/
 
-# bat init header
-contains(PROJECTCONFIG,QTVS) {
-    INSTALL_DEPS_FILE=$$OUT_PWD/$${TARGET}-InstallDependencies_$${OUTPUTDIR}.bat
-    BAT_HEADER_COMMAND = "@echo off"
-    write_file($${INSTALL_DEPS_FILE},BAT_HEADER_COMMAND)
+win32 {
+    # bat init header
+    contains(PROJECTCONFIG,QTVS) {
+        INSTALL_DEPS_FILE=$$OUT_PWD/$${TARGET}-InstallDependencies_$${OUTPUTDIR}.bat
+        BAT_HEADER_COMMAND = "@echo off"
+        write_file($${INSTALL_DEPS_FILE},BAT_HEADER_COMMAND)
+    }
 }
 
 # list all shared lib on folder parameter
 defineReplace(ListSharedLibrairies) {
     sharedLibFiles=$$files($$1/*.$${DYNLIBEXT})
-    !isEmpty(sharedLibFiles) {
-        for (sharedLibFile, sharedLibFiles) {
-            !isEmpty(INSTALL_DEPS_FILE) {
-                BAT_INSTALLDEPS_COMMAND = "$${REMAKEN_XCOPY} $$system_path($${sharedLibFile}) $$shell_quote($$shell_path($${DEPS_OUTPUTPATH}))"
-                write_file($${INSTALL_DEPS_FILE},BAT_INSTALLDEPS_COMMAND, append)
+    win32 {
+        !isEmpty(sharedLibFiles) {
+            for (sharedLibFile, sharedLibFiles) {
+                !isEmpty(INSTALL_DEPS_FILE) {
+                    BAT_INSTALLDEPS_COMMAND = "$${REMAKEN_XCOPY} $$system_path($${sharedLibFile}) $$shell_quote($$shell_path($${DEPS_OUTPUTPATH}))"
+                    write_file($${INSTALL_DEPS_FILE},BAT_INSTALLDEPS_COMMAND, append)
+                }
             }
+            message("    --> [INFO] add install command for shared lib of $$system_path($$1/) ")
+        } else {
+            message("    --> [INFO] no shared lib in $$system_path($$1/) ")
         }
-        message("    --> [INFO] add install command for shared lib of $$system_path($$1/) ")
-    } else {
-        message("    --> [INFO] no shared lib in $$system_path($$1/) ")
     }
     return($$sharedLibFiles)
 }
@@ -40,8 +44,10 @@ message("STEP => INSTALL - prepare dependencies installation")
 message("----------------------------------------------------------------")
 message(" ")
 
-!isEmpty(INSTALL_DEPS_FILE) {
-    message("---- generates $$INSTALL_DEPS_FILE for msvc post Install  ----" )
+win32 {
+    !isEmpty(INSTALL_DEPS_FILE) {
+        message("---- generates $$INSTALL_DEPS_FILE for msvc post Install  ----" )
+    }
 }
 
 contains(DEPENDENCIESCONFIG,install_recurse) {
