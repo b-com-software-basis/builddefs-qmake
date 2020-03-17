@@ -1,0 +1,85 @@
+# Author(s) : Loic Touraine, Stephane Leduc
+
+# Check input parameters existence
+!defined(FRAMEWORK,var) {
+    error("FRAMEWORK must be defined before templatelibconfig.pri inclusion. A typical definition is FRAMEWORK = \$\$TARGET.")
+}
+
+# Detect build toolchain and define BCOM_TARGET_ARCH
+include(bcom_arch_define.pri)
+
+QMAKE_CODE_SCANNER="sonar-scanner"
+
+for (source, SOURCES) {
+    BCOM_ALLSOURCES += $${_PRO_FILE_PWD_}/$${source}
+}
+for (header, HEADERS) {
+    BCOM_ALLSOURCES += $${_PRO_FILE_PWD_}/$${header}
+}
+message("ALL Sources = " $$BCOM_ALLSOURCES)
+
+REPORTSPREFIX += "vera"
+REPORTSPREFIX += "rats"
+
+unix {
+}
+
+macx{
+# install tools with
+# brew install valgrind, rats, vera++, sonar-scanner
+    !equals(CODE_SCAN_PREPARE_CMD,"") {
+        CODE_SCAN_PREPARE_CMD += &&
+    }
+#    REPORTSPREFIX += " valgrind"
+#CODE_SCAN_PREPARE_CMD += valgrind --xml=yes --xml-file=report.xml <program> <arguments>
+}
+
+win32 {
+#cppcheck -v --enable=all --xml -I[include directory] [sources] 2> report.xml
+    !equals(CODE_SCAN_PREPARE_CMD,"") {
+        CODE_SCAN_PREPARE_CMD += &&
+    }
+    CODE_SCAN_PREPARE_CMD += vera++ -s -c $${OUT_PWD}/vera_report.xml $${BCOM_ALLSOURCES}
+    REPORTSPREFIX += " cppcheck"
+}
+
+!equals(CODE_SCAN_PREPARE_CMD,"") {
+   CODE_SCAN_PREPARE_CMD += &&
+}
+# https://bitbucket.org/verateam/vera/wiki/Home
+CODE_SCAN_PREPARE_CMD += vera++ -s -c $${OUT_PWD}/vera_report.xml $${BCOM_ALLSOURCES}
+
+# https://github.com/andrew-d/rough-auditing-tool-for-security
+CODE_SCAN_PREPARE_CMD += && rats -w 3 --xml $${BCOM_ALLSOURCES} > $${OUT_PWD}/rats_report.xml
+
+
+for (prefix, REPORTSPREFIX) {
+    !equals(CODE_SCAN_CLEAN_CMD,"") {
+        CODE_SCAN_CLEAN_CMD += &&
+    }
+    CODE_SCAN_CLEAN_CMD += rm -f $${OUT_PWD}/$${prefix}_report.xml
+}
+
+# need to parse also include dependencies ??
+# INCLUDEDIRS = $$replace(BCOMDEPSINCLUDEPATH,"-I","")
+
+#drmemory.exe -logdir c:/logs -- c:/path/to/my/app
+#also for linux and mac
+bcom_code_scan_clean.commands = $${CODE_SCAN_CLEAN_CMD}
+bcom_code_scan_prepare.commands = $$CODE_SCAN_PREPARE_CMD
+bcom_code_scan_prepare.depends += bcom_code_scan_clean
+
+code_scan.commands = $${QMAKE_CODE_SCANNER} \
+  -Dsonar.projectKey=$${TARGET}-$${BRANCH} \
+  -Dsonar.sources=$${_PRO_FILE_PWD_}/src,$${_PRO_FILE_PWD_}/interfaces \
+  -Dsonar.projectBaseDir=$${_PRO_FILE_PWD_} \
+  -Dsonar.host.url=http://api.metric.irtbcom.org \
+  -Dsonar.login=4678863a247d6537df8f476b5c01a78a4052b51c \
+  -Dsonar.language=c++ \
+  -Dsonar.cxx.includeDirectories=$${_PRO_FILE_PWD_}/src,$${_PRO_FILE_PWD_}/interfaces \ #,$${INCLUDEDIRS} \
+  -Dsonar.cxx.vera.reportPath=$${OUT_PWD}/vera_report.xml \
+  -Dsonar.cxx.rats.reportPath=$${OUT_PWD}/rats_report.xml
+code_scan.depends += bcom_code_scan_prepare
+
+QMAKE_EXTRA_TARGETS += bcom_code_scan_clean bcom_code_scan_prepare code_scan
+

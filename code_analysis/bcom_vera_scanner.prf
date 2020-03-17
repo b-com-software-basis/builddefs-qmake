@@ -1,0 +1,36 @@
+# Author(s) : Loic Touraine, Stephane Leduc
+
+# Check input parameters existence
+isEmpty(QMAKE_VERA) {
+    unix {
+        QMAKE_VERA = $$system(which vera++)
+    }
+
+    win32 {
+    }
+
+    isEmpty(QMAKE_VERA) {
+        message("vera not found")
+    }
+}
+
+isEmpty(QMAKE_VERA_FLAGS):!!isEmpty(QMAKE_VERA) {
+    QMAKE_VERA_FLAGS = -w 3
+}
+
+!isEmpty(QMAKE_VERA) {
+    SONAR_ANALYZERS += "vera"
+
+    bcom_vera_source.CONFIG += no_link combine
+    bcom_vera_source.dependency_type = TYPE_C
+    bcom_vera_source.variables = QMAKE_VERA_FLAGS
+    bcom_vera_source.commands = $$QMAKE_VERA $(QMAKE_COMP_QMAKE_VERA_FLAGS) -c ${QMAKE_FILE_OUT} ${QMAKE_FILE_IN}
+    bcom_vera_source.output = $${_PRO_FILE_PWD_}/$${QMAKE_CODE_SCANNER_REPORT_FOLDER}/vera_report.xml
+    bcom_vera_source.input = SOURCES
+    bcom_vera_source.input += HEADERS
+    bcom_vera_source.name = VERA
+    bcom_vera_source.variable_out = BCOM_VERA_REPORT
+    silent:bcom_vera_source.commands = @echo Calling vera++ $${BCOM_ALLSOURCES} && $$bcom_vera_source.commands
+    QMAKE_EXTRA_COMPILERS += bcom_vera_source
+}
+

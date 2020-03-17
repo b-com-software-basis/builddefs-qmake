@@ -1,0 +1,44 @@
+# Author(s) : Loic Touraine, Stephane Leduc
+
+# Check input parameters existence
+include (bcom_scanner_prepare.prf)
+include (bcom_vera_scanner.prf)
+include (bcom_rats_scanner.prf)
+
+!defined(SONAR_ANALYZERS,var) {
+    warning("No sonar analyzer found : check you have at least one of cppcheck, rats, vera++ ... installed ! make code_scan rule will not be available !Refer to https://github.com/SonarOpenCommunity/sonar-cxx/wiki/Code-checkers for a list of analyzers")
+} else {
+
+    # Detect build toolchain and define BCOM_TARGET_ARCH
+    include(bcom_arch_define.pri)
+
+    QMAKE_CODE_SCANNER="sonar-scanner"
+
+    # need to parse also include dependencies ??
+    # INCLUDEDIRS = $$replace(BCOMDEPSINCLUDEPATH,"-I","")
+
+    #drmemory.exe -logdir c:/logs -- c:/path/to/my/app
+    #also for linux and mac
+
+    for (analyzer, SONAR_ANALYZERS) {
+        REPORTPATH = SONAR_ANALYZER_REPORTPATH.$${analyzer}
+        SONAR_ANALYZERS_COMMAND +=  -Dsonar.cxx.$${analyzer}.reportPath=$${QMAKE_CODE_SCANNER_REPORT_FOLDER}/$${analyzer}_report.xml
+        code_scan.depends += ../$${TARGET}/$${QMAKE_CODE_SCANNER_REPORT_FOLDER}/$${analyzer}_report.xml
+    }
+
+    code_scan.depends += code_scan_prepare
+    code_scan.commands = $${QMAKE_CODE_SCANNER}  \
+      -Dsonar.projectKey=$${TARGET}-$${BRANCH} \
+      -Dsonar.sources=$${_PRO_FILE_PWD_}/src,$${_PRO_FILE_PWD_}/interfaces,$${_PRO_FILE_PWD_}/tools \
+      -Dsonar.tests=$${_PRO_FILE_PWD_}/test \
+      -Dsonar.exclusions=$${_PRO_FILE_PWD_}/src/tinyxml2.*,$${_PRO_FILE_PWD_}/tutorial/*.h,$${_PRO_FILE_PWD_}/tutorial/* \
+      -Dsonar.projectBaseDir=$${_PRO_FILE_PWD_} \
+      -Dsonar.host.url=http://api.metric.irtbcom.org \
+      -Dsonar.login=4678863a247d6537df8f476b5c01a78a4052b51c \
+      -Dsonar.cxx.includeDirectories=$${_PRO_FILE_PWD_}/src,$${_PRO_FILE_PWD_}/interfaces \ #,$${INCLUDEDIRS} \
+      -Dsonar.language=c++ \
+      $${SONAR_ANALYZERS_COMMAND}
+
+    QMAKE_EXTRA_TARGETS += code_scan
+
+}

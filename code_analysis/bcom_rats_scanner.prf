@@ -1,0 +1,37 @@
+# Author(s) : Loic Touraine, Stephane Leduc
+
+# Check input parameters existence
+isEmpty(QMAKE_RATS) {
+    unix {
+        QMAKE_RATS = $$system(which rats)
+    }
+
+    win32 {
+    }
+
+    isEmpty(QMAKE_RATS) {
+        message("rats not found")
+    }
+}
+
+isEmpty(QMAKE_RATS_FLAGS):!!isEmpty(QMAKE_RATS) {
+    QMAKE_RATS_FLAGS = -w 3
+}
+
+!isEmpty(QMAKE_RATS) {
+    SONAR_ANALYZERS += rats
+
+    bcom_rats_source.CONFIG += no_link combine
+    bcom_rats_source.dependency_type = TYPE_C
+    bcom_rats_source.variables = QMAKE_RATS_FLAGS
+    bcom_rats_source.commands = $$QMAKE_RATS $(QMAKE_COMP_QMAKE_RATS_FLAGS) --xml ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+    bcom_rats_source.output = $${_PRO_FILE_PWD_}/$${QMAKE_CODE_SCANNER_REPORT_FOLDER}/rats_report.xml
+  #  bcom_rats_source.input = BCOM_ALLSOURCES
+    bcom_rats_source.input = SOURCES
+    bcom_rats_source.input += HEADERS
+    bcom_rats_source.name = RATS
+    bcom_rats_source.variable_out = BCOM_RATS_REPORT
+    silent:bcom_rats_source.commands = @echo Calling rats $${BCOM_ALLSOURCES} && $$bcom_rats_source.commands
+    QMAKE_EXTRA_COMPILERS += bcom_rats_source
+}
+
