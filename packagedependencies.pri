@@ -196,20 +196,18 @@ for(depfile, packagedepsfiles) {
                 pkgCfgLibVars += --libs
             }
             equals(pkg.repoType,"system") {# local system package handling
-                pkgCfgFilePath = /usr/local/lib/pkgconfig/$${libName}.pc
-                !exists($${pkgCfgFilePath}) {# error
-                    pkgCfgFilePath = /usr/lib/pkgconfig/$${libName}.pc
-                    !exists($${pkgCfgFilePath}) {#
-                        error("  --> [ERROR] " $${pkgCfgFilePath} " doesn't exists for package " $${libName})
+                !equals(pkg.identifier, "choco") {
+                    !system(pkg-config --exists $${libName}) {
+                        error("  --> [ERROR] no package found with pkg-config for package " $${libName})
                     }
                 }
-                message("    --> [INFO] "  $${pkgCfgFilePath} " exists")
+                message("    --> [INFO] found package " $${libName} " with pkg-config")
                 message("    --> [INFO] checking local version for package "  $${libName} " : expected version =" $${pkg.version})
                 localpkg.version = $$system(pkg-config --modversion $${libName})
                 !equals(pkg.version,$${localpkg.version}) {
                      error("    --> [ERROR] expected version for " $${libName} " is " $${pkg.version} ": system's package version is " $${localpkg.version})
                 } else {
-                message("    --> [OK] package expected version and local version matched")
+                    message("    --> [OK] package expected version and local version matched")
                 }
                 pkgCfgVars = $${libName}
                 pkgCfgLibVars = $$pkgCfgVars
