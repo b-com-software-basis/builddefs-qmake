@@ -226,7 +226,14 @@ for(depfile, packagedepsfiles) {
                 }
                     conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
                     for (conanOption, conanOptions) {
-                        remakenConanOptions += $${pkg.name}:$${conanOption}
+                        conanOptionInfo = $$split(conanOption, :)
+                        conanOptionPrefix = $$take_first(conanOptionInfo)
+                        isEmpty(conanOptionInfo) {
+                            remakenConanOptions += $${pkg.name}:$${conanOption}
+                        }
+                        else {
+                            remakenConanOptions += $${conanOption}
+                        }
                     }
                 }
             equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
