@@ -216,7 +216,12 @@ for(depfile, packagedepsfiles) {
             }
             equals(pkg.repoType,"conan") {# conan system package handling
                 message("    --> ["$${pkg.repoType}"] adding " $${pkg.name} " dependency")
-                remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
+                #to use new recipes from conan-center-index, not ready as some recipes are in error
+                #equals(pkg.repoUrl,conan-center) {
+                #    remakenConanDeps += $${pkg.name}/$${pkg.version}@
+                #} else {
+                    remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
+                #}
                 sharedLinkMode = False
                 equals(pkg.linkMode,shared) {
                     sharedLinkMode = True
