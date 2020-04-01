@@ -23,15 +23,28 @@ build_script:
 
     cd $HOME/projects && tar -zcvf qmakebin.tgz qmakebin && cd -
 
+    cd $HOME/projects && tar -zcvf builddefs-qmake-latest.tgz builddefs-qmake && cd -
+
     mv $HOME/projects/qmakebin.tgz $APPVEYOR_BUILD_FOLDER
+
+    mv $HOME/projects/builddefs-qmake-latest.tgz $APPVEYOR_BUILD_FOLDER
 artifacts:
 - path: qmakebin.tgz
   name: qmakebin
+- path: builddefs-qmake-latest.tgz
+  name: builddefs-qmake-latest
 deploy:
 - provider: GitHub
   release: ${APPVEYOR_BUILD_WORKER_IMAGE}/qmake-latest
   auth_token:
     secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
   artifact: qmakebin
+  on:
+    branch: master
+- provider: GitHub
+  release: builddefs-qmake-latest
+  auth_token:
+    secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
+  artifact: builddefs-qmake-latest
   on:
     branch: master

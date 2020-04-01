@@ -196,20 +196,18 @@ for(depfile, packagedepsfiles) {
                 pkgCfgLibVars += --libs
             }
             equals(pkg.repoType,"system") {# local system package handling
-                pkgCfgFilePath = /usr/local/lib/pkgconfig/$${libName}.pc
-                !exists($${pkgCfgFilePath}) {# error
-                    pkgCfgFilePath = /usr/lib/pkgconfig/$${libName}.pc
-                    !exists($${pkgCfgFilePath}) {#
-                        error("  --> [ERROR] " $${pkgCfgFilePath} " doesn't exists for package " $${libName})
+                !equals(pkg.identifier, "choco") {
+                    !system(pkg-config --exists $${libName}) {
+                        error("  --> [ERROR] no package found with pkg-config for package " $${libName})
                     }
                 }
-                message("    --> [INFO] "  $${pkgCfgFilePath} " exists")
+                message("    --> [INFO] found package " $${libName} " with pkg-config")
                 message("    --> [INFO] checking local version for package "  $${libName} " : expected version =" $${pkg.version})
                 localpkg.version = $$system(pkg-config --modversion $${libName})
                 !equals(pkg.version,$${localpkg.version}) {
                      error("    --> [ERROR] expected version for " $${libName} " is " $${pkg.version} ": system's package version is " $${localpkg.version})
                 } else {
-                message("    --> [OK] package expected version and local version matched")
+                    message("    --> [OK] package expected version and local version matched")
                 }
                 pkgCfgVars = $${libName}
                 pkgCfgLibVars = $$pkgCfgVars
@@ -218,7 +216,12 @@ for(depfile, packagedepsfiles) {
             }
             equals(pkg.repoType,"conan") {# conan system package handling
                 message("    --> ["$${pkg.repoType}"] adding " $${pkg.name} " dependency")
-                remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
+                #to use new recipes from conan-center-index, not ready as some recipes are in error
+                #equals(pkg.repoUrl,conan-center) {
+                #    remakenConanDeps += $${pkg.name}/$${pkg.version}@
+                #} else {
+                    remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
+                #}
                 sharedLinkMode = False
                 equals(pkg.linkMode,shared) {
                     sharedLinkMode = True
@@ -228,7 +231,14 @@ for(depfile, packagedepsfiles) {
                 }
                     conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
                     for (conanOption, conanOptions) {
-                        remakenConanOptions += $${pkg.name}:$${conanOption}
+                        conanOptionInfo = $$split(conanOption, :)
+                        conanOptionPrefix = $$take_first(conanOptionInfo)
+                        isEmpty(conanOptionInfo) {
+                            remakenConanOptions += $${pkg.name}:$${conanOption}
+                        }
+                        else {
+                            remakenConanOptions += $${conanOption}
+                        }
                     }
                 }
             equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
@@ -365,9 +375,32 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     contains(CONFIG,c++2a)|contains(CONFIG,c++20) {
         conanCppStd=20
     }
+    # Default arch
+    conanArch = "arch=x86_64"
+    android {
+        conanArch = $${ANDROID_TARGET_ARCH}
+    }
+    macx {
+          # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
+        contains(CONFIG, x86) {
+              conanArch = "arch=x86"
+        }
+    }
+    unix {
+          # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
+        contains(CONFIG, x86) {
+              conanArch = "arch=x86"
+        }
+    }
+    win32 {
+          # Deduce for windows as it depends on the build kit used (each kit handles either 32 or 64 bits build, but not both)
+        contains(QMAKE_TARGET.arch, x86) {
+              conanArch = "arch=x86"
+        }
+    }
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build)
+    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build)
     include($$_PRO_FILE_PWD_/build/conanbuildinfo.pri)
 }
 
