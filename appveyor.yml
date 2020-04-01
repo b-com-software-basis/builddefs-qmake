@@ -23,15 +23,15 @@ build_script:
 
     cd $HOME/projects && tar -zcvf qmakebin.tgz qmakebin && cd -
 
-    cd $HOME/projects && tar -zcvf builddefs-qmake-latest.tgz builddefs-qmake && cd -
+    cd $HOME/projects && zip builddefs-qmake-latest.zip -r builddefs-qmake && cd -
 
     mv $HOME/projects/qmakebin.tgz $APPVEYOR_BUILD_FOLDER
 
-    mv $HOME/projects/builddefs-qmake-latest.tgz $APPVEYOR_BUILD_FOLDER
+    mv $HOME/projects/builddefs-qmake-latest.zip $APPVEYOR_BUILD_FOLDER
 artifacts:
 - path: qmakebin.tgz
   name: qmakebin
-- path: builddefs-qmake-latest.tgz
+- path: builddefs-qmake-latest.zip
   name: builddefs-qmake-latest
 deploy:
 - provider: GitHub
