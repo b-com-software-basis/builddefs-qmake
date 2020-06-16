@@ -1,5 +1,8 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
+# include additionnal qmake defined functions
+include(remaken_functions.pri)
+
 message(" ")
 message("----------------------------------------------------------------")
 message("STEP => BUILD - Project dependencies parsing")
@@ -17,6 +20,7 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
         DEPENDENCIESCONFIG += recurse
     }
 }
+
 
 #include sub-dependencies recursion function
 include(populateSubDependencies.pri)
@@ -62,7 +66,7 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
     message("----------------------------------------------------------------")
     message(" ")
     message("----------------------------------------------------------------")
-    message("---- Search recurse dependencies for project $${TARGET} :" )
+    message("---- Search recursive dependencies for project $${TARGET} :" )
     for (depFile, packagedepsfiles) {
         baseDepFile = $$basename(depFile)
         write_file($$OUT_PWD/$${TARGET}-$${baseDepFile})
@@ -107,7 +111,7 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
 message("----------------------------------------------------------------")
 for(depfile, packagedepsfiles) {
     !exists($${depfile}) {
-        message("  -- No " $${depfile} " file to process for " $$TARGET)
+        verboseMessage("  -- No " $${depfile} " file to process for " $$TARGET)
     } else {
         message("---- Processing $${depfile} ----" )
         dependencies = $$cat($${depfile})
@@ -125,6 +129,7 @@ for(depfile, packagedepsfiles) {
             pkgLibInformation = $$member(dependencyMetaInf,2)
             pkgLibConditionList = $$split(pkgLibInformation, %)
             libName = $$take_first(pkgLibConditionList)
+            message("---- Processing $${pkg.name} $${pkg.version} package ----" )
             pkgTypeInformation = $$member(dependencyMetaInf,3)
             pkgTypeInfoList = $$split(pkgTypeInformation, @)
             pkg.identifier = $$member(pkgTypeInfoList,0)
@@ -164,7 +169,7 @@ for(depfile, packagedepsfiles) {
             !isEmpty (pkgConditionsNotFullfilled) {
                 message("  --> [INFO] Dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
             } else {
-                message("  ---- Processing dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} repository")
+                verboseMessage("  ---- Processing dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} repository")
             # VPCKG package handling
             equals(pkg.repoType,"vcpkg") {
                 deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.repoType}/packages/$${pkg.name}_$${vcpkgtriplet}
@@ -196,6 +201,7 @@ for(depfile, packagedepsfiles) {
                 pkgCfgLibVars += --libs
             }
             equals(pkg.repoType,"system") {# local system package handling
+                pkgCfgFilePath = ""
                 !equals(pkg.identifier, "choco") {
                     !system(pkg-config --exists $${libName}) {
                         error("  --> [ERROR] no package found with pkg-config for package " $${libName})
@@ -264,7 +270,7 @@ for(depfile, packagedepsfiles) {
                     warning("No information file found for " $${libName}-$${pkg.version}_$${REMAKEN_INFO_SUFFIX} " found.")
                     warning("Package "  $${pkg.name} " was built with an older version of builddefs. Please upgrade the package builddefs' to the latest version ! ")
                 } else {
-                    message("    --> [INFO] "  $${remakenInfoFilePath} " exists : checking build consistency")
+                    verboseMessage("    --> [INFO] "  $${remakenInfoFilePath} " exists : checking build consistency")
                     win32 {
                         REMAKENINFOFILE_CONTENT = $$cat($${remakenInfoFilePath},lines)
                         WINRT = $$find(REMAKENINFOFILE_CONTENT, runtime=.*)
@@ -302,7 +308,7 @@ for(depfile, packagedepsfiles) {
                         LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
                     }
                 } else {
-                    message("    --> [INFO] "  $${pkgCfgFilePath} "exists")
+                    verboseMessage("    --> [INFO] "  $${pkgCfgFilePath} "exists")
                     pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     pkgCfgVars += --define-variable=lext=$${LIBEXT}
                     pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
@@ -321,25 +327,31 @@ for(depfile, packagedepsfiles) {
                 }
             }
             equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
-                message("    pkg-config variables for includes :")
-                message("    $$pkgCfgVars")
-                message("    pkg-config variables for libs :")
-                message("    $$pkgCfgLibVars")
+                verboseMessage("    pkg-config variables for includes :")
+                verboseMessage("    $$pkgCfgVars")
+                verboseMessage("    pkg-config variables for libs :")
+                verboseMessage("    $$pkgCfgLibVars")
                 QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
                 LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
     	    }
-            message(" ")
+            verboseMessage(" ")
             } # pkgConditionFullfilled
         } # end for loop
-        message("---- process result for $${depfile} :")
-        message("  --> [INFO] QMAKE_CXXFLAGS : ")
-        message("  "$${QMAKE_CXXFLAGS})
-        message("  --> [INFO] LIBS : " )
-        message("  "$${LIBS})
-        message(" ")
+        verboseMessage("---- process result for $${depfile} :")
+        verboseMessage("  --> [INFO] QMAKE_CXXFLAGS : ")
+        verboseMessage("  "$${QMAKE_CXXFLAGS})
+        verboseMessage("  --> [INFO] LIBS : " )
+        verboseMessage("  "$${LIBS})
+        verboseMessage(" ")
     }
 }
 
+message("----------------------------------------------------------------")
+message("---- Global processing result ")
+message("  --> [INFO] QMAKE_CXXFLAGS : ")
+message("  "$${QMAKE_CXXFLAGS})
+message("  --> [INFO] LIBS : " )
+message("  "$${LIBS})
 QMAKE_CFLAGS += $${QMAKE_CXXFLAGS}
 QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
@@ -435,10 +447,10 @@ defined(PROJECTDEPLOYDIR,var) {
     unix:exists($$_PRO_FILE_PWD_/packagedependencies-unix.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
     }
-        macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
+    macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
     }
-        linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
+    linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {

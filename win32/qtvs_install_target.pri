@@ -55,7 +55,7 @@ contains(PROJECTCONFIG,QTVS) {
         } else {
             for (install_files, $${install}.files) {
                 for (install_path, $${install}.path) {
-                    BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$system_path($$install_files) $$shell_quote($$shell_path($$install_path))"
+                    BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$system_path($$install_files) $$shell_quote($$shell_path($$install_path/))"
                     write_file($${INSTALL_PROJECT_FILE},BAT_INSTALLPROJECT_COMMAND, append)
                 }
             }

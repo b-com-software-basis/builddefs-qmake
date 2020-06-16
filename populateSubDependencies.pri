@@ -53,7 +53,7 @@ defineReplace(populateSubDependencies) {
                 !isEmpty (pkgConditionsNotFullfilled) {
                     message("  --> [INFO] Dependency $${pkgName}_$${pkgVersion}@$${pkgRepoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
                 } else {
-                    message("  ---- Processing dependency $${pkgName}_$${pkgVersion}@$${pkgRepoType} repository")
+                    verboseMessage("  ---- Processing dependency $${pkgName}_$${pkgVersion}@$${pkgRepoType} repository")
                     equals(pkgRepoType,"artifactory") | equals(pkgRepoType,"github") | equals(pkgRepoType,"nexus") {
                         deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                         !equals(pkgCategory,$${pkgRepoType}) {
@@ -94,14 +94,15 @@ defineReplace(populateSubDependencies) {
                                 dependencyPkgDepFiles += $${deployFolder}/packagedependencies-linux.txt
                             }
                         }
+                        currentPackageDeps = $${dependencyPkgDepFiles}
                         outPackageDeps += $${dependencyPkgDepFiles}
                     }
-                    isEmpty(outPackageDeps) {
+                    isEmpty(currentPackageDeps) {
                         message("    ---- No sub-dependencies found ----")
                     } else {
                         message("    ---- Sub-dependencies found :" )
-                        for(var, outPackageDeps) {
-                        message("         ==>"  $${var} )
+                        for(var, currentPackageDeps) {
+                            message("         ==>"  $${var} )
                         }
                     }
                     message(" ")
