@@ -1,5 +1,8 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
+# include additionnal qmake defined functions
+include(remaken_functions.pri)
+
 message(" ")
 message("----------------------------------------------------------------")
 message("STEP => BUILD - Project dependencies parsing")
@@ -8,12 +11,6 @@ message("STEP => BUILD - Project dependencies parsing")
 !defined(DEPENDENCIESCONFIG,var) {
     warning("DEPENDENCIESCONFIG is not defined : defaulting to shared dependencies mode")
     DEPENDENCIESCONFIG = sharedlib
-}
-    
-defineTest(verboseMessage) {
-    contains(DEPENDENCIESCONFIG,verbose) {
-        message($$ARGS)
-    }
 }
 
 # Check install_recurse parameters existence
