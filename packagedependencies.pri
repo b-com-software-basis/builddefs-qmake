@@ -125,6 +125,7 @@ for(depfile, packagedepsfiles) {
             pkgLibInformation = $$member(dependencyMetaInf,2)
             pkgLibConditionList = $$split(pkgLibInformation, %)
             libName = $$take_first(pkgLibConditionList)
+            message("---- Processing LIBRARY $${libName} ----" )
             pkgTypeInformation = $$member(dependencyMetaInf,3)
             pkgTypeInfoList = $$split(pkgTypeInformation, @)
             pkg.identifier = $$member(pkgTypeInfoList,0)
@@ -196,6 +197,7 @@ for(depfile, packagedepsfiles) {
                 pkgCfgLibVars += --libs
             }
             equals(pkg.repoType,"system") {# local system package handling
+                pkgCfgFilePath = ""
                 !equals(pkg.identifier, "choco") {
                     !system(pkg-config --exists $${libName}) {
                         error("  --> [ERROR] no package found with pkg-config for package " $${libName})
@@ -435,10 +437,10 @@ defined(PROJECTDEPLOYDIR,var) {
     unix:exists($$_PRO_FILE_PWD_/packagedependencies-unix.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
     }
-        macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
+    macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
     }
-        linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
+    linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
