@@ -37,25 +37,25 @@ contains(PROJECTCONFIG,QTVS) {
         # specific for target (no target.files!)
         equals(install,"target") {
             contains(TEMPLATE, lib)|contains(TEMPLATE,vclib) {
-                BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$system_path($${OUT_PWD}/$${QTVS_OUTPUTDIR}$${LIBPREFIX}$${TARGET}.$${LIBEXT}) $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))"
+                BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$shell_quote($$shell_path($${OUT_PWD}/$${QTVS_OUTPUTDIR}$${LIBPREFIX}$${TARGET}.$${LIBEXT})) $$shell_quote($$shell_path($$clean_path($${TARGETDEPLOYDIR})/))"
                 write_file($${INSTALL_PROJECT_FILE},BAT_INSTALLPROJECT_COMMAND, append)
                 !staticlib {
-                    BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$system_path($${OUT_PWD}/$${QTVS_OUTPUTDIR}$${LIBPREFIX}$${TARGET}.$${DYNLIBEXT}) $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))"
+                    BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$shell_quote($$shell_path($${OUT_PWD}/$${QTVS_OUTPUTDIR}$${LIBPREFIX}$${TARGET}.$${DYNLIBEXT})) $$shell_quote($$shell_path($$clean_path($${TARGETDEPLOYDIR})/))"
                     write_file($${INSTALL_PROJECT_FILE},BAT_INSTALLPROJECT_COMMAND, append)
                 }
             }
             CONFIG(debug,debug|release){
-                BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$system_path($${OUT_PWD}/$${QTVS_OUTPUTDIR}$${LIBPREFIX}$${TARGET}.pdb) $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))"
+                BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$shell_quote($$shell_path($${OUT_PWD}/$${QTVS_OUTPUTDIR}$${LIBPREFIX}$${TARGET}.pdb)) $$shell_quote($$shell_path($$clean_path($${TARGETDEPLOYDIR})/))"
                 write_file($${INSTALL_PROJECT_FILE},BAT_INSTALLPROJECT_COMMAND, append)
             }
             contains(TEMPLATE, app)|contains(TEMPLATE,vcapp) {
-                BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$system_path($${OUT_PWD}/$${QTVS_OUTPUTDIR}$${LIBPREFIX}$${TARGET}.$${APPEXT}) $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))"
+                BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$shell_quote($$shell_path($${OUT_PWD}/$${QTVS_OUTPUTDIR}$${LIBPREFIX}$${TARGET}.$${APPEXT})) $$shell_quote($$shell_path($$clean_path($${TARGETDEPLOYDIR})/))"
                 write_file($${INSTALL_PROJECT_FILE},BAT_INSTALLPROJECT_COMMAND, append)
             }
         } else {
             for (install_files, $${install}.files) {
                 for (install_path, $${install}.path) {
-                    BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$system_path($$install_files) $$shell_quote($$shell_path($$install_path/))"
+                    BAT_INSTALLPROJECT_COMMAND = "$${REMAKEN_XCOPY} $$shell_quote($$shell_path($$install_files)) $$shell_quote($$shell_path($$clean_path($$install_path)/))"
                     write_file($${INSTALL_PROJECT_FILE},BAT_INSTALLPROJECT_COMMAND, append)
                 }
             }

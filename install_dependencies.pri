@@ -23,13 +23,13 @@ defineReplace(ListSharedLibrairies) {
         !isEmpty(sharedLibFiles) {
             for (sharedLibFile, sharedLibFiles) {
                 !isEmpty(INSTALL_DEPS_FILE) {
-                    BAT_INSTALLDEPS_COMMAND = "$${REMAKEN_XCOPY} $$system_path($${sharedLibFile}) $$shell_quote($$shell_path($${DEPS_OUTPUTPATH}))"
+                    BAT_INSTALLDEPS_COMMAND = "$${REMAKEN_XCOPY} $$shell_quote($$shell_path($${sharedLibFile})) $$shell_quote($$shell_path($${DEPS_OUTPUTPATH}))"
                     write_file($${INSTALL_DEPS_FILE},BAT_INSTALLDEPS_COMMAND, append)
                 }
             }
-            message("    --> [INFO] add install command for shared lib of $$system_path($$1/) ")
+            message("    --> [INFO] add install command for shared lib of $$shell_path($$1/) ")
         } else {
-            message("    --> [INFO] no shared lib in $$system_path($$1/) ")
+            message("    --> [INFO] no shared lib in $$shell_path($$1/) ")
         }
     }
     return($$sharedLibFiles)
