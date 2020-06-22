@@ -47,7 +47,7 @@ win32 {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
     vcpkgtriplet = x64-windows
 }
-# Common unix platform (macx, linux...)
+# Common unix platform (macx, linux, android...)
 unix {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
 }
@@ -58,6 +58,9 @@ macx {
 linux {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     vcpkgtriplet = x64-linux
+}
+android {
+    packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-android.txt
 }
 
 BCOMPFX = bcom-
@@ -416,6 +419,7 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     }
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
+    verboseMessage("conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build")
     system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build)
     include($$_PRO_FILE_PWD_/build/conanbuildinfo.pri)
 }
@@ -452,6 +456,9 @@ defined(PROJECTDEPLOYDIR,var) {
     }
     linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
+    }
+    android:exists($$_PRO_FILE_PWD_/packagedependencies-android.txt) {
+        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-android.txt
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
         package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
