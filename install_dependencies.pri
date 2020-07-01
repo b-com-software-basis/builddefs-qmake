@@ -3,11 +3,24 @@
 # echo R for manage Path instead file!
 REMAKEN_XCOPY= echo R | xcopy /Y /Q
 
-# manage outputdir (deploydir for lib, and build dir for app)
-DEPS_OUTPUTPATH = $${TARGETDEPLOYDIR}/
-install_deps.path = $${TARGETDEPLOYDIR}/
+# remove/replace forbidden chars
+defineReplace(ReplaceSpecialCharacter) {
+    str = $$ARGS
+    str = $$replace(str, "<>", "-")
+    str = $$replace(str, "<", "")
+    str = $$replace(str, ">", "")
+    str = $$replace(str, "/", "_")
+    str = $$replace(str, "\\", "_")
+    str = $$replace(str, ":", "_")
+    str = $$replace(str, "*", "")
+    str = $$replace(str, "\?", "")
+    str = $$replace(str, "\"", "_")
+    str = $$replace(str, "|", "")
+    return($${str})
+}
 
 win32 {
+    conanbindirSuffix = bin
     # bat init header
     contains(PROJECTCONFIG,QTVS) {
         INSTALL_DEPS_FILE=$$OUT_PWD/$${TARGET}-InstallDependencies_$${OUTPUTDIR}.bat
@@ -15,28 +28,9 @@ win32 {
         write_file($${INSTALL_DEPS_FILE},BAT_HEADER_COMMAND)
     }
 }
-
-# list all shared lib on folder parameter
-defineReplace(ListSharedLibrairies) {
-    sharedLibFiles=$$files($$1/*.$${DYNLIBEXT})
-    win32 {
-        !isEmpty(sharedLibFiles) {
-            for (sharedLibFile, sharedLibFiles) {
-                !isEmpty(INSTALL_DEPS_FILE) {
-                    BAT_INSTALLDEPS_COMMAND = "$${REMAKEN_XCOPY} $$shell_quote($$shell_path($${sharedLibFile})) $$shell_quote($$shell_path($${DEPS_OUTPUTPATH}))"
-                    write_file($${INSTALL_DEPS_FILE},BAT_INSTALLDEPS_COMMAND, append)
-                }
-            }
-            message("    --> [INFO] add install command for shared lib of $$shell_path($$1/) ")
-        } else {
-            message("    --> [INFO] no shared lib in $$shell_path($$1/) ")
-        }
-    }
-    return($$sharedLibFiles)
+else {
+    conanbindirSuffix = lib
 }
-
-# init target
-install_deps.files =
 
 message(" ")
 message("----------------------------------------------------------------")
@@ -157,10 +151,11 @@ for(depfile, installdeps_depsfiles) {
                             warning("Defaulting search folder to " $${deployFolder})
                         }
 
-                        !exists($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/) {
-                            message("    --> [INFO] $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/ doesn't exists for package " $${libName})
+                        depOutputDir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
+                        !exists($${depOutputDir}/) {
+                            message("    --> [INFO] $${depOutputDir}/ doesn't exists for package " $${libName})
                         } else {
-                            install_deps.files += $$ListSharedLibrairies($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR)
+                            sharedLibFiles += $$files($${depOutputDir}/*.$${DYNLIBEXT}*)
                         }
                     } else {
                         message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
@@ -170,11 +165,11 @@ for(depfile, installdeps_depsfiles) {
             equals(pkg.repoType,"conan") {# conan system package handling
                 contains(ignoredeps, $${pkg.name}) {
                     # list of ignored conan dependencies - used for install_recurse
-                    REMAKEN_IGNORE_CONAN_BINDIRS += CONAN_BINDIRS_$$upper($${pkg.name})
-                    message("    --> [INFO] Ignore install for $${pkg.name} dependency : $$eval(CONAN_BINDIRS_$$upper($${pkg.name}))")
+                    REMAKEN_IGNORE_CONAN_BINDIRS += CONAN_BUILDDIRS_$$upper($${pkg.name})
+                    message("    --> [INFO] Ignore install for $${pkg.name} dependency : $$eval(CONAN_BUILDDIRS_$$upper($${pkg.name}))$$conanbindirSuffix")
                 } else {
                     # list of conan dependencies to install - used for install (not recurse)
-                    REMAKEN_CONAN_BINDIRS += $$eval(CONAN_BINDIRS_$$upper($${pkg.name}))
+                    REMAKEN_CONAN_BINDIRS += $$eval(CONAN_BUILDDIRS_$$upper($${pkg.name}))
                 }
             }
             } # pkgConditionFullfilled
@@ -185,7 +180,7 @@ for(depfile, installdeps_depsfiles) {
 contains(DEPENDENCIESCONFIG,install_recurse) {
     # work on complete list and remove ignored deps in order to have subdepends and inherited deps (for instance bzip2 for boost)
     # allow to use recurse for depends and install only on 1st level deps
-    REMAKEN_CONAN_BINDIRS = $$CONAN_BINDIRS
+    REMAKEN_CONAN_BINDIRS = $$eval(CONAN_BUILDDIRS)
     for (conanBinDir, REMAKEN_IGNORE_CONAN_BINDIRS) {
         REMAKEN_CONAN_BINDIRS -= $$eval($$conanBinDir)
     }
@@ -196,7 +191,25 @@ exists($$_PRO_FILE_PWD_/build/conanbuildinfo.pri) {
     conanBinDirListSize = $$size(conanBinDirList)
     greaterThan(conanBinDirListSize,0) {
         for (conanBinDir, conanBinDirList) {
-            install_deps.files += $$ListSharedLibrairies($${conanBinDir})
+           sharedLibFiles += $$files($${conanBinDir}$$conanbindirSuffix/*.$${DYNLIBEXT}*)
+        }
+    }
+}
+
+for (sharedLibFile, sharedLibFiles) {
+    !isEmpty(INSTALL_DEPS_FILE) {
+        BAT_INSTALLDEPS_COMMAND = "$${REMAKEN_XCOPY} $$shell_quote($$shell_path($${sharedLibFile})) $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))"
+        write_file($${INSTALL_DEPS_FILE},BAT_INSTALLDEPS_COMMAND, append)
+    } else {
+        targetname = copy_$$ReplaceSpecialCharacter($${sharedLibFile})
+        !contains(install_deps.depends, install) {
+            # add install target before for folder creation
+            install_deps.depends += install
+        }
+        !contains(QMAKE_EXTRA_TARGETS, $${targetname}) {
+            $${targetname}.commands = $$QMAKE_COPY $$shell_quote($$shell_path($${sharedLibFile})) $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))
+            QMAKE_EXTRA_TARGETS += $${targetname}
+            install_deps.depends += $${targetname}
         }
     }
 }
@@ -211,8 +224,7 @@ exists($$_PRO_FILE_PWD_/build/conanbuildinfo.pri) {
         QMAKE_POST_LINK += call $${INSTALL_DEPS_FILE}
     }
 } else {
-    INSTALLS += install_deps
+    QMAKE_EXTRA_TARGETS  += install_deps
 }
 
 message("----------------------------------------------------------------")
-
