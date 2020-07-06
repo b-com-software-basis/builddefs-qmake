@@ -2,7 +2,7 @@ version: 1.0.{build}
 branches:
   only:
   - master
-skip_tags: true
+  - develop
 skip_branch_with_pr: true
 image:
 - Ubuntu1804
@@ -23,7 +23,7 @@ build_script:
 
     cd $HOME/projects && tar -zcvf qmakebin.tgz qmakebin && cd -
 
-    cd $HOME/projects && zip builddefs-qmake-latest.zip -r builddefs-qmake && cd -
+    cd $HOME/projects && zip builddefs-qmake-package.zip -r builddefs-qmake && cd -
 
     mv $HOME/projects/qmakebin.tgz $APPVEYOR_BUILD_FOLDER
 
@@ -31,8 +31,8 @@ build_script:
 artifacts:
 - path: qmakebin.tgz
   name: qmakebin
-- path: builddefs-qmake-latest.zip
-  name: builddefs-qmake-latest
+- path: builddefs-qmake-package.zip
+  name: builddefs-qmake-package
 deploy:
 - provider: GitHub
   release: ${APPVEYOR_BUILD_WORKER_IMAGE}/qmake-latest
@@ -40,11 +40,18 @@ deploy:
     secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
   artifact: qmakebin
   on:
-    branch: master
+    APPVEYOR_REPO_TAG: true
+- provider: GitHub
+  release: builddefs-qmake-${APPVEYOR_REPO_TAG_NAME}
+  auth_token:
+    secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
+  artifact: builddefs-qmake-package
+  on:
+    APPVEYOR_REPO_TAG: true
 - provider: GitHub
   release: builddefs-qmake-latest
   auth_token:
     secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
-  artifact: builddefs-qmake-latest
+  artifact: builddefs-qmake-package
   on:
-    branch: master
+    branch: develop
