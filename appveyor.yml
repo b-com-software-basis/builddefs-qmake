@@ -27,7 +27,7 @@ build_script:
 
     mv $HOME/projects/qmakebin.tgz $APPVEYOR_BUILD_FOLDER
 
-    mv $HOME/projects/builddefs-qmake-latest.zip $APPVEYOR_BUILD_FOLDER
+    mv $HOME/projects/builddefs-qmake-package.zip $APPVEYOR_BUILD_FOLDER
 artifacts:
 - path: qmakebin.tgz
   name: qmakebin
