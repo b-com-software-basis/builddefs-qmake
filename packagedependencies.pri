@@ -43,7 +43,7 @@ CONFIG(release,debug|release) {
 }
 
 packagedepsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
-win32 {
+win32:!android {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
     vcpkgtriplet = x64-windows
 }
@@ -51,11 +51,11 @@ win32 {
 unix {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
 }
-macx {
+macx:!android {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
     vcpkgtriplet = x64-osx
 }
-linux {
+linux:!android {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     vcpkgtriplet = x64-linux
 }
