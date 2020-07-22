@@ -39,11 +39,12 @@ deploy:
   auth_token:
     secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
   artifact: qmakebin
-  tag: $(APPVEYOR_REPO_TAG_NAME)
+  force_update: true
   on:
-    APPVEYOR_REPO_TAG: true
+    branch: master
 - provider: GitHub
   release: builddefs-qmake-${APPVEYOR_REPO_TAG_NAME}
+  force_update: true
   auth_token:
     secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
   artifact: builddefs-qmake-package
@@ -52,6 +53,7 @@ deploy:
     APPVEYOR_REPO_TAG: true
 - provider: GitHub
   release: builddefs-qmake-latest
+  force_update: true
   auth_token:
     secure: WUZuOKLtErzvGojYwISnWio7doATSkiTNVWQaO1iz9ozEJQDPMIQKbF4Hzn8SkLU
   artifact: builddefs-qmake-package
