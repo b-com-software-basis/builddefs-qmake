@@ -20,16 +20,12 @@ defineReplace(ReplaceSpecialCharacter) {
 }
 
 win32 {
-    conanbindirSuffix = bin
     # bat init header
     contains(PROJECTCONFIG,QTVS) {
         INSTALL_DEPS_FILE=$$OUT_PWD/$${TARGET}-InstallDependencies_$${OUTPUTDIR}.bat
         BAT_HEADER_COMMAND = "@echo off"
         write_file($${INSTALL_DEPS_FILE},BAT_HEADER_COMMAND)
     }
-}
-else {
-    conanbindirSuffix = lib
 }
 
 message(" ")
@@ -153,9 +149,10 @@ for(depfile, installdeps_depsfiles) {
 
                         depOutputDir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                         !exists($${depOutputDir}/) {
-                            message("    --> [INFO] $${depOutputDir}/ doesn't exists for package " $${libName})
+                            message("    --> [INFO] package without binaries : $${libName}")
                         } else {
                             sharedLibFiles += $$files($${depOutputDir}/*.$${DYNLIBEXT}*)
+                            message("    --> [INFO] install $${pkg.repoType} dependency : $${pkg.name} (from $${depOutputDir})")
                         }
                     } else {
                         message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
@@ -165,11 +162,12 @@ for(depfile, installdeps_depsfiles) {
             equals(pkg.repoType,"conan") {# conan system package handling
                 contains(ignoredeps, $${pkg.name}) {
                     # list of ignored conan dependencies - used for install_recurse
-                    REMAKEN_IGNORE_CONAN_BINDIRS += CONAN_BUILDDIRS_$$upper($${pkg.name})
-                    message("    --> [INFO] Ignore install for $${pkg.name} dependency : $$eval(CONAN_BUILDDIRS_$$upper($${pkg.name}))$$conanbindirSuffix")
+                    REMAKEN_IGNORE_CONAN_BINDIRS += CONAN_BINDIRS_$$upper($${pkg.name})
+                    message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
                 } else {
                     # list of conan dependencies to install - used for install (not recurse)
-                    REMAKEN_CONAN_BINDIRS += $$eval(CONAN_BUILDDIRS_$$upper($${pkg.name}))
+                    REMAKEN_CONAN_BINDIRS += $$eval(CONAN_BINDIRS_$$upper($${pkg.name}))
+                    message("    --> [INFO] install $${pkg.repoType} dependency : $${pkg.name} (from $$eval(CONAN_BINDIRS_$$upper($${pkg.name})))")
                 }
             }
             } # pkgConditionFullfilled
@@ -180,7 +178,7 @@ for(depfile, installdeps_depsfiles) {
 contains(DEPENDENCIESCONFIG,install_recurse) {
     # work on complete list and remove ignored deps in order to have subdepends and inherited deps (for instance bzip2 for boost)
     # allow to use recurse for depends and install only on 1st level deps
-    REMAKEN_CONAN_BINDIRS = $$eval(CONAN_BUILDDIRS)
+    REMAKEN_CONAN_BINDIRS = $$eval(CONAN_BINDIRS)
     for (conanBinDir, REMAKEN_IGNORE_CONAN_BINDIRS) {
         REMAKEN_CONAN_BINDIRS -= $$eval($$conanBinDir)
     }
@@ -191,7 +189,7 @@ exists($$_PRO_FILE_PWD_/build/conanbuildinfo.pri) {
     conanBinDirListSize = $$size(conanBinDirList)
     greaterThan(conanBinDirListSize,0) {
         for (conanBinDir, conanBinDirList) {
-           sharedLibFiles += $$files($${conanBinDir}$$conanbindirSuffix/*.$${DYNLIBEXT}*)
+            sharedLibFiles += $$files($${conanBinDir}/*.$${DYNLIBEXT}*)
         }
     }
 }
