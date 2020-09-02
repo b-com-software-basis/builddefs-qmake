@@ -393,7 +393,15 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     # Default arch
     conanArch = "arch=x86_64"
     android {
-        conanArch = $${ANDROID_TARGET_ARCH}
+        contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
+            conanArch = "arch=armv7"
+        }
+        contains(ANDROID_TARGET_ARCH, arm64-v8a) {
+            conanArch = "arch=armv8"
+        }
+        contains(ANDROID_TARGET_ARCH, x86) {
+            conanArch = "arch=x86"
+        }
     }
     macx {
           # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
