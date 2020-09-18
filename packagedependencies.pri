@@ -449,16 +449,16 @@ defined(PROJECTDEPLOYDIR,var) {
     exists($$_PRO_FILE_PWD_/packagedependencies.txt) {
         package_files.files = $$_PRO_FILE_PWD_/packagedependencies.txt
     }
-    win32:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
+    win32:!android:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-win.txt
     }
     unix:exists($$_PRO_FILE_PWD_/packagedependencies-unix.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
     }
-    macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
+    macx:!android:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
     }
-    linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
+    linux:!android:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     }
     android:exists($$_PRO_FILE_PWD_/packagedependencies-android.txt) {
