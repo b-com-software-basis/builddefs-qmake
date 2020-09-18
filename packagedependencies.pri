@@ -393,7 +393,15 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     # Default arch
     conanArch = "arch=x86_64"
     android {
-        conanArch = $${ANDROID_TARGET_ARCH}
+        contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
+            conanArch = "arch=armv7"
+        }
+        contains(ANDROID_TARGET_ARCH, arm64-v8a) {
+            conanArch = "arch=armv8"
+        }
+        contains(ANDROID_TARGET_ARCH, x86) {
+            conanArch = "arch=x86"
+        }
     }
     macx {
           # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
@@ -441,16 +449,16 @@ defined(PROJECTDEPLOYDIR,var) {
     exists($$_PRO_FILE_PWD_/packagedependencies.txt) {
         package_files.files = $$_PRO_FILE_PWD_/packagedependencies.txt
     }
-    win32:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
+    win32:!android:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-win.txt
     }
     unix:exists($$_PRO_FILE_PWD_/packagedependencies-unix.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
     }
-    macx:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
+    macx:!android:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
     }
-    linux:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
+    linux:!android:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
         package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
     }
     android:exists($$_PRO_FILE_PWD_/packagedependencies-android.txt) {
