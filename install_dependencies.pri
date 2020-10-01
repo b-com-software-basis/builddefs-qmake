@@ -192,7 +192,7 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
     }
 }
 
-exists($$_PRO_FILE_PWD_/build/conanbuildinfo.pri) {
+exists($$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanbuildinfo.pri) {
     conanBinDirList = $$split(REMAKEN_CONAN_BINDIRS, " ")
     conanBinDirListSize = $$size(conanBinDirList)
     greaterThan(conanBinDirListSize,0) {

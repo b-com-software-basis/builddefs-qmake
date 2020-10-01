@@ -356,8 +356,8 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
 # Manage conan dependencies
 !isEmpty(remakenConanDeps) {
-    !exists($$_PRO_FILE_PWD_/build) {
-        mkpath($$_PRO_FILE_PWD_/build)
+    !exists($$_PRO_FILE_PWD_/build/$$OUTPUTDIR) {
+        mkpath($$_PRO_FILE_PWD_/build/$$OUTPUTDIR)
     }
 
     #create conanfile.txt
@@ -373,7 +373,7 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     for (option,remakenConanOptions) {
         CONANFILECONTENT+=$${option}
     }
-    write_file($$_PRO_FILE_PWD_/build/conanfile.txt, CONANFILECONTENT)
+    write_file($$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanfile.txt, CONANFILECONTENT)
     contains(CONFIG,c++11) {
         !msvc {
             conanCppStd=11
@@ -423,9 +423,9 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     }
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    verboseMessage("conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build")
-    system(conan install $$_PRO_FILE_PWD_/build/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build)
-    include($$_PRO_FILE_PWD_/build/conanbuildinfo.pri)
+    verboseMessage("conan install $$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$$OUTPUTDIR")
+    system(conan install $$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$$OUTPUTDIR)
+    include($$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanbuildinfo.pri)
 }
 
 exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
