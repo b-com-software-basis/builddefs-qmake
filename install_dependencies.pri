@@ -10,9 +10,9 @@ defineReplace(ReplaceSpecialCharacter) {
     str = $$replace(str, "<", "")
     str = $$replace(str, ">", "")
     str = $$replace(str, "/", "_")
-    str = $$replace(str, "\\", "_")
+    #str = $$replace(str, "\\", "_")
     str = $$replace(str, ":", "_")
-    str = $$replace(str, "*", "")
+    #str = $$replace(str, "*", "")
     str = $$replace(str, "\?", "")
     str = $$replace(str, "\"", "_")
     str = $$replace(str, "|", "")
@@ -231,8 +231,8 @@ for (sharedLibFile, sharedLibFiles) {
         }
         QMAKE_POST_LINK += call $${INSTALL_DEPS_FILE}
     }
-} else {
-    QMAKE_EXTRA_TARGETS  += install_deps
+
 }
+QMAKE_EXTRA_TARGETS  += install_deps
 
 message("----------------------------------------------------------------")
