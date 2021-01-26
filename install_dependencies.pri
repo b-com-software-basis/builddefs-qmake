@@ -19,6 +19,15 @@ defineReplace(ReplaceSpecialCharacter) {
     return($${str})
 }
 
+equals (MAKEFILE_GENERATOR, MSBUILD) \
+|equals (MAKEFILE_GENERATOR, MSVC.NET) \
+|isEmpty(QMAKE_SH) {
+    REMAKEN_DEPS_COPY = copy /y
+}
+else {
+    REMAKEN_DEPS_COPY = cp -f -r --preserve=links
+}
+
 win32 {
     REMAKEN_CONAN_BINDIRS_BASENAME=CONAN_BINDIRS
     # bat init header
@@ -215,7 +224,7 @@ for (sharedLibFile, sharedLibFiles) {
             install_deps.depends += install
         }
         !contains(QMAKE_EXTRA_TARGETS, $${targetname}) {
-            $${targetname}.commands = $$QMAKE_COPY $$shell_quote($$shell_path($${sharedLibFile})) $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))
+            $${targetname}.commands = $$REMAKEN_DEPS_COPY $$shell_quote($$shell_path($${sharedLibFile})) $$shell_quote($$shell_path($${TARGETDEPLOYDIR}/))
             QMAKE_EXTRA_TARGETS += $${targetname}
             install_deps.depends += $${targetname}
         }
