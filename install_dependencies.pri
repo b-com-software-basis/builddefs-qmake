@@ -61,21 +61,21 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
 } else {
     message("---- Install 1st level dependencies for project $${TARGET} :" )
     # No Recursive dependencie parsing!
-    installdeps_depsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
+    installdeps_depsfiles = $$OUT_PWD/packagedependencies.txt
     win32:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-win.txt
     }
     unix {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-unix.txt
     }
     macx:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-mac.txt
     }
     linux:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-linux.txt
     }
     android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-android.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-android.txt
     }
 }
 
