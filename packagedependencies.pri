@@ -326,7 +326,10 @@ for(depfile, packagedepsfiles) {
                 # custom built package handling
                 deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                 !equals(pkg.identifier,$${pkg.repoType}) {
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                    !exists($${deployFolder}) { #try old structure for backward compatibility
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                    }
                 }
                 !exists($${deployFolder}) {
                     warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
