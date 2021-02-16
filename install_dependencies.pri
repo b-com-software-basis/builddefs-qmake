@@ -61,21 +61,21 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
 } else {
     message("---- Install 1st level dependencies for project $${TARGET} :" )
     # No Recursive dependencie parsing!
-    installdeps_depsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
+    installdeps_depsfiles = $$OUT_PWD/packagedependencies.txt
     win32:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-win.txt
     }
     unix {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-unix.txt
     }
     macx:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-mac.txt
     }
     linux:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-linux.txt
     }
     android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-android.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-android.txt
     }
 }
 
@@ -100,15 +100,14 @@ for(depfile, installdeps_depsfiles) {
             pkgInformation = $$member(dependencyMetaInf,0)
             pkgInfoList = $$split(pkgInformation, $$LITERAL_HASH)
             pkg.name = $$member(pkgInfoList,0)
+
             pkg.channel = "stable"
             pkgInfoListSize = $$size(pkgInfoList)
             equals(pkgInfoListSize,2) {
                 pkg.channel = $$member(pkgInfoList,1)
             }
             pkg.version = $$member(dependencyMetaInf,1)
-            pkgLibInformation = $$member(dependencyMetaInf,2)
-            pkgLibConditionList = $$split(pkgLibInformation, %)
-            libName = $$take_first(pkgLibConditionList)
+            libName = $$member(dependencyMetaInf,2)
             pkgTypeInformation = $$member(dependencyMetaInf,3)
             pkgTypeInfoList = $$split(pkgTypeInformation, @)
             pkg.identifier = $$member(pkgTypeInfoList,0)
@@ -117,7 +116,7 @@ for(depfile, installdeps_depsfiles) {
             equals(pkgTypeInfoListSize,2) {
                 pkg.repoType = $$member(pkgTypeInfoList,1)
             } else {
-               equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
                     pkg.repoType = "artifactory"
                 }  # otherwise pkg.repoType = pkg.identifier
             }
@@ -133,19 +132,6 @@ for(depfile, installdeps_depsfiles) {
                 }
             }
 
-            pkgConditionsNotFullfilled = ""
-            !isEmpty(pkgLibConditionList) {
-                message("  --> [INFO] Parsing $${pkg.name}_$${pkg.version} compilation flag definitions : $${pkgLibConditionList}")
-                for (condition,pkgLibConditionList) {
-                    #message("      --> [INFO] found condition $${condition}")
-                    !contains(DEFINES, $${condition}) {
-                        pkgConditionsNotFullfilled += $${condition}
-                    }
-                }
-            }
-            !isEmpty (pkgConditionsNotFullfilled) {
-                message("  --> [INFO] Dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
-            } else {
             # Artifactory dependencies
             equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
                 equals(pkg.linkMode, "shared") {
@@ -153,7 +139,10 @@ for(depfile, installdeps_depsfiles) {
                         # custom built package handling
                         deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                         !equals(pkg.identifier,$${pkg.repoType}) {
-                            deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                            deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                            !exists($${deployFolder}) { #try old structure for backward compatibility
+                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                            }
                         }
                         !exists($${deployFolder}) {
                             warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
@@ -187,10 +176,9 @@ for(depfile, installdeps_depsfiles) {
                     message("    --> [INFO] install $${pkg.repoType} dependency : $${pkg.name} (from $$eval($${REMAKEN_CONAN_BINDIRS_BASENAME}_$$upper($${pkg.name})))")
                 }
             }
-            } # pkgConditionFullfilled
-        } # end for loop
-    }
-}
+        } # for(var, dependencies)
+    } #!exists($${depfile})
+} # for(depfile, packagedepsfiles)
 
 contains(DEPENDENCIESCONFIG,install_recurse) {
     # work on complete list and remove ignored deps in order to have subdepends and inherited deps (for instance bzip2 for boost)

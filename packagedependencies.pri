@@ -5,7 +5,7 @@ include(remaken_functions.pri)
 
 message(" ")
 message("----------------------------------------------------------------")
-message("STEP => BUILD - Project dependencies parsing")
+message("STEP => PREPARE - Project dependencies analysis")
 
 # Check input parameters existence
 !defined(DEPENDENCIESCONFIG,var) {
@@ -21,6 +21,8 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
     }
 }
 
+# package dependencies comment info
+PKG_COMMENT="//"
 
 #include sub-dependencies recursion function
 include(populateSubDependencies.pri)
@@ -64,6 +66,93 @@ android {
 }
 
 BCOMPFX = bcom-
+
+message("----------------------------------------------------------------")
+for(depfile, packagedepsfiles) {
+    !exists($${depfile}) {
+        verboseMessage("  -- No " $${depfile} " file to process for " $$TARGET)
+    } else {
+        message("---- Processing $${depfile} ----" )
+        dependencies = $$cat($${depfile})
+        for(depLine, dependencies) {
+            dependencyMetaInf = $$split(depLine, |)
+            pkgInformation = $$member(dependencyMetaInf,0)
+            pkgInfoList = $$split(pkgInformation, $$LITERAL_HASH)
+            pkg.name = $$member(pkgInfoList,0)
+            pkgInComment = $$str_member($${pkg.name}, 0, 1)
+            !equals (pkgInComment, $$PKG_COMMENT) {
+                pkg.channel = "stable"
+                pkgInfoListSize = $$size(pkgInfoList)
+                equals(pkgInfoListSize,2) {
+                    pkg.channel = $$member(pkgInfoList,1)
+                }
+                pkg.version = $$member(dependencyMetaInf,1)
+                pkgLibInformation = $$member(dependencyMetaInf,2)
+                pkgLibConditionList = $$split(pkgLibInformation, %)
+                libName = $$take_first(pkgLibConditionList)
+                message("---- Processing $${pkg.name} $${pkg.version} package ----" )
+                pkgTypeInformation = $$member(dependencyMetaInf,3)
+                pkgTypeInfoList = $$split(pkgTypeInformation, @)
+                pkg.identifier = $$member(pkgTypeInfoList,0)
+                pkg.repoType = $${pkg.identifier}
+                pkgTypeInfoListSize = $$size(pkgTypeInfoList)
+                equals(pkgTypeInfoListSize,2) {
+                    pkg.repoType = $$member(pkgTypeInfoList,1)
+                } else {
+                   equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                        pkg.repoType = "artifactory"
+                    }  # otherwise pkg.repoType = pkg.identifier
+                }
+                pkg.repoUrl=$$member(dependencyMetaInf,4)
+                pkg.linkMode = $$member(dependencyMetaInf,5)
+                pkg.toolOptions = $$member(dependencyMetaInf,6)
+                # check pkg.linkMode not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
+                equals(pkg.linkMode,"")|equals(pkg.linkMode,"default") {
+                    pkg.linkMode = default
+                } else {
+                    if (!equals(pkg.linkMode,"static"):!equals(pkg.linkMode,"shared"):!equals(pkg.linkMode,"na")){
+                        pkg.linkMode = $${DEPLINKMODE}
+                    }
+                }
+                pkgConditionsNotFullfilled = ""
+                !isEmpty(pkgLibConditionList) {
+                    message("  --> [INFO] Parsing $${pkg.name}_$${pkg.version} compilation flag definitions : $${pkgLibConditionList}")
+                    builddefs_info.commands += $(info "Conditional dependencies defined in packagedependencies information files:")
+                    for (condition,pkgLibConditionList) {
+                        builddefs_info.commands += $(info "       --> define -D$${condition} to use $${pkg.name} dependency")
+                        #message("      --> [INFO] found condition $${condition}")
+                        !contains(DEFINES, $${condition}) {
+                            pkgConditionsNotFullfilled += $${condition}
+                        }
+                    }
+                    builddefs_info.commands += $(info "")
+                }
+                repoInfo = $${pkg.repoType}
+                !equals(pkg.identifier,$${pkg.repoType}) {
+                    repoInfo = $${pkg.identifier}@$${pkg.repoType}
+                }
+                !isEmpty (pkgConditionsNotFullfilled) {
+                    message("  --> [INFO] Dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
+                } else {
+                    PKGDEPFILE_CONTENT += $${pkg.name}|$${pkg.version}|$${libName}|$${repoInfo}|$${pkg.repoUrl}|$${pkg.linkMode}|$${pkg.toolOptions}
+                }
+
+                verboseMessage(" ")
+            } # comment package
+            else {
+                #message(package in comment : $${pkg.name})
+            }
+        } # for(var, dependencies)
+    } #!exists($${depfile})
+} # for(depfile, packagedepsfiles)
+
+write_file($$OUT_PWD/packagedependencies.txt, PKGDEPFILE_CONTENT)
+
+packagedepsfiles = $$OUT_PWD/packagedependencies.txt
+
+message(" ")
+message("----------------------------------------------------------------")
+message("STEP => BUILD - Project dependencies parsing")
 
 contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
     message("----------------------------------------------------------------")
@@ -129,9 +218,7 @@ for(depfile, packagedepsfiles) {
                 pkg.channel = $$member(pkgInfoList,1)
             }
             pkg.version = $$member(dependencyMetaInf,1)
-            pkgLibInformation = $$member(dependencyMetaInf,2)
-            pkgLibConditionList = $$split(pkgLibInformation, %)
-            libName = $$take_first(pkgLibConditionList)
+            libName = $$member(dependencyMetaInf,2)
             message("---- Processing $${pkg.name} $${pkg.version} package ----" )
             pkgTypeInformation = $$member(dependencyMetaInf,3)
             pkgTypeInfoList = $$split(pkgTypeInformation, @)
@@ -141,7 +228,7 @@ for(depfile, packagedepsfiles) {
             equals(pkgTypeInfoListSize,2) {
                 pkg.repoType = $$member(pkgTypeInfoList,1)
             } else {
-               equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
                     pkg.repoType = "artifactory"
                 }  # otherwise pkg.repoType = pkg.identifier
             }
@@ -156,23 +243,8 @@ for(depfile, packagedepsfiles) {
                     pkg.linkMode = $${DEPLINKMODE}
                 }
             }
-            pkgConditionsNotFullfilled = ""
-            !isEmpty(pkgLibConditionList) {
-                message("  --> [INFO] Parsing $${pkg.name}_$${pkg.version} compilation flag definitions : $${pkgLibConditionList}")
-                builddefs_info.commands += $(info "Conditional dependencies defined in packagedependencies information files:")
-                for (condition,pkgLibConditionList) {
-                    builddefs_info.commands += $(info "       --> define -D$${condition} to use $${pkg.name} dependency")
-                    #message("      --> [INFO] found condition $${condition}")
-                    !contains(DEFINES, $${condition}) {
-                        pkgConditionsNotFullfilled += $${condition}
-                    }
-                }
-                builddefs_info.commands += $(info "")
-            }
-            !isEmpty (pkgConditionsNotFullfilled) {
-                message("  --> [INFO] Dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
-            } else {
-                verboseMessage("  ---- Processing dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} repository")
+
+            verboseMessage("  ---- Processing dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} repository")
             # VPCKG package handling
             equals(pkg.repoType,"vcpkg") {
                 deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.repoType}/packages/$${pkg.name}_$${vcpkgtriplet}
@@ -214,7 +286,7 @@ for(depfile, packagedepsfiles) {
                 message("    --> [INFO] checking local version for package "  $${libName} " : expected version =" $${pkg.version})
                 localpkg.version = $$system(pkg-config --modversion $${libName})
                 !equals(pkg.version,$${localpkg.version}) {
-                     error("    --> [ERROR] expected version for " $${libName} " is " $${pkg.version} ": system's package version is " $${localpkg.version})
+                        error("    --> [ERROR] expected version for " $${libName} " is " $${pkg.version} ": system's package version is " $${localpkg.version})
                 } else {
                     message("    --> [OK] package expected version and local version matched")
                 }
@@ -236,25 +308,28 @@ for(depfile, packagedepsfiles) {
                     sharedLinkMode = True
                 }
                 !equals(pkg.linkMode,na) {
-                   remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
+                    remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
                 }
-                    conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
-                    for (conanOption, conanOptions) {
-                        conanOptionInfo = $$split(conanOption, :)
-                        conanOptionPrefix = $$take_first(conanOptionInfo)
-                        isEmpty(conanOptionInfo) {
-                            remakenConanOptions += $${pkg.name}:$${conanOption}
-                        }
-                        else {
-                            remakenConanOptions += $${conanOption}
-                        }
+                conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
+                for (conanOption, conanOptions) {
+                    conanOptionInfo = $$split(conanOption, :)
+                    conanOptionPrefix = $$take_first(conanOptionInfo)
+                    isEmpty(conanOptionInfo) {
+                        remakenConanOptions += $${pkg.name}:$${conanOption}
+                    }
+                    else {
+                        remakenConanOptions += $${conanOption}
                     }
                 }
+            }
             equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
                 # custom built package handling
                 deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                 !equals(pkg.identifier,$${pkg.repoType}) {
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                    !exists($${deployFolder}) { #try old structure for backward compatibility
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                    }
                 }
                 !exists($${deployFolder}) {
                     warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
@@ -281,7 +356,7 @@ for(depfile, packagedepsfiles) {
                         else {
                             contains(WINRT,.*staticCRT) {
                                 error("    --> [ERROR] Inconsistent configuration :  it is prohibited to mix static runtime linked dependency with the shared windows runtime (prohibited since VS2017, bad practice before). Either add 'usestaticwinrt' to your build configuration (add the line 'CONFIG += usestaticwinrt'), or use a dynamic runtime build of " $${pkg.name})
-                             }
+                                }
                         }
                     }
                 }
@@ -332,18 +407,17 @@ for(depfile, packagedepsfiles) {
                 verboseMessage("    $$pkgCfgLibVars")
                 QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
                 LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
-    	    }
+            }
             verboseMessage(" ")
-            } # pkgConditionFullfilled
-        } # end for loop
+        } # for(var, dependencies)
         verboseMessage("---- process result for $${depfile} :")
         verboseMessage("  --> [INFO] QMAKE_CXXFLAGS : ")
         verboseMessage("  "$${QMAKE_CXXFLAGS})
         verboseMessage("  --> [INFO] LIBS : " )
         verboseMessage("  "$${LIBS})
         verboseMessage(" ")
-    }
-}
+    } #!exists($${depfile})
+} # for(depfile, packagedepsfiles)
 
 message("----------------------------------------------------------------")
 message("---- Global processing result ")
@@ -427,6 +501,9 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     system(conan install $$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$$OUTPUTDIR)
     include($$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanbuildinfo.pri)
 }
+else {
+    # TODO remove generated 'build/$$OUTPUTDIR' folder
+}
 
 exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
     templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in
@@ -446,23 +523,23 @@ QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
 # PROJECTDEPLOYDIR only defined for lib
 defined(PROJECTDEPLOYDIR,var) {
     package_files.path = $${PROJECTDEPLOYDIR}
-    exists($$_PRO_FILE_PWD_/packagedependencies.txt) {
-        package_files.files = $$_PRO_FILE_PWD_/packagedependencies.txt
+    exists($$OUT_PWD/packagedependencies.txt) {
+        package_files.files = $$OUT_PWD/packagedependencies.txt
     }
-    win32:!android:exists($$_PRO_FILE_PWD_/packagedependencies-win.txt) {
-        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-win.txt
+    win32:!android:exists($$OUT_PWD/packagedependencies-win.txt) {
+        package_files.files += $$OUT_PWD/packagedependencies-win.txt
     }
-    unix:exists($$_PRO_FILE_PWD_/packagedependencies-unix.txt) {
-        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
+    unix:exists($$OUT_PWD/packagedependencies-unix.txt) {
+        package_files.files += $$OUT_PWD/packagedependencies-unix.txt
     }
-    macx:!android:exists($$_PRO_FILE_PWD_/packagedependencies-mac.txt) {
-        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+    macx:!android:exists($$OUT_PWD/packagedependencies-mac.txt) {
+        package_files.files += $$OUT_PWD/packagedependencies-mac.txt
     }
-    linux:!android:exists($$_PRO_FILE_PWD_/packagedependencies-linux.txt) {
-        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
+    linux:!android:exists($$OUT_PWD/packagedependencies-linux.txt) {
+        package_files.files += $$OUT_PWD/packagedependencies-linux.txt
     }
-    android:exists($$_PRO_FILE_PWD_/packagedependencies-android.txt) {
-        package_files.files += $$_PRO_FILE_PWD_/packagedependencies-android.txt
+    android:exists($$OUT_PWD/packagedependencies-android.txt) {
+        package_files.files += $$OUT_PWD/packagedependencies-android.txt
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
         package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
@@ -476,3 +553,4 @@ message("----------------------------------------------------------------")
 contains(DEPENDENCIESCONFIG,install)|contains(DEPENDENCIESCONFIG,install_recurse) {
     include (install_dependencies.pri)
 }
+
