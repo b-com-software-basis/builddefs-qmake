@@ -108,7 +108,7 @@ for(depfile, packagedepsfiles) {
                 pkg.toolOptions = $$member(dependencyMetaInf,6)
                 # check pkg.linkMode not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
                 equals(pkg.linkMode,"")|equals(pkg.linkMode,"default") {
-                    pkg.linkMode = default
+                    pkg.linkMode = $${DEPLINKMODE}
                 } else {
                     if (!equals(pkg.linkMode,"static"):!equals(pkg.linkMode,"shared"):!equals(pkg.linkMode,"na")){
                         pkg.linkMode = $${DEPLINKMODE}
