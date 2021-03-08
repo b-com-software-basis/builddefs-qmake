@@ -22,7 +22,7 @@ defineReplace(ReplaceSpecialCharacter) {
 equals (MAKEFILE_GENERATOR, MSBUILD) \
 |equals (MAKEFILE_GENERATOR, MSVC.NET) \
 |isEmpty(QMAKE_SH) {
-    REMAKEN_DEPS_COPY = copy /y
+    REMAKEN_DEPS_COPY = xcopy /Y /Q
 }
 else {
     REMAKEN_DEPS_COPY = cp -f -r --preserve=links
