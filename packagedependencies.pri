@@ -3,6 +3,12 @@
 # include additionnal qmake defined functions
 include(remaken_functions.pri)
 
+equals(_PRO_FILE_PWD_, $${OUT_PWD}) {
+    !contains(PROJECTCONFIG,QTVS) {
+        warning("Bad practice : build folder must be different from project folder !")
+    }
+}
+
 message(" ")
 message("----------------------------------------------------------------")
 message("STEP => PREPARE - Project dependencies analysis")
@@ -146,9 +152,9 @@ for(depfile, packagedepsfiles) {
     } #!exists($${depfile})
 } # for(depfile, packagedepsfiles)
 
-write_file($$OUT_PWD/packagedependencies.txt, PKGDEPFILE_CONTENT)
+write_file($$_PRO_FILE_PWD_/build/packagedependencies.txt, PKGDEPFILE_CONTENT)
 
-packagedepsfiles = $$OUT_PWD/packagedependencies.txt
+packagedepsfiles = $$_PRO_FILE_PWD_/build/packagedependencies.txt
 
 message(" ")
 message("----------------------------------------------------------------")
@@ -523,34 +529,15 @@ QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
 # PROJECTDEPLOYDIR only defined for lib
 defined(PROJECTDEPLOYDIR,var) {
     package_files.path = $${PROJECTDEPLOYDIR}
-    exists($$OUT_PWD/packagedependencies.txt) {
-        package_files.files = $$OUT_PWD/packagedependencies.txt
-    }
-    win32:!android:exists($$OUT_PWD/packagedependencies-win.txt) {
-        package_files.files += $$OUT_PWD/packagedependencies-win.txt
-    }
-    unix:exists($$OUT_PWD/packagedependencies-unix.txt) {
-        package_files.files += $$OUT_PWD/packagedependencies-unix.txt
-    }
-    macx:!android:exists($$OUT_PWD/packagedependencies-mac.txt) {
-        package_files.files += $$OUT_PWD/packagedependencies-mac.txt
-    }
-    linux:!android:exists($$OUT_PWD/packagedependencies-linux.txt) {
-        package_files.files += $$OUT_PWD/packagedependencies-linux.txt
-    }
-    android:exists($$OUT_PWD/packagedependencies-android.txt) {
-        package_files.files += $$OUT_PWD/packagedependencies-android.txt
+    exists($$_PRO_FILE_PWD_/build/packagedependencies.txt) {
+        package_files.files = $$_PRO_FILE_PWD_/build/packagedependencies.txt
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
         package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
     }
-
     INSTALLS += package_files
 }
 message("----------------------------------------------------------------")
 
 # manage dependencies install
-contains(DEPENDENCIESCONFIG,install)|contains(DEPENDENCIESCONFIG,install_recurse) {
-    include (install_dependencies.pri)
-}
-
+include (install_dependencies.pri)

@@ -80,16 +80,27 @@ isEmpty(BCOM_TARGET_ARCH) {
   }
 }
 
+win32:!android {
+    REMAKEN_OS = win
+}
+unix:!android {
+    REMAKEN_OS = unix
+}
+macx:!android {
+    REMAKEN_OS = mac
+}
+linux:!android {
+    REMAKEN_OS = linux
+}
+android {
+    REMAKEN_OS = android
+}
+ios {
+    REMAKEN_OS = ios
+}
+
 isEmpty(BCOM_TARGET_PLATFORM) {
-    android {
-        BCOM_TARGET_PLATFORM = android-$$basename(QMAKE_CC)
-    }
-    linux:!android {
-        BCOM_TARGET_PLATFORM = linux-$$basename(QMAKE_CC)
-    }
-    macx {
-        BCOM_TARGET_PLATFORM = mac-$$basename(QMAKE_CC)
-    }
+    REMAKEN_BUILD_TOOLCHAIN = $$basename(QMAKE_CC)
     win32 {
         !defined(QMAKE_MSC_VER,var) {
             !defined (MSVC_VER, var) {
@@ -130,9 +141,11 @@ isEmpty(BCOM_TARGET_PLATFORM) {
                 CONFIG -= c++11
             }
         }
-		# note : when icl is used with msvc, the most important is the msvc compiler version!
-        BCOM_TARGET_PLATFORM = win-$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
+
+        # note : when icl is used with msvc, the most important is the msvc compiler version!
+        REMAKEN_BUILD_TOOLCHAIN=$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
     }
+    BCOM_TARGET_PLATFORM = $${REMAKEN_OS}-$${REMAKEN_BUILD_TOOLCHAIN}
 }
 
 macx {
