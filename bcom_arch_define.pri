@@ -57,26 +57,56 @@ isEmpty(REMAKENDEPSFOLDER) {
 isEmpty(BCOM_TARGET_ARCH) {
   # Defaults to x86_64
   BCOM_TARGET_ARCH = x86_64
-  android {
-      BCOM_TARGET_ARCH = $${ANDROID_TARGET_ARCH}
-  }
-  macx {
-      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
-      contains(CONFIG, x86) {
-          BCOM_TARGET_ARCH = i386
-    }
-  }
-  unix {
-      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
-      contains(CONFIG, x86) {
-          BCOM_TARGET_ARCH = i386
-    }
-  }
-  win32 {
+  conanArch = "arch=x86_64"
+  win32:!android {
       # Deduce for windows as it depends on the build kit used (each kit handles either 32 or 64 bits build, but not both)
+      vcpkgtriplet = x64-windows
       contains(QMAKE_TARGET.arch, x86) {
           BCOM_TARGET_ARCH = i386
-    }
+          conanArch = "arch=x86"
+          vcpkgtriplet = x86-windows
+      }
+  }
+  unix:!android {
+      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
+      contains(CONFIG, x86) {
+          BCOM_TARGET_ARCH = i386
+          conanArch = "arch=x86"
+      }
+  }
+  macx:!android {
+      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
+      vcpkgtriplet = x64-osx
+      contains(CONFIG, x86) {
+          BCOM_TARGET_ARCH = i386
+          conanArch = "arch=x86"
+          vcpkgtriplet = x86-osx
+      }
+  }
+  linux:!android {
+      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
+      vcpkgtriplet = x64-linux
+      contains(CONFIG, x86) {
+          BCOM_TARGET_ARCH = i386
+          conanArch = "arch=x86"
+          vcpkgtriplet = x86-linux
+      }
+  }
+  android {
+      BCOM_TARGET_ARCH = $${ANDROID_TARGET_ARCH}
+      vcpkgtriplet = x64-android
+      contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
+          conanArch = "arch=armv7"
+          vcpkgtriplet = arm-android
+      }
+      contains(ANDROID_TARGET_ARCH, arm64-v8a) {
+          conanArch = "arch=armv8"
+          vcpkgtriplet = arm64-android
+      }
+      contains(ANDROID_TARGET_ARCH, x86) {
+          conanArch = "arch=x86"
+          vcpkgtriplet = x86-android
+      }
   }
 }
 

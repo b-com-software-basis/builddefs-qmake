@@ -53,7 +53,6 @@ CONFIG(release,debug|release) {
 packagedepsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
 win32:!android {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
-    vcpkgtriplet = x64-windows
 }
 # Common unix platform (macx, linux, android...)
 unix {
@@ -61,11 +60,9 @@ unix {
 }
 macx:!android {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
-    vcpkgtriplet = x64-osx
 }
 linux:!android {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
-    vcpkgtriplet = x64-linux
 }
 android {
     packagedepsfiles += $$_PRO_FILE_PWD_/packagedependencies-android.txt
@@ -470,37 +467,7 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     contains(CONFIG,c++2a)|contains(CONFIG,c++20) {
         conanCppStd=20
     }
-    # Default arch
-    conanArch = "arch=x86_64"
-    android {
-        contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
-            conanArch = "arch=armv7"
-        }
-        contains(ANDROID_TARGET_ARCH, arm64-v8a) {
-            conanArch = "arch=armv8"
-        }
-        contains(ANDROID_TARGET_ARCH, x86) {
-            conanArch = "arch=x86"
-        }
-    }
-    macx {
-          # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
-        contains(CONFIG, x86) {
-              conanArch = "arch=x86"
-        }
-    }
-    unix {
-          # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
-        contains(CONFIG, x86) {
-              conanArch = "arch=x86"
-        }
-    }
-    win32 {
-          # Deduce for windows as it depends on the build kit used (each kit handles either 32 or 64 bits build, but not both)
-        contains(QMAKE_TARGET.arch, x86) {
-              conanArch = "arch=x86"
-        }
-    }
+
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
     verboseMessage("conan install $$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$$OUTPUTDIR")
