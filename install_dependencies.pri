@@ -25,7 +25,11 @@ equals (MAKEFILE_GENERATOR, MSBUILD) \
     REMAKEN_DEPS_COPY = xcopy /Y /Q
 }
 else {
-    REMAKEN_DEPS_COPY = cp -f -r --preserve=links
+    macx {
+        REMAKEN_DEPS_COPY = cp -f -a  
+    } else {
+        REMAKEN_DEPS_COPY = cp -f -r --preserve=links
+    }
 }
 
 win32 {
