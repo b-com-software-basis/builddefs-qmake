@@ -15,6 +15,22 @@ SETUP_SUFFIX =
 
 SETUP_INSTALLDIR_VALUE = $${SETUP_INSTALLDIR}
 
+# detect system signtool
+SYSTEM_SIGNTOOL_CMD = $$shell_quote($$shell_path($$system(where signtool)))
+isEmpty(SYSTEM_SIGNTOOL_CMD) {
+    signtool_arch = x64
+    contains(CONFIG, x86) {
+        signtool_arch = x86
+    }
+    PATH = $$shell_quote($$shell_path($$getenv(WindowsSdkVerBinPath)/$${signtool_arch}/signtool.exe))
+    exists($${PATH}) {
+        SYSTEM_SIGNTOOL_CMD = $${PATH}
+    } else {
+        message("Unable to find signtool application : check your Msvc installation")
+    }   
+}
+SYSTEM_SIGNTOOL_PARAMS = sign /t http://timestamp.digicert.com
+
 # manage packaging according to plugin extension
 for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
 
@@ -120,6 +136,21 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
         SETUP_SUFFIX = VST3
     }
 
+    #############
+    # sign bundle
+    #############
+    !equals(BUNDLE_SIGN_CMD,"") {
+        BUNDLE_SIGN_CMD += &&
+    }
+    !contains(PLUGIN_EXTENSION,.aaxplugin) {
+        !isEmpty(SYSTEM_SIGNTOOL_CMD) {
+            isEmpty(SYSTEM_SIGNTOOL_STORE_NAME) {
+                SYSTEM_SIGNTOOL_STORE_NAME = My
+            }
+            BUNDLE_SIGN_CMD += $${SYSTEM_SIGNTOOL_CMD} $${SYSTEM_SIGNTOOL_PARAMS} /s $${SYSTEM_SIGNTOOL_STORE_NAME} /n $${PRODUCT_SYSTEM_CERTIFCATE_NAME} $${TARGET}$${PLUGIN_EXTENSION}
+        }
+    }
+
     # VST plugin
     contains(PLUGIN_EXTENSION,.dll|.vst3) {
         # nsis parameters (separate management from AAX)
@@ -169,8 +200,11 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
     NSIS_PACKAGE_CMD += $${NSISCOMMAND}
 }
 
+sign_bundle.commands += $${BUNDLE_SIGN_CMD}
+sign_bundle.depends += create_bundle
+
 create_setup.commands = $${NSIS_PACKAGE_CMD}
 #create_setup.depends += create_bundle
 
-QMAKE_EXTRA_TARGETS  += bcom_copylogo_clean bcom_copylogo_prepare bcom_component_aaxbundle_clean bcom_component_aaxbundle_prepare bcom_component_vst3bundle_prepare create_bundle create_setup
+QMAKE_EXTRA_TARGETS  += bcom_copylogo_clean bcom_copylogo_prepare bcom_component_aaxbundle_clean bcom_component_aaxbundle_prepare bcom_component_vst3bundle_prepare create_bundle create_setup sign_bundle
 
