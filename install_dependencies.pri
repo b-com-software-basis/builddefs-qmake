@@ -65,21 +65,21 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
 } else {
     message("---- Install 1st level dependencies for project $${TARGET} :" )
     # No Recursive dependencie parsing!
-    installdeps_depsfiles = $$_PRO_FILE_PWD_/packagedependencies.txt
+    installdeps_depsfiles = $$OUT_PWD/packagedependencies.txt
     win32:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-win.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-win.txt
     }
     unix {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-unix.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-unix.txt
     }
     macx:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-mac.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-mac.txt
     }
     linux:!android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-linux.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-linux.txt
     }
     android {
-        installdeps_depsfiles += $$_PRO_FILE_PWD_/packagedependencies-android.txt
+        installdeps_depsfiles += $$OUT_PWD/packagedependencies-android.txt
     }
 }
 
@@ -104,99 +104,81 @@ for(depfile, installdeps_depsfiles) {
             pkgInformation = $$member(dependencyMetaInf,0)
             pkgInfoList = $$split(pkgInformation, $$LITERAL_HASH)
             pkg.name = $$member(pkgInfoList,0)
-            pkgInComment = $$str_member($${pkg.name}, 0, 1)
-            !equals (pkgInComment, $$PKG_COMMENT) {
-                pkg.channel = "stable"
-                pkgInfoListSize = $$size(pkgInfoList)
-                equals(pkgInfoListSize,2) {
-                    pkg.channel = $$member(pkgInfoList,1)
-                }
-                pkg.version = $$member(dependencyMetaInf,1)
-                pkgLibInformation = $$member(dependencyMetaInf,2)
-                pkgLibConditionList = $$split(pkgLibInformation, %)
-                libName = $$take_first(pkgLibConditionList)
-                pkgTypeInformation = $$member(dependencyMetaInf,3)
-                pkgTypeInfoList = $$split(pkgTypeInformation, @)
-                pkg.identifier = $$member(pkgTypeInfoList,0)
-                pkg.repoType = $${pkg.identifier}
-                pkgTypeInfoListSize = $$size(pkgTypeInfoList)
-                equals(pkgTypeInfoListSize,2) {
-                    pkg.repoType = $$member(pkgTypeInfoList,1)
-                } else {
-                   equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
-                        pkg.repoType = "artifactory"
-                    }  # otherwise pkg.repoType = pkg.identifier
-                }
-                pkg.repoUrl=$$member(dependencyMetaInf,4)
-                pkg.linkMode = $$member(dependencyMetaInf,5)
-                pkg.toolOptions = $$member(dependencyMetaInf,6)
-                # check pkg.linkMode not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
-                equals(pkg.linkMode,"")|equals(pkg.linkMode,"default") {
+
+            pkg.channel = "stable"
+            pkgInfoListSize = $$size(pkgInfoList)
+            equals(pkgInfoListSize,2) {
+                pkg.channel = $$member(pkgInfoList,1)
+            }
+            pkg.version = $$member(dependencyMetaInf,1)
+            libName = $$member(dependencyMetaInf,2)
+            pkgTypeInformation = $$member(dependencyMetaInf,3)
+            pkgTypeInfoList = $$split(pkgTypeInformation, @)
+            pkg.identifier = $$member(pkgTypeInfoList,0)
+            pkg.repoType = $${pkg.identifier}
+            pkgTypeInfoListSize = $$size(pkgTypeInfoList)
+            equals(pkgTypeInfoListSize,2) {
+                pkg.repoType = $$member(pkgTypeInfoList,1)
+            } else {
+                equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                    pkg.repoType = "artifactory"
+                }  # otherwise pkg.repoType = pkg.identifier
+            }
+            pkg.repoUrl=$$member(dependencyMetaInf,4)
+            pkg.linkMode = $$member(dependencyMetaInf,5)
+            pkg.toolOptions = $$member(dependencyMetaInf,6)
+            # check pkg.linkMode not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
+            equals(pkg.linkMode,"")|equals(pkg.linkMode,"default") {
+                pkg.linkMode = $${DEPLINKMODE}
+            } else {
+                if (!equals(pkg.linkMode,"static"):!equals(pkg.linkMode,"shared"):!equals(pkg.linkMode,"na")){
                     pkg.linkMode = $${DEPLINKMODE}
-                } else {
-                    if (!equals(pkg.linkMode,"static"):!equals(pkg.linkMode,"shared"):!equals(pkg.linkMode,"na")){
-                        pkg.linkMode = $${DEPLINKMODE}
-                    }
                 }
+            }
 
-                pkgConditionsNotFullfilled = ""
-                !isEmpty(pkgLibConditionList) {
-                    message("  --> [INFO] Parsing $${pkg.name}_$${pkg.version} compilation flag definitions : $${pkgLibConditionList}")
-                    for (condition,pkgLibConditionList) {
-                        #message("      --> [INFO] found condition $${condition}")
-                        !contains(DEFINES, $${condition}) {
-                            pkgConditionsNotFullfilled += $${condition}
-                        }
-                    }
-                }
-                !isEmpty (pkgConditionsNotFullfilled) {
-                    message("  --> [INFO] Dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
-                } else {
-                    # Artifactory dependencies
-                    equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
-                        equals(pkg.linkMode, "shared") {
-                            !contains(ignoredeps, $${pkg.name}) {
-                                # custom built package handling
-                                deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
-                                !equals(pkg.identifier,$${pkg.repoType}) {
-                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
-                                }
-                                !exists($${deployFolder}) {
-                                    warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
-                                    deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
-                                    !equals(pkg.identifier,$${pkg.repoType}) {
-                                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
-                                    }
-                                    warning("Defaulting search folder to " $${deployFolder})
-                                }
-
-                                depOutputDir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
-                                !exists($${depOutputDir}/) {
-                                    message("    --> [INFO] package without binaries : $${libName}")
-                                } else {
-                                    sharedLibFiles += $$files($${depOutputDir}/*.$${DYNLIBEXT}*)
-                                    message("    --> [INFO] install $${pkg.repoType} dependency : $${pkg.name} (from $${depOutputDir})")
-                                }
-                            } else {
-                                message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
+            # Artifactory dependencies
+            equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
+                equals(pkg.linkMode, "shared") {
+                    !contains(ignoredeps, $${pkg.name}) {
+                        # custom built package handling
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                        !equals(pkg.identifier,$${pkg.repoType}) {
+                            deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                            !exists($${deployFolder}) { #try old structure for backward compatibility
+                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                             }
                         }
-                    }
-                    equals(pkg.repoType,"conan") {# conan system package handling
-                        contains(ignoredeps, $${pkg.name}) {
-                            # list of ignored conan dependencies - used for install_recurse
-                            REMAKEN_IGNORE_CONAN_BINDIRS += $${REMAKEN_CONAN_BINDIRS_BASENAME}_$$upper($${pkg.name})
-                            message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
-                        } else {
-                            # list of conan dependencies to install - used for install (not recurse)
-                            REMAKEN_CONAN_BINDIRS += $$eval($${REMAKEN_CONAN_BINDIRS_BASENAME}_$$upper($${pkg.name}))
-                            message("    --> [INFO] install $${pkg.repoType} dependency : $${pkg.name} (from $$eval($${REMAKEN_CONAN_BINDIRS_BASENAME}_$$upper($${pkg.name})))")
+                        !exists($${deployFolder}) {
+                            warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                            deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
+                            !equals(pkg.identifier,$${pkg.repoType}) {
+                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                            }
+                            warning("Defaulting search folder to " $${deployFolder})
                         }
+
+                        depOutputDir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
+                        !exists($${depOutputDir}/) {
+                            message("    --> [INFO] package without binaries : $${libName}")
+                        } else {
+                            sharedLibFiles += $$files($${depOutputDir}/*.$${DYNLIBEXT}*)
+                            message("    --> [INFO] install $${pkg.repoType} dependency : $${pkg.name} (from $${depOutputDir})")
+                        }
+                    } else {
+                        message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
                     }
-                } # pkgConditionsNotFullfilled
-            } # comment package
-            else {
-                #message(package in comment : $${pkg.name})
+                }
+            }
+            equals(pkg.repoType,"conan") {# conan system package handling
+                contains(ignoredeps, $${pkg.name}) {
+                    # list of ignored conan dependencies - used for install_recurse
+                    REMAKEN_IGNORE_CONAN_BINDIRS += $${REMAKEN_CONAN_BINDIRS_BASENAME}_$$upper($${pkg.name})
+                    message("    --> [INFO] Ignore install for $${pkg.repoType} dependency : $${pkg.name}")
+                } else {
+                    # list of conan dependencies to install - used for install (not recurse)
+                    REMAKEN_CONAN_BINDIRS += $$eval($${REMAKEN_CONAN_BINDIRS_BASENAME}_$$upper($${pkg.name}))
+                    message("    --> [INFO] install $${pkg.repoType} dependency : $${pkg.name} (from $$eval($${REMAKEN_CONAN_BINDIRS_BASENAME}_$$upper($${pkg.name})))")
+                }
             }
         } # for(var, dependencies)
     } #!exists($${depfile})
