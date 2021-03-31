@@ -76,7 +76,7 @@ NSISFILE_CONTENT = $$replace(NSISFILE_CONTENT, "/\*@CUSTOM_NSIS_INCLUDE@\*/\"", 
     NSISFILE_CONTENT = $$replace(NSISFILE_CONTENT, ";@CUSTOM_NSIS_SCRIPT@", "!include \""$$shell_path($${SETUP_NSIS_CUSTOM_FILEPATH})"\"")
 }
 !isEmpty(SETUP_NSIS_CUSTOM_PAGE_DEFINITION_FILEPATH):exists($$shell_quote($$shell_path($${SETUP_NSIS_CUSTOM_PAGE_DEFINITION_FILEPATH}))) {
-    NSIS_ADD_CUSTOM_PAGE_CONTENT = $$cat($${SETUP_NSIS_CUSTOM_PAGE_DEFINITION_FILEPATH},lines)
+    NSIS_ADD_CUSTOM_PAGE_CONTENT = $$cat($${SETUP_NSIS_CUSTOM_PAGE_DEFINITION_FILEPATH},blob)
     NSISFILE_CONTENT = $$replace(NSISFILE_CONTENT, ";@CUSTOM_NSIS_ADD_CUSTOM_PAGE@", $${NSIS_ADD_CUSTOM_PAGE_CONTENT})
 }
 write_file($$OUT_PWD/Setup.nsi, NSISFILE_CONTENT)
@@ -90,9 +90,9 @@ defineReplace(nsisReplaceSpecialCharacter) {
     nsisString = $$replace(nsisString, "<", "")
     nsisString = $$replace(nsisString, ">", "")
     nsisString = $$replace(nsisString, "/", "")
-    nsisString = $$replace(nsisString, "\\", "")
+    #nsisString = $$replace(nsisString, "\\", "")
     nsisString = $$replace(nsisString, ":", "")
-    nsisString = $$replace(nsisString, "*", "")
+    #nsisString = $$replace(nsisString, "*", "")
     nsisString = $$replace(nsisString, "\?", "")
     nsisString = $$replace(nsisString, "\"", "")
     nsisString = $$replace(nsisString, "|", "")
