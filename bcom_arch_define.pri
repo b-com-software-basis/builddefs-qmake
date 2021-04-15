@@ -57,39 +57,80 @@ isEmpty(REMAKENDEPSFOLDER) {
 isEmpty(BCOM_TARGET_ARCH) {
   # Defaults to x86_64
   BCOM_TARGET_ARCH = x86_64
-  android {
-      BCOM_TARGET_ARCH = $${ANDROID_TARGET_ARCH}
-  }
-  macx {
-      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
-      contains(CONFIG, x86) {
-          BCOM_TARGET_ARCH = i386
-    }
-  }
-  unix {
-      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
-      contains(CONFIG, x86) {
-          BCOM_TARGET_ARCH = i386
-    }
-  }
-  win32 {
+  conanArch = "arch=x86_64"
+  win32:!android {
       # Deduce for windows as it depends on the build kit used (each kit handles either 32 or 64 bits build, but not both)
+      vcpkgtriplet = x64-windows
       contains(QMAKE_TARGET.arch, x86) {
           BCOM_TARGET_ARCH = i386
-    }
+          conanArch = "arch=x86"
+          vcpkgtriplet = x86-windows
+      }
+  }
+  unix:!android {
+      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
+      contains(CONFIG, x86) {
+          BCOM_TARGET_ARCH = i386
+          conanArch = "arch=x86"
+      }
+  }
+  macx:!android {
+      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
+      vcpkgtriplet = x64-osx
+      contains(CONFIG, x86) {
+          BCOM_TARGET_ARCH = i386
+          conanArch = "arch=x86"
+          vcpkgtriplet = x86-osx
+      }
+  }
+  linux:!android {
+      # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
+      vcpkgtriplet = x64-linux
+      contains(CONFIG, x86) {
+          BCOM_TARGET_ARCH = i386
+          conanArch = "arch=x86"
+          vcpkgtriplet = x86-linux
+      }
+  }
+  android {
+      BCOM_TARGET_ARCH = $${ANDROID_TARGET_ARCH}
+      vcpkgtriplet = x64-android
+      contains(ANDROID_TARGET_ARCH, armeabi-v7a) {
+          conanArch = "arch=armv7"
+          vcpkgtriplet = arm-android
+      }
+      contains(ANDROID_TARGET_ARCH, arm64-v8a) {
+          conanArch = "arch=armv8"
+          vcpkgtriplet = arm64-android
+      }
+      contains(ANDROID_TARGET_ARCH, x86) {
+          conanArch = "arch=x86"
+          vcpkgtriplet = x86-android
+      }
   }
 }
 
+win32:!android {
+    REMAKEN_OS = win
+}
+unix:!android {
+    REMAKEN_OS = unix
+}
+macx:!android {
+    REMAKEN_OS = mac
+}
+linux:!android {
+    REMAKEN_OS = linux
+}
+android {
+    REMAKEN_OS = android
+}
+ios {
+    REMAKEN_OS = ios
+}
+
 isEmpty(BCOM_TARGET_PLATFORM) {
-    android {
-        BCOM_TARGET_PLATFORM = android-$$basename(QMAKE_CC)
-    }
-    linux:!android {
-        BCOM_TARGET_PLATFORM = linux-$$basename(QMAKE_CC)
-    }
-    macx {
-        BCOM_TARGET_PLATFORM = mac-$$basename(QMAKE_CC)
-    }
+    REMAKEN_BUILD_TOOLCHAIN = $$basename(QMAKE_CC)
     win32 {
         !defined(QMAKE_MSC_VER,var) {
             !defined (MSVC_VER, var) {
@@ -130,9 +171,11 @@ isEmpty(BCOM_TARGET_PLATFORM) {
                 CONFIG -= c++11
             }
         }
-		# note : when icl is used with msvc, the most important is the msvc compiler version!
-        BCOM_TARGET_PLATFORM = win-$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
+
+        # note : when icl is used with msvc, the most important is the msvc compiler version!
+        REMAKEN_BUILD_TOOLCHAIN=$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
     }
+    BCOM_TARGET_PLATFORM = $${REMAKEN_OS}-$${REMAKEN_BUILD_TOOLCHAIN}
 }
 
 macx {
