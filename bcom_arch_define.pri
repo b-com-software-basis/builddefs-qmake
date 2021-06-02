@@ -1,7 +1,9 @@
 # Author(s) : Loic Touraine
 
 REMAKEN_INFO_SUFFIX=remakeninfo.txt
-include(builddefs_info.pri)
+!win32 {
+    include(builddefs_info.pri)
+}
 
 android {
     # unix path
