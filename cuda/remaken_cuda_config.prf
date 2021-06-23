@@ -95,36 +95,70 @@ LIBS += -L$$CUDA_DIR/lib/$$CUDA_SYSTEM_NAME
 CUDART_OPTION = static
 LIBS += -lcudart_static
 LIBS -= -lcudart
-contains(CUDA_CONFIG, sharedlib)|contains(CUDA_CONFIG, shared) {
+contains(DEPENDENCIESCONFIG,shared) {
     CUDART_OPTION = shared
     LIBS += -lcudart
     LIBS -= -lcudart_static
 }
 
 # command options
-NVCC_OPTIONS += --machine $$CUDA_SYSTEM_TYPE -cudart $$CUDART_OPTION $$CUDA_ARCH
+NVCC_OPTIONS += -m$$CUDA_SYSTEM_TYPE $$CUDA_ARCH -cudart $$CUDART_OPTION
 
-cuda.input = CUDA_SOURCES
-unix {
-    cuda.output = ${QMAKE_FILE_BASE}_cuda.o
+# win32 options
+win32 {
+    CONFIG(debug, debug|release) {
+        COMPILER_OPTIONS = -Xcompiler $$shell_quote(/EHsc /W3 /nologo /Od /RTC1 /FS /MDd)
+    }   else {
+        COMPILER_OPTIONS = -Xcompiler $$shell_quote(/EHsc /W3 /nologo /O2 /MD)
+    }
 }
-win32
-{
-    cuda.output = ${QMAKE_FILE_BASE}_cuda.obj
-}
-cuda.dependency_type = TYPE_C
+
 CONFIG(debug, debug|release) {
-    NVCC_OPTIONS += -g -G -D_DEBUGl
-    COMPILER_OPTIONS = -Xcompiler $$shell_quote(/EHsc /W3 /nologo /Od /RTC1 /FS /MDd)
+    NVCC_OPTIONS += -g -G
+    win32 {
+        NVCC_OPTIONS += -D_DEBUG
+    }
 }
-else {
-    COMPILER_OPTIONS = -Xcompiler $$shell_quote(/EHsc /W3 /nologo /O2 /MD)
-}
+
+INCLUDEPATH += $$CUDA_DIR/include
 
 win32 {
-    cuda.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS $(INCPATH) $(DEFINES) $$COMPILER_OPTIONS -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+	#OLD cuda.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS $(INCPATH) $(DEFINES) $$COMPILER_OPTIONS -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+
+    cuda.dependency_type = TYPE_C
+    cuda.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS $(INCPATH) $(DEFINES) $$COMPILER_OPTIONS -c ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
+    cuda.output = ${QMAKE_FILE_BASE}_cuda$${first(QMAKE_EXT_OBJ)}
+    cuda.input = CUDA_SOURCES
+    cuda.name = Compile ${QMAKE_FILE_IN}
+
+    #cuda.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS $(INCPATH) $(DEFINES) $$COMPILER_OPTIONS -c -Xcompiler $(QMAKE_COMP_REMAKEN_CUDA_CFLAGS) ${QMAKE_FILE_NAME} -o ${QMAKE_FILE_OUT}
+
+    QMAKE_EXTRA_COMPILERS += cuda
 } else {
-#SLETODO linux!!
-    cuda.commands = $$CUDA_DIR/bin/nvcc $(INCPATH) $(DEFINES) -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+
+    cuda.dependency_type = TYPE_C
+    cuda.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS -ccbin $${QMAKE_CXX} ${INCPATH} $(DEFINES) -o ${QMAKE_FILE_OUT} -c ${QMAKE_FILE_NAME}
+    cuda.output = ${QMAKE_FILE_BASE}_cuda$${first(QMAKE_EXT_OBJ)}
+    cuda.input = CUDA_SOURCES
+    cuda.name = Compile ${QMAKE_FILE_IN}
+    contains(TEMPLATE, app) {
+        cuda.CONFIG += no_link
+        cuda.variable_out = BCOM_CUDA_COMPILED_FILES
+        silent:cuda.commands = @echo cuda ${QMAKE_FILE_IN} && $$cuda.commands
+    }
+    QMAKE_EXTRA_COMPILERS += cuda
+
+    contains(TEMPLATE, app) {
+        cuda_link.CONFIG += no_link combine
+        cuda_link.dependency_type = TYPE_C
+        cuda_link.variables = LIBS
+        cuda_link.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS -ccbin $${QMAKE_CXX} ${INCPATH} $(DEFINES) ${QMAKE_COMP_LIBS} -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+        cuda_link.output = $$TARGET #${QMAKE_FILE_BASE}_cudalink$${first(QMAKE_EXT_OBJ)}
+        cuda_link.input = BCOM_CUDA_COMPILED_FILES
+        cuda_link.name = Link ${BCOM_CUDA_COMPILED_FILES}
+        cuda_link.variable_out = BCOM_CUDA_LINK_FILES
+        silent:cuda_link.commands = @echo cuda_link ${QMAKE_FILE_IN} && $$cuda_link.commands
+        QMAKE_EXTRA_COMPILERS += cuda_link
+    }
 }
-QMAKE_EXTRA_COMPILERS += cuda
+
