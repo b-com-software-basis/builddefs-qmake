@@ -1,0 +1,130 @@
+# Author(s) : Loic Touraine & Stephane Leduc
+
+
+# Check input parameters existence
+!defined(CUDA_SOURCES,var) {
+    error("CUDA_SOURCES must be defined before remaken_cuda_config.prf inclusion")
+}
+!defined(CUDA_SYSTEM_NAME,var) {
+    error("CUDA_SYSTEM_NAME must be defined before remaken_cuda_config.prf inclusion")
+}
+!defined(CUDA_SYSTEM_TYPE,var) {
+    error("CUDA_SYSTEM_TYPE must be defined before remaken_cuda_config.prf inclusion")
+}
+!defined(CUDA_CONFIG,var) {
+    warning("CUDA_CONFIG can be defined before remaken_cuda_config.prf inclusion for define gpu feature, and link usage")
+}
+!defined(NVCC_OPTIONS,var) {
+    warning("NVCC_OPTIONS can be defined before remaken_cuda_config.prf inclusion for add specific options (for instance : -Xcompiler /openmp -use_fast_math)")
+}
+
+unix {
+    CUDA_PATH = /usr/local/cuda
+}
+win32 {
+    # use environment variable
+    CUDA_PATH = $$(CUDA_PATH)
+}
+
+CUDA_DIR = $$clean_path($$CUDA_PATH)
+!exists($$CUDA_DIR) {
+    error("Unable to locate Nvidia GPU toolkit (CUDA). Check your CUDA installation, or provide the path to your cuda cuda tooklit in CUDA_PATH environment variable.")
+}
+
+CUDA_ARCH_CONFIG = $$find(CUDA_CONFIG, sm_.*)
+isEmpty(CUDA_ARCH_CONFIG) {
+    CUDA_ARCH_CONFIG += sm_35
+    warning ("unable to find arch/gpu feature option (ex sm_35) in CUDA_CONFIG, set default value to sm_35")
+}
+
+# https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/index.html#gpu-feature-list
+contains(CUDA_ARCH_CONFIG,sm_30) {
+    CUDA_ARCH += -gencode arch=compute_30,code=sm_30 \
+        -gencode arch=compute_30,code=compute_30
+}
+contains(CUDA_ARCH_CONFIG,sm_32) {
+    CUDA_ARCH += -gencode arch=compute_32,code=sm_32 \
+        -gencode arch=compute_32,code=compute_32
+}
+contains(CUDA_ARCH_CONFIG,sm_35) {
+    CUDA_ARCH += -gencode arch=compute_35,code=sm_35 \
+        -gencode arch=compute_35,code=compute_35
+}
+contains(CUDA_ARCH_CONFIG,sm_50) {
+    CUDA_ARCH += -gencode arch=compute_50,code=sm_50 \
+        -gencode arch=compute_50,code=compute_50
+}
+contains(CUDA_ARCH_CONFIG,sm_52) {
+    CUDA_ARCH += -gencode arch=compute_52,code=sm_52 \
+        -gencode arch=compute_52,code=compute_52
+}
+contains(CUDA_ARCH_CONFIG,sm_53) {
+    CUDA_ARCH += -gencode arch=compute_53,code=sm_53 \
+        -gencode arch=compute_53,code=compute_53
+}
+contains(CUDA_ARCH_CONFIG,sm_60) {
+    CUDA_ARCH += -gencode arch=compute_60,code=sm_60 \
+        -gencode arch=compute_60,code=compute_60
+}
+contains(CUDA_ARCH_CONFIG,sm_61) {
+    CUDA_ARCH += -gencode arch=compute_61,code=sm_61 \
+        -gencode arch=compute_61,code=compute_61
+}
+contains(CUDA_ARCH_CONFIG,sm_62) {
+    CUDA_ARCH += -gencode arch=compute_62,code=sm_62 \
+        -gencode arch=compute_62,code=compute_62
+}
+contains(CUDA_ARCH_CONFIG,sm_70) {
+    CUDA_ARCH += -gencode arch=compute_70,code=sm_70 \
+        -gencode arch=compute_70,code=compute_70
+}
+contains(CUDA_ARCH_CONFIG,sm_72) {
+    CUDA_ARCH += -gencode arch=compute_72,code=sm_72 \
+        -gencode arch=compute_72,code=compute_72
+}
+contains(CUDA_ARCH_CONFIG,sm_75) {
+    CUDA_ARCH += -gencode arch=compute_75,code=sm_75 \
+        -gencode arch=compute_75,code=compute_75
+}
+
+# Includes
+INCLUDEPATH += $$CUDA_DIR/include
+
+# lib - default is static
+LIBS += -L$$CUDA_DIR/lib/$$CUDA_SYSTEM_NAME
+CUDART_OPTION = static
+LIBS += -lcudart_static
+LIBS -= -lcudart
+contains(CUDA_CONFIG, sharedlib)|contains(CUDA_CONFIG, shared) {
+    CUDART_OPTION = shared
+    LIBS += -lcudart
+    LIBS -= -lcudart_static
+}
+
+# command options
+NVCC_OPTIONS += --machine $$CUDA_SYSTEM_TYPE -cudart $$CUDART_OPTION $$CUDA_ARCH
+
+cuda.input = CUDA_SOURCES
+unix {
+    cuda.output = ${QMAKE_FILE_BASE}_cuda.o
+}
+win32
+{
+    cuda.output = ${QMAKE_FILE_BASE}_cuda.obj
+}
+cuda.dependency_type = TYPE_C
+CONFIG(debug, debug|release) {
+    NVCC_OPTIONS += -g -G -D_DEBUGl
+    COMPILER_OPTIONS = -Xcompiler $$shell_quote(/EHsc /W3 /nologo /Od /RTC1 /FS /MDd)
+}
+else {
+    COMPILER_OPTIONS = -Xcompiler $$shell_quote(/EHsc /W3 /nologo /O2 /MD)
+}
+
+win32 {
+    cuda.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS $(INCPATH) $(DEFINES) $$COMPILER_OPTIONS -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+} else {
+#SLETODO linux!!
+    cuda.commands = $$CUDA_DIR/bin/nvcc $(INCPATH) $(DEFINES) -c -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+}
+QMAKE_EXTRA_COMPILERS += cuda
