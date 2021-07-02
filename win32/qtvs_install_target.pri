@@ -1,7 +1,7 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 # echo R for manage Path instead file!
-REMAKEN_XCOPY= echo R | xcopy /Y /Q
+REMAKEN_XCOPY= echo R | xcopy /Y /F
 
 QTVS_OUTPUTDIR =
 # debug_and_release_target change output dir when debug_and_release is set)
