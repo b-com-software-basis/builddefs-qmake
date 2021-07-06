@@ -37,7 +37,7 @@ isEmpty(REMAKENDEPSFOLDER) {
         }
     }
     !isEmpty(REMAKENDEPSROOTFOLDER) {
-        REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER}/packages)
+        REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER})
     }
     else { #new remaken behavior
         isEmpty(USERHOMEFOLDER) {
