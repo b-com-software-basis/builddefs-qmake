@@ -33,8 +33,8 @@ include (bcom_rats_scanner.prf)
       -Dsonar.tests=$${_PRO_FILE_PWD_}/test \
       -Dsonar.exclusions=$${_PRO_FILE_PWD_}/src/tinyxml2.*,$${_PRO_FILE_PWD_}/tutorial/*.h,$${_PRO_FILE_PWD_}/tutorial/* \
       -Dsonar.projectBaseDir=$${_PRO_FILE_PWD_} \
-      -Dsonar.host.url=http://api.metric.irtbcom.org \
-      -Dsonar.login=4678863a247d6537df8f476b5c01a78a4052b51c \
+      -Dsonar.host.url=$$(REMAKEN_SONAR_URL)\
+      -Dsonar.login=$$(REMAKEN_SONAR_LOGIN) \
       -Dsonar.cxx.includeDirectories=$${_PRO_FILE_PWD_}/src,$${_PRO_FILE_PWD_}/interfaces \ #,$${INCLUDEDIRS} \
       -Dsonar.language=c++ \
       $${SONAR_ANALYZERS_COMMAND}
