@@ -414,24 +414,52 @@ for(depfile, packagedepsfiles) {
                 verboseMessage("    $$pkgCfgVars")
                 verboseMessage("    pkg-config variables for libs :")
                 verboseMessage("    $$pkgCfgLibVars")
-                QMAKE_CXXFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+                PKGCFG_CFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
                 LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
             }
             verboseMessage(" ")
         } # for(var, dependencies)
         verboseMessage("---- process result for $${depfile} :")
-        verboseMessage("  --> [INFO] QMAKE_CXXFLAGS : ")
-        verboseMessage("  "$${QMAKE_CXXFLAGS})
+        verboseMessage("  --> [INFO] pkg-config CFLAGS : ")
+        verboseMessage("  "$${PKGCFG_CFLAGS})
         verboseMessage("  --> [INFO] LIBS : " )
         verboseMessage("  "$${LIBS})
         verboseMessage(" ")
     } #!exists($${depfile})
 } # for(depfile, packagedepsfiles)
 
+
+# separate parameters manually in generated qmake vars
+# because 'split' does't run correctly with space in path
+gen_suffix=
+for(info, PKGCFG_CFLAGS) {
+    first2char = $$str_member($$info, 0, 1)
+    equals(first2char, "-D") | equals (first2char, "-I") {
+        gen_suffix= $${gen_suffix}A
+        gen_cflags_$${gen_suffix}=$$info
+        LIST_CFLAGVAR += gen_cflags_$${gen_suffix}
+    } else {
+        gen_cflags_$${gen_suffix}+=$$info
+    }
+}
+# now split -I in INCLUDEPATH and -D in QMAKE_CXX_FLAGS
+for (var, LIST_CFLAGVAR) {
+    first2char = $$str_member($$eval($${var}), 0, 1)
+    equals (first2char, "-I") {
+        #manage path with space
+        # TODO check with a real path with space
+        INCLUDEPATH += $$shell_quote($$replace($$eval(var), -I,))
+    } else {
+        QMAKE_CXXFLAGS += $$eval($${var})
+    }
+}
+
 message("----------------------------------------------------------------")
 message("---- Global processing result ")
 message("  --> [INFO] QMAKE_CXXFLAGS : ")
 message("  "$${QMAKE_CXXFLAGS})
+message("  --> [INFO] INCLUDEPATH : ")
+message("  "$${INCLUDEPATH})
 message("  --> [INFO] LIBS : " )
 message("  "$${LIBS})
 QMAKE_CFLAGS += $${QMAKE_CXXFLAGS}
