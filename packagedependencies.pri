@@ -230,7 +230,7 @@ for(depfile, packagedepsfiles) {
                     equals(pkg.repoType,"conan") {# conan system package handling
                         message("    --> ["$${pkg.repoType}"] adding " $${pkg.name} " dependency")
                         #use url format according to remote as conan-center index urls are now without '@user/channel' suffix
-                        equals(pkg.repoUrl,conan-center) {
+                        equals(pkg.repoUrl,conan-center)|equals(pkg.repoUrl,conancenter) {
                             remakenConanDeps += $${pkg.name}/$${pkg.version}
                         } else {
                             remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}
