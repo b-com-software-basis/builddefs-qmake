@@ -137,9 +137,15 @@ for(depfile, packagedepsfiles) {
                 !isEmpty (pkgConditionsNotFullfilled) {
                     message("  --> [INFO] Dependency $${pkg.name}_$${pkg.version}@$${pkg.repoType} ignored ! Missing compilation flag definition : $${pkgConditionsNotFullfilled}")
                 } else {
-                    PKGDEPFILE_CONTENT += $${pkg.name}|$${pkg.version}|$${libName}|$${repoInfo}|$${pkg.repoUrl}|$${pkg.linkMode}|$${pkg.toolOptions}
+                    packageInfo = $${pkg.name}
+                    equals(pkg.repoType,"conan") {# conan system package handling
+                        !equals(pkg.channel,"stable") {
+                            packageInfo = $${pkg.name}$$LITERAL_HASH$${pkg.channel}
+                        }
+                    }
+                    verboseMessage("PREPARE=>> " $${packageInfo}|$${pkg.version}|$${libName}|$${repoInfo}|$${pkg.repoUrl}|$${pkg.linkMode}|$${pkg.toolOptions})
+                    PKGDEPFILE_CONTENT += $${packageInfo}|$${pkg.version}|$${libName}|$${repoInfo}|$${pkg.repoUrl}|$${pkg.linkMode}|$${pkg.toolOptions}
                 }
-
                 verboseMessage(" ")
             } # comment package
             else {
@@ -301,7 +307,7 @@ for(depfile, packagedepsfiles) {
             equals(pkg.repoType,"conan") {# conan system package handling
                 message("    --> ["$${pkg.repoType}"] adding " $${pkg.name} " dependency")
                 #use url format according to remote as conan-center index urls are now without '@user/channel' suffix
-                equals(pkg.repoUrl,conan-center) {
+                equals(pkg.repoUrl,conan-center)|equals(pkg.repoUrl,conancenter) {
                     remakenConanDeps += $${pkg.name}/$${pkg.version}
                 } else {
                     remakenConanDeps += $${pkg.name}/$${pkg.version}@$${pkg.identifier}/$${pkg.channel}

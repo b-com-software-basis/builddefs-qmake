@@ -96,8 +96,8 @@ exists($$_PRO_FILE_PWD_/build/packagedependencies.txt) {
                 !equals(QMAKE_POST_LINK,"") {
                     QMAKE_POST_LINK += &&
                 }
-                # TODO : remaken destination dir creation
-                QMAKE_POST_LINK += $${QMAKE_CHK_DIR_EXISTS} $$shell_quote($$shell_path($${TARGETDEPLOYDIR})) $${QMAKE_MKDIR} $$shell_quote($$shell_path($${TARGETDEPLOYDIR})) &&
+                # NB : remaken doesn't create output dir in context of post build call - scope check and create dir 
+                QMAKE_POST_LINK += ($${QMAKE_CHK_DIR_EXISTS} $$shell_quote($$shell_path($${TARGETDEPLOYDIR})) $${QMAKE_MKDIR} $$shell_quote($$shell_path($${TARGETDEPLOYDIR}))) &&
                 QMAKE_POST_LINK += $${REMAKEN_BUNDLE_COMMAND}
             }
         }

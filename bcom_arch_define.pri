@@ -1,7 +1,9 @@
 # Author(s) : Loic Touraine
 
 REMAKEN_INFO_SUFFIX=remakeninfo.txt
-include(builddefs_info.pri)
+!win32 {
+    include(builddefs_info.pri)
+}
 
 android {
     # unix path
@@ -35,7 +37,7 @@ isEmpty(REMAKENDEPSFOLDER) {
         }
     }
     !isEmpty(REMAKENDEPSROOTFOLDER) {
-        REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER}/packages)
+        REMAKENDEPSFOLDER = $$clean_path($${REMAKENDEPSROOTFOLDER})
     }
     else { #new remaken behavior
         isEmpty(USERHOMEFOLDER) {
