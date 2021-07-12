@@ -40,7 +40,7 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
     }
 
     message("---- Complete dependencies list for project $${TARGET} :" )
-    targetDepFiles=$$files($$OUT_PWD/$${TARGET}-packagedependencies*.txt)
+    targetDepFiles=$$files($$OUT_PWD/$${TARGET}-$${PKGDEPFILENAME)
     for (depfile, targetDepFiles) {
         message( $${depfile} ":")
         dependencies = $$cat($${depfile})
@@ -310,8 +310,8 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
 # Manage conan dependencies
 !isEmpty(remakenConanDeps) {
-    !exists($$_PRO_FILE_PWD_/build/$$OUTPUTDIR) {
-        mkpath($$_PRO_FILE_PWD_/build/$$OUTPUTDIR)
+    !exists($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR) {
+        mkpath($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR)
     }
 
     #create conanfile.txt
@@ -327,7 +327,7 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     for (option,remakenConanOptions) {
         CONANFILECONTENT+=$${option}
     }
-    write_file($$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanfile.txt, CONANFILECONTENT)
+    write_file($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt, CONANFILECONTENT)
     contains(CONFIG,c++11) {
         !msvc {
             conanCppStd=11
@@ -347,10 +347,10 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    verboseMessage("conan install $$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$$OUTPUTDIR")
-    system(conan install $$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$$OUTPUTDIR)
-    include($$_PRO_FILE_PWD_/build/$$OUTPUTDIR/conanbuildinfo.pri)
+    verboseMessage("conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR")
+    system(conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR)
+    include($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanbuildinfo.pri)
 }
 else {
-    # TODO remove generated 'build/$$OUTPUTDIR' folder
+    # TODO remove generated 'build/$${LINKMODE}/$$OUTPUTDIR' folder
 }

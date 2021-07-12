@@ -27,7 +27,7 @@ exists($$_PRO_FILE_PWD_/build/configure_conditions.pri) {
 # Check input parameters existence
 !defined(DEPENDENCIESCONFIG,var) {
     warning("DEPENDENCIESCONFIG is not defined : defaulting to shared dependencies mode")
-    DEPENDENCIESCONFIG = sharedlib
+    DEPENDENCIESCONFIG = $${LINKMODE}
 }
 
 # Check install_recurse parameters existence
@@ -167,7 +167,7 @@ write_file($$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}, PKGDEPFILE_CONTENT)
 
 contains(DEPENDENCIESCONFIG,use_remaken_parser)|contains(CONFIG,use_remaken_parser)|contains(REMAKENCONFIG,use_remaken_parser) {
     message("--> [INFO] Using dependencies from dependenciesBuildInfo.pri generated with remaken")
-    include($$_PRO_FILE_PWD_/build/$${OUTPUTDIR}/dependenciesBuildInfo.pri)
+    include($$_PRO_FILE_PWD_/build/$${OUTPUTDIR}/$${LINKMODE}/dependenciesBuildInfo.pri)
 } else {
     message("--> [INFO] Parsing and using dependencies from packagedependencies-parser.pri")
     include (packagedependencies-parser.pri)
