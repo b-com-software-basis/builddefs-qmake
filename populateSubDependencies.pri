@@ -1,6 +1,6 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
-# Detect build toolchain and define BCOM_TARGET_ARCH and BCOM_TARGET_PLATFORM
+# Detect build toolchain and define BCOM_TARGET_ARCH and REMAKEN_TARGET_PLATFORM
 include(bcom_arch_define.pri)
 
 defineReplace(populateSubDependencies) {
@@ -50,15 +50,15 @@ defineReplace(populateSubDependencies) {
                     }
                     verboseMessage("  ---- Processing dependency $${pkgName}_$${pkgVersion}@$${pkgRepoType} repository")
                     equals(pkgRepoType,"artifactory") | equals(pkgRepoType,"github") | equals(pkgRepoType,"nexus") {
-                        deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                         !equals(pkgCategory,$${pkgRepoType}) {
-                            deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
+                            deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
                             !exists($${deployFolder}) { #try old structure for backward compatibility
-                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${BCOM_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
+                                deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${REMAKEN_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                             }
                         }
                         !exists($${deployFolder}) {
-                            warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                            warning("Dependencies source folder should include the target platform information " $${REMAKEN_TARGET_PLATFORM})
                             deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
                             !equals(pkgCategory,$${pkgRepoType}) {
                                 deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}

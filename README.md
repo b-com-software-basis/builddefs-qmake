@@ -7,7 +7,31 @@ The dependencies can be used from [vcpkg](https://github.com/microsoft/vcpkg), [
 
 The rules use the various ```pkg-config``` files to feed the include and link flags, avoiding the need for the developer to maintain the flags in the project file.
 
-builddefs-qmake also support [remaken](https://github.com/b-com-software-basis/remaken) package format
+builddefs-qmake also supports [remaken](https://github.com/b-com-software-basis/remaken) package format
+
+[EXPERIMENTAL] builddefs-qmake can also rely on the output generated with ```remaken configure ...``` ([EXPERIMENTAL] in remaken 1.8.0).
+
+To use this mode, add ```use_remaken_parser``` to either CONFIG, DEPENDENCIES_CONFIG or REMAKENCONFIG variables in your qmake project file before ```[templatelibconfig|templateappconfig].pri``` inclusion.
+
+## builddefs-qmake environment variables
+REMAKEN\_PKG\_ROOT: the remaken packages root folder. The variable must give the path to the root of installed packages (for instance ```/my_path_to/.remaken/packages```). 
+
+Do not define this variable if your remaken packages root is the default one (```$${USERHOMEFOLDER}/.remaken/packages```).
+
+## builddefs-qmake qmake variables
+USERHOMEFOLDER: represents the user home folder. It is the ```$HOME``` folder on unix(e)s, and ```$USERPROFILE``` or - when ```$USERPROFILE``` is not set - ```$HOMEDRIVE/$HOMEPATH``` on windows
+
+
+REMAKENDEPSFOLDER: the remaken packages root folder. Defaults to ```$${USERHOMEFOLDER}/.remaken/packages``` unless ```REMAKEN_PKG_ROOT``` is defined.
+
+FRAMEWORK: the framework name the project belongs to. It is often the same name that the target name. It can be used to gather several libraries belonging to the same framework in the same installation folder.
+
+INSTALLSUBDIR [optional - not recommended]: installation subfolder in which the package will be installed in remaken structure.
+
+PROJECTDEPLOYDIR: the full path to the package installation folder. Its default value is built from 
+```$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}``` (or ```$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}``` when INSTALLSUBDIR is defined)
+
+REMAKEN\_TARGET\_PLATFORM: the platform the project is built for. This value is built from ```$${REMAKEN_OS}-$${REMAKEN_BUILD_TOOLCHAIN}```, for instance ```linux-gcc```.
 
 ## Using Buiddefs-qmake
 

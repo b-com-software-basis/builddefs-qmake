@@ -1,6 +1,6 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
-# Detect build toolchain, define BCOM_TARGET_ARCH and BCOM_TARGET_PLATFORM
+# Detect build toolchain, define BCOM_TARGET_ARCH and REMAKEN_TARGET_PLATFORM
 include(bcom_arch_define.pri)
 
 # Check input parameters existence
@@ -13,9 +13,9 @@ include(bcom_arch_define.pri)
 }
 
 !defined(PROJECTDEPLOYDIR,var) {
-    PROJECTDEPLOYDIR = $${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}
+    PROJECTDEPLOYDIR = $${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}
     defined(INSTALLSUBDIR,var) {
-        PROJECTDEPLOYDIR = $${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}
+        PROJECTDEPLOYDIR = $${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}
     }
     warning("PROJECTDEPLOYDIR may be defined before templatelibconfig.pri inclusion => Defaulting PROJECTDEPLOYDIR to $${PROJECTDEPLOYDIR}. ")
 }

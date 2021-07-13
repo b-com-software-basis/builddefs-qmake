@@ -176,15 +176,15 @@ for(depfile, packagedepsfiles) {
             }
             equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
                 # custom built package handling
-                deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                 !equals(pkg.identifier,$${pkg.repoType}) {
-                    deployFolder=$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
+                    deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}
                     !exists($${deployFolder}) { #try old structure for backward compatibility
-                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${BCOM_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
+                        deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${REMAKEN_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                     }
                 }
                 !exists($${deployFolder}) {
-                    warning("Dependencies source folder should include the target platform information " $${BCOM_TARGET_PLATFORM})
+                    warning("Dependencies source folder should include the target platform information " $${REMAKEN_TARGET_PLATFORM})
                     deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.name}/$${pkg.version}
                     !equals(pkg.identifier,$${pkg.repoType}) {
                         deployFolder=$${REMAKENDEPSFOLDER}/$${pkg.identifier}/$${pkg.name}/$${pkg.version}

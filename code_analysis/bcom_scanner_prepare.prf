@@ -3,7 +3,7 @@
 include(bcom_arch_define.pri)
 
 QMAKE_CODE_SCANNER="sonar-scanner"
-QMAKE_CODE_SCANNER_REPORT_FOLDER = build/sonar/$${BCOM_TARGET_PLATFORM}
+QMAKE_CODE_SCANNER_REPORT_FOLDER = build/sonar/$${REMAKEN_TARGET_PLATFORM}
 code_scan_prepare.commands = mkdir -p $${_PRO_FILE_PWD_}/$${QMAKE_CODE_SCANNER_REPORT_FOLDER}
 
 QMAKE_EXTRA_TARGETS += code_scan_prepare

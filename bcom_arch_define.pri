@@ -131,7 +131,7 @@ ios {
     REMAKEN_OS = ios
 }
 
-isEmpty(BCOM_TARGET_PLATFORM) {
+isEmpty(REMAKEN_TARGET_PLATFORM) {
     REMAKEN_BUILD_TOOLCHAIN = $$basename(QMAKE_CC)
     win32 {
         !defined(QMAKE_MSC_VER,var) {
@@ -177,7 +177,7 @@ isEmpty(BCOM_TARGET_PLATFORM) {
         # note : when icl is used with msvc, the most important is the msvc compiler version!
         REMAKEN_BUILD_TOOLCHAIN=$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
     }
-    BCOM_TARGET_PLATFORM = $${REMAKEN_OS}-$${REMAKEN_BUILD_TOOLCHAIN}
+    REMAKEN_TARGET_PLATFORM = $${REMAKEN_OS}-$${REMAKEN_BUILD_TOOLCHAIN}
 }
 
 macx {
