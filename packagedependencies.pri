@@ -191,7 +191,7 @@ QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
 # PROJECTDEPLOYDIR only defined for lib
 defined(PROJECTDEPLOYDIR,var) {
     package_files.path = $${PROJECTDEPLOYDIR}
-    exists($$_PRO_FILE_PWD_/build/packagedependencies.txt) {
+    exists($$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}) {
         package_files.files = $$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {

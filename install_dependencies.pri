@@ -85,9 +85,9 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
     remakenBundleRecurseOption = --recurse
 }
 
-exists($$_PRO_FILE_PWD_/build/packagedependencies.txt) {
-    verboseMessage("remaken bundle $$_PRO_FILE_PWD_/build/packagedependencies.txt -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} -cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${BCOM_TARGET_ARCH} -v $${remakenBundleRecurseOption}")
-    REMAKEN_BUNDLE_COMMAND = remaken bundle $$_PRO_FILE_PWD_/build/packagedependencies.txt -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} --cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${BCOM_TARGET_ARCH} -v $${remakenBundleRecurseOption}
+exists($$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}) {
+    verboseMessage("remaken bundle $$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} -cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${BCOM_TARGET_ARCH} -v $${remakenBundleRecurseOption}")
+    REMAKEN_BUNDLE_COMMAND = remaken bundle $$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} --cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${BCOM_TARGET_ARCH} -v $${remakenBundleRecurseOption}
 
     win32 {
         contains(PROJECTCONFIG,QTVS) {

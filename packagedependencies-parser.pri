@@ -40,7 +40,7 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
     }
 
     message("---- Complete dependencies list for project $${TARGET} :" )
-    targetDepFiles=$$files($$OUT_PWD/$${TARGET}-$${PKGDEPFILENAME)
+    targetDepFiles=$$files($$OUT_PWD/$${TARGET}-$${PKGDEPFILENAME})
     for (depfile, targetDepFiles) {
         message( $${depfile} ":")
         dependencies = $$cat($${depfile})
