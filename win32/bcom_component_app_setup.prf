@@ -25,10 +25,12 @@ contains (CONFIG, app_setup)
                                 /DSETUP_MANUFACTURER=$$shell_quote($${SETUP_MANUFACTURER}) /DSETUP_PROJECT_PATH=$$shell_quote($$shell_path($$_PRO_FILE_PWD_)) \
                                 /DSETUP_COPYRIGHT=$$shell_quote($${QMAKE_TARGET_COPYRIGHT})
 
-    SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
-    SETUP_COPYFILENAME=$${TARGET}.$${APPEXT}
-    if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
-        NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}
+    !contains(SETUP_CONFIG,DISABLE_TARGET_COPY) {
+        SETUP_COPYFILEPATH=$$shell_quote($$shell_path($${OUT_PWD}/))
+        SETUP_COPYFILENAME=$${TARGET}.$${APPEXT}
+        if (!isEmpty(SETUP_COPYFILEPATH):!isEmpty(SETUP_COPYFILENAME)){
+            NSISCOMMAND += /DSETUP_COPYFILEPATH=$${SETUP_COPYFILEPATH} /DSETUP_COPYFILENAME=$${SETUP_COPYFILENAME}
+        }
     }
 
     !isEmpty(SETUP_SUBINSTALLDIR) {
