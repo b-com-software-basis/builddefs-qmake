@@ -28,10 +28,12 @@ FRAMEWORK: the framework name the project belongs to. It is often the same name 
 
 INSTALLSUBDIR [optional - not recommended]: installation subfolder in which the package will be installed in remaken structure.
 
-PROJECTDEPLOYDIR: the full path to the package installation folder. Its default value is built from 
-```$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}``` (or ```$${REMAKENDEPSFOLDER}/$${BCOM_TARGET_PLATFORM}/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}``` when INSTALLSUBDIR is defined)
-
 REMAKEN\_TARGET\_PLATFORM: the platform the project is built for. This value is built from ```$${REMAKEN_OS}-$${REMAKEN_BUILD_TOOLCHAIN}```, for instance ```linux-gcc```.
+
+PROJECTDEPLOYDIR: the full path to the package installation folder. Its default value is built from 
+```$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${FRAMEWORK}/$${VERSION}``` (or ```$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}``` when INSTALLSUBDIR is defined)
+
+
 
 ## Using Buiddefs-qmake
 
