@@ -130,7 +130,7 @@ Section "-hidden Install"
   
   !ifdef SETUP_COPYFILEPATH & SETUP_COPYFILENAME
 	; copy file or dir
-    File /a /r ${SETUP_COPYFILEPATH}${SETUP_COPYFILENAME}
+    File /nonfatal /a /r ${SETUP_COPYFILEPATH}${SETUP_COPYFILENAME}
   !endif
   
   !ifdef SETUP_COPYDIR
