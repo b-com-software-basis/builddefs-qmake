@@ -81,6 +81,33 @@ defineReplace(populateSubDependencies) {
                                 dependencyPkgDepFiles+=$${deployFolder}/packagedependencies.txt
                             }
                         }
+                        win32:!android {
+                            exists($${deployFolder}/packagedependencies-win.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-win.txt
+                            }
+                        }
+                            # Common unix platform (macx, linux...)
+                        unix {
+                            exists($${deployFolder}/packagedependencies-unix.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-unix.txt
+                            }
+                        }
+                        macx:!android {
+                            exists($${deployFolder}/packagedependencies-mac.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-mac.txt
+                            }
+                        }
+                        linux:!android {
+                            exists($${deployFolder}/packagedependencies-linux.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-linux.txt
+                            }
+                        }
+                        android {
+                            exists($${deployFolder}/packagedependencies-android.txt) {
+                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-android.txt
+                            }
+                        }
+
                         currentPackageDeps = $${dependencyPkgDepFiles}
                         outPackageDeps += $${dependencyPkgDepFiles}
                     }
