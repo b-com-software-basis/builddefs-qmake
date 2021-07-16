@@ -174,7 +174,7 @@ for(depfile, packagedepsfiles) {
                     }
                 }
             }
-            equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
+            equals(pkg.repoType,"http") |equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
                 # custom built package handling
                 deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                 !equals(pkg.identifier,$${pkg.repoType}) {
@@ -252,7 +252,7 @@ for(depfile, packagedepsfiles) {
                     }
                 }
             }
-            equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
+            equals(pkg.repoType,"http")|equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
                 verboseMessage("    pkg-config variables for includes :")
                 verboseMessage("    $$pkgCfgVars")
                 verboseMessage("    pkg-config variables for libs :")
