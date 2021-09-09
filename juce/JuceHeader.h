@@ -37,7 +37,7 @@
 #include "juce_dsp/juce_dsp.h"
 #endif
 #ifdef JUCE_MODULE_AVAILABLE_juce_osc
-#include “juce_osc/juce_osc.h”
+#include "juce_osc/juce_osc.h"
 #endif
 #ifdef JUCE_MODULE_AVAILABLE_juce_cryptography
 #include "juce_cryptography/juce_cryptography.h"
