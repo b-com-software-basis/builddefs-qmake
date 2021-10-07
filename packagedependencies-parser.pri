@@ -277,7 +277,7 @@ for(depfile, packagedepsfiles) {
 gen_suffix=
 for(info, PKGCFG_CFLAGS) {
     first2char = $$str_member($$info, 0, 1)
-    equals(first2char, "-D") | equals (first2char, "-I") {
+    equals(first2char, "-W") | equals(first2char, "-D") | equals (first2char, "-I") {
         gen_suffix= $${gen_suffix}A
         gen_cflags_$${gen_suffix}=$$info
         LIST_CFLAGVAR += gen_cflags_$${gen_suffix}
