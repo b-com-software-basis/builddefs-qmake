@@ -1,6 +1,14 @@
 # Author(s) : Loic Touraine
 # Check resource compiled files existence
 
+# detect system codesign
+exists("/usr/bin/codesign") {
+    SYSTEM_SIGNTOOL_CMD = "/usr/bin/codesign"
+} else {
+    message("Unable to find codesign application : check your Xcode and Developer Tools installation")
+}
+SYSTEM_SIGNTOOL_PARAMS = --force --sign --deep
+
 MAC_PLUGINS_ROOT_PATH = $$(HOME)/Library/Audio/Plug-Ins
 include(bcom_plist_bundle.prf)
 
@@ -81,6 +89,19 @@ for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
         BUNDLE_PACKAGE_CLEAN_CMD += &&
     }
     BUNDLE_PACKAGE_CLEAN_CMD += rm -rf $${TARGET}$${BUNDLE_EXTENSION}
+
+
+    #############
+    # sign bundle
+    #############
+    !equals(BUNDLE_SIGN_CMD,"") {
+        BUNDLE_SIGN_CMD += &&
+    }
+    !equals(BUNDLE_EXTENSION,.aaxplugin) {
+        !isEmpty(SYSTEM_SIGNTOOL_CMD) {
+            BUNDLE_SIGN_CMD += $${SYSTEM_SIGNTOOL_CMD} $${SYSTEM_SIGNTOOL_PARAMS} $${PRODUCT_SYSTEM_CERTIFCATE_NAME} $${TARGET}$${BUNDLE_EXTENSION}
+        }
+    }
 }
 
 bcom_component_bundle_clean.commands = $${BUNDLE_PACKAGE_CLEAN_CMD}
@@ -91,6 +112,9 @@ bcom_component_bundle_prepare.depends += bcom_component_bundle_clean
 create_bundle.commands = $$BUNDLE_PACKAGE_CMD
 create_bundle.depends += bcom_component_bundle_prepare $(TARGET)
 
+sign_bundle.commands = $$BUNDLE_SIGN_CMD
+sign_bundle.depends = $$create_bundle
+
 install_bundle.commands = $$BUNDLE_INSTALL_CMD
 install_bundle.depends += create_bundle $(TARGET)
 
@@ -99,7 +123,7 @@ uninstall_bundle.commands = $$BUNDLE_UNINSTALL_CMD
 
 
 #QMAKE doesn't manage adding targets from inference rules : we need to explicitly declare each target even when they are dependent on each other
-QMAKE_EXTRA_TARGETS += bcom_component_bundle_clean bcom_component_bundle_prepare create_bundle install_bundle uninstall_bundle
+QMAKE_EXTRA_TARGETS += bcom_component_bundle_clean bcom_component_bundle_prepare create_bundle install_bundle uninstall_bundle sign_bundle
 
 #NOTE: DO NOT PUT bcom_component_bundle in POST or PRE_TARGETDEPS as it will create a circular dependent upon $(TARGET) and will result in the build of the target AFTER the bcom_component_bundle target
 #which gives an error (the target to copy doesn't exists)
