@@ -1,0 +1,256 @@
+{
+    "version": 1,
+    "supportedProjectTypes": [ "Qt4ProjectManager.Qt4Project" ],
+    "id": "R.RemakenLibrary",
+    "category": "I.RemakenProjects",
+    "trDescription": "Creates a simple remaken C++ template library.",
+    "trDisplayName": "Remaken Library template",
+    "trDisplayCategory": "Remaken Projects",
+    "icon": "library_icon.png",
+    "enabled": "%{JS: [ %{Plugins} ].indexOf('CppEditor') >= 0 && ([ %{Plugins} ].indexOf('QmakeProjectManager') >= 0 || [ %{Plugins} ].indexOf('CMakeProjectManager') >= 0)}",
+
+    "options":
+    [
+        { "key": "ProjectFile", "value": "%{ProFile}" },
+        { "key": "ProFile", "value": "%{JS: Util.fileName('%{ProjectDirectory}/%{ProjectName}', 'pro')}" },
+        { "key": "LibraryName", "value": "%{ProjectName}"},
+        { "key": "PackageNameKey", "value": "%{PackageName}"},
+        { "key": "PackageVersionKey", "value": "%{PackageVersion}"},
+        { "key": "InstallSubDir", "value": "%{InstallSubFolder}"},
+        { "key": "withQTVS","value": "%{UseQTVS}" },
+        { "key": "libraryBuildMode","value": "%{BuildMode}" },
+        { "key": "dependenciesBuildMode","value": "%{DepsBuildMode}" },
+        { "key": "recurseDependencies","value": "%{RecursiveDeps}" },
+        { "key": "dependenciesInstallMode","value": "%{InstallMode}" }
+    ],
+
+    "pages":
+    [
+        {
+            "trDisplayName": "Project Location",
+            "trShortTitle": "Location",
+            "typeId": "Project"
+        },
+        {
+            "trDisplayName": "Define Project Details",
+            "trShortTitle": "Details",
+            "typeId": "Fields",
+            "data":
+            [
+                {
+                    "name": "ProjectPageDescription",
+                    "type": "Label",
+                    "span": true,
+                    "data":
+                    {
+                        "trText": "Specify basic information about the build options to use for the XPCF module.",
+                        "wordWrap": true
+                    }
+                },
+                {
+                    "name": "Sp1",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "PackageDescription",
+                    "type": "Label",
+                    "span": false,
+                    "data":
+                    {
+                        "trText": "-> (used to install several modules in the same package - defaults to the project name)",
+                        "wordWrap": true
+                    }
+                },
+                {
+                    "name": "PackageName",
+                    "trDisplayName": "Package name :",
+                    "type": "LineEdit",
+                    "mandatory": true,
+                    "data":
+                    {
+                        "trText": "%{ProjectName}",
+                        "trDisabledText": "%{ProjectName}"
+                    }
+                },
+                {
+                    "name": "Sp2",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "PackageVersion",
+                    "trDisplayName": "Package version :",
+                    "type": "LineEdit",
+                    "mandatory": true,
+                    "data":
+                    {
+                        "trText": "1.0.0",
+                        "trDisabledText": "1.0.0"
+                    }
+                },
+            
+                {
+                    "name": "InstallSubFolder",
+                    "trDisplayName": "Package installation sub folder :",
+                    "type": "LineEdit",
+                    "mandatory": false,
+                    "data":
+                    {
+                        "trText": "",
+                        "trDisabledText": ""
+                    }
+                },
+                {
+                    "name": "BuildMode",
+                    "trDisplayName": "Target type:",
+                    "type": "ComboBox",
+                    "data":
+                    {
+                        "index": 0,
+                        "items":
+                        [
+                            {
+                                "trKey": "Shared Library",
+                                "value": "shared"
+                            },
+                            {
+                                "trKey": "Statically Linked Library",
+                                "value": "static"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "DepsBuildMode",
+                    "trDisplayName": "Dependencies type:",
+                    "type": "ComboBox",
+                    "data":
+                    {
+                        "index": 0,
+                        "items":
+                        [
+                            {
+                                "trKey": "Shared libraries",
+                                "value": "shared"
+                            },
+                            {
+                                "trKey": "Static libraries",
+                                "value": "static"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "Sp3",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "InstallMode",
+                    "trDisplayName": "Dependencies installation mode:",
+                    "type": "ComboBox",
+                    "data":
+                    {
+                        "index": 0,
+                        "items":
+                        [
+                            {
+                                "trKey": "don't install dependencies",
+                                "value": "noinstall"
+                            },
+                            {
+                                "trKey": "install first level dependencies",
+                                "value": "install"
+                            },
+                            {
+                                "trKey": "install recursively all dependencies",
+                                "value": "install_recurse"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "Sp4",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "RecursiveDeps",
+                    "trDisplayName": "Recursively find dependencies",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "recurse",
+                        "uncheckedValue": "norecurse",
+                        "checked": "%{JS: value('InstallMode') === 'install_recurse' ? 'true' : 'false'}"                        
+                    }
+                },
+                {
+                    "name": "Sp5",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "UseQTVS",
+                    "trDisplayName": "Use QTVS",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "QTVS",
+                        "uncheckedValue": "noQTVS"
+                    }
+                }
+            ]
+        },        
+        {
+            "trDisplayName": "Kit Selection",
+            "trShortTitle": "Kits",
+            "typeId": "Kits",
+            "enabled": "%{JS: ! %{IsSubproject}}",
+            "data": { "projectFilePath": "%{ProjectFile}" }
+        },
+        {
+            "trDisplayName": "Project Management",
+            "trShortTitle": "Summary",
+            "typeId": "Summary"
+        }
+    ],
+    "generators":
+    [
+        {
+            "typeId": "File",
+            "data":
+            [
+                {
+                    "source": "library.pro",
+                    "target": "%{ProFile}",
+                    "openAsProject": true,
+                    "condition": "%{JS: '%{BuildSystem}' === 'qmake'}"
+                },
+                {
+                    "source": "findremakenrules.pri",
+                    "target": "findremakenrules.pri",
+                    "openAsProject": false,
+                    "condition": "%{JS: '%{BuildSystem}' === 'qmake'}"
+                },
+                {
+                    "source": "remaken-library.pc.in",
+                    "target": "%{JS: 'bcom-' + '%{ProjectName}' + '.pc.in'}",
+                    "openAsProject": false,
+                    "condition": "%{JS: '%{BuildSystem}' === 'qmake'}"
+                },
+                {
+                    "source": "library_API.h",
+                    "target": "%{LibraryName}API.h",
+                    "openInEditor": true
+                },
+                {
+                    "source": "packagedependencies_tmpl.txt",
+                    "target": "packagedependencies.txt",
+                    "openInEditor": true
+                },
+                {
+                    "source": "git.ignore",
+                    "target": ".gitignore",
+                    "condition": "%{JS: ! %{IsSubproject} && '%{VersionControl}' === 'G.Git'}"
+                }
+            ]
+        }
+    ]
+}

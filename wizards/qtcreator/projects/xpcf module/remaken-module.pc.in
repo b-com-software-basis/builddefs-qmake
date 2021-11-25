@@ -1,0 +1,9 @@
+libname=@TARGET@
+prefix=/usr/local
+includedir=${prefix}/interfaces
+
+Name: @TARGET@
+Description:
+Version: @VERSION@
+Requires:
+Cflags: -I${includedir}

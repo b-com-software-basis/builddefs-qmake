@@ -1,0 +1,5 @@
+============ QT CREATOR XPCF WIZARDS INSTALLATION =================
+
+To install qt creator xpcf wizards, run within the current directory :
+- For unix(e)s like systems (Linux, macos ...) : ./install.sh
+- For windows : install.bat

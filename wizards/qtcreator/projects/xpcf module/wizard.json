@@ -1,0 +1,283 @@
+{
+    "version": 1,
+    "supportedProjectTypes": [ "Qt4ProjectManager.Qt4Project" ],
+    "id": "R.XPCFModuleLibrary",
+    "category": "I.XPCFProjects",
+    "trDescription": "Creates a simple XPCF C++ template module.",
+    "trDisplayName": "XPCF Module template",
+    "trDisplayCategory": "XPCF Projects",
+    "icon": "module_thin.png",
+    "enabled": "%{JS: [ %{Plugins} ].indexOf('CppEditor') >= 0 && ([ %{Plugins} ].indexOf('QmakeProjectManager') >= 0 || [ %{Plugins} ].indexOf('CMakeProjectManager') >= 0)}",
+
+    "options":
+    [
+        { "key": "ProjectFile", "value": "%{ProFile}" },
+        { "key": "ProFile", "value": "%{JS: Util.fileName('%{ProjectDirectory}/%{ProjectName}', 'pro')}" },
+        { "key": "ModuleName", "value": "%{ProjectName}"},
+        { "key": "PackageNameKey", "value": "%{PackageName}"},
+        { "key": "PackageVersionKey", "value": "%{PackageVersion}"},
+        { "key": "InstallSubDir", "value": "%{InstallSubFolder}"},
+        { "key": "XPCFVersion", "value": "%{JS: Util.fileName(Util.baseName('%{XPCFVersionPath}') , Util.completeSuffix('%{XPCFVersionPath}'))}"},
+        { "key": "ModuleNamespace","value": "%{ModuleNamespaceName}" },
+        { "key": "CppFileName", "value": "%{JS: '%{ProjectName}' + '_main.' + Util.preferredSuffix('text/x-c++src')}" },
+        { "key": "withQTVS","value": "%{UseQTVS}" },
+        { "key": "dependenciesBuildMode","value": "%{DepsBuildMode}" },
+        { "key": "recurseDependencies","value": "%{RecursiveDeps}" },
+        { "key": "dependenciesInstallMode","value": "%{InstallMode}" }
+    ],
+
+    "pages":
+    [
+        {
+            "trDisplayName": "Project Location",
+            "trShortTitle": "Location",
+            "typeId": "Project"
+        },
+        {
+            "trDisplayName": "Define Project Details",
+            "trShortTitle": "Details",
+            "typeId": "Fields",
+            "data":
+            [
+                {
+                    "name": "ProjectPageDescription",
+                    "type": "Label",
+                    "span": true,
+                    "data":
+                    {
+                        "trText": "Specify basic information about the build options to use for the XPCF module.",
+                        "wordWrap": true
+                    }
+                },
+                {
+                    "name": "Sp10",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "PackageDescription",
+                    "type": "Label",
+                    "span": false,
+                    "data":
+                    {
+                        "trText": "-> (used to install several modules in the same package - defaults to the project name)",
+                        "wordWrap": true
+                    }
+                },
+                {
+                    "name": "PackageName",
+                    "trDisplayName": "Package name :",
+                    "type": "LineEdit",
+                    "mandatory": true,
+                    "data":
+                    {
+                        "trText": "%{ProjectName}",
+                        "trDisabledText": "%{ProjectName}"
+                    }
+                },
+                {
+                    "name": "Sp11",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "PackageVersion",
+                    "trDisplayName": "Package version :",
+                    "type": "LineEdit",
+                    "mandatory": true,
+                    "data":
+                    {
+                        "trText": "1.0.0",
+                        "trDisabledText": "1.0.0"
+                    }
+                },
+                {
+                    "name": "InstallSubFolder",
+                    "trDisplayName": "Package installation sub folder :",
+                    "type": "LineEdit",
+                    "mandatory": false,
+                    "data":
+                    {
+                        "trText": "",
+                        "trDisabledText": ""
+                    }
+                },
+                {
+                    "name": "DepsBuildMode",
+                    "trDisplayName": "Dependencies type:",
+                    "type": "ComboBox",
+                    "data":
+                    {
+                        "index": 0,
+                        "items":
+                        [
+                            {
+                                "trKey": "Shared libraries",
+                                "value": "shared"
+                            },
+                            {
+                                "trKey": "Static libraries",
+                                "value": "static"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "Sp0",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "InstallMode",
+                    "trDisplayName": "Dependencies installation mode:",
+                    "type": "ComboBox",
+                    "data":
+                    {
+                        "index": 0,
+                        "items":
+                        [
+                            {
+                                "trKey": "don't install dependencies",
+                                "value": "noinstall"
+                            },
+                            {
+                                "trKey": "install first level dependencies",
+                                "value": "install"
+                            },
+                            {
+                                "trKey": "install recursively all dependencies",
+                                "value": "install_recurse"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "Sp1",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "RecursiveDeps",
+                    "trDisplayName": "Recursively find dependencies",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "recurse",
+                        "uncheckedValue": "norecurse",
+                        "checked": "%{JS: value('InstallMode') === 'install_recurse' ? 'true' : 'false'}"                        
+                    }
+                },
+                {
+                    "name": "Sp2",
+                    "type": "Spacer"
+                },
+                {
+                    "name": "UseQTVS",
+                    "trDisplayName": "Use QTVS",
+                    "type": "CheckBox",
+                    "data":
+                    {
+                        "checkedValue": "QTVS",
+                        "uncheckedValue": "noQTVS"
+                    }
+                }
+            ]
+        },
+        {
+            "trDisplayName": "Choose XPCF version",
+            "trShortTitle": "XPCF Version",
+            "typeId": "Fields",
+            "enabled": "%{JS: ! %{IsSubproject}}",
+            "data":
+            [
+                {
+                    "name": "XPCFVersionDescription",
+                    "type": "Label",
+                    "data":
+                    {
+                        "trText": "Provide the XPCF package version to use: select the x.y.z directory where XPCF is located (i.e. the x.y.z folder where x,y and z are numbers):",
+                        "wordWrap": true
+                    }
+                },
+                {
+                    "name": "XPCFVersionPath",
+                    "trDisplayName": "XPCF version folder:",
+                    "type": "PathChooser",
+                    "mandatory": true,
+                    "data":
+                    {
+                    "kind": "existingDirectory",
+                    "basePath": "%{InitialPath}/.remaken/packages/",
+                    "path": "%{InitialPath}/.remaken/packages/"
+                    }
+                },
+                {
+                    "name": "ModuleNamespaceName",
+                    "trDisplayName": "Module namespace:",
+                    "type": "LineEdit",
+                    "mandatory": true,
+                    "data":
+                    {
+                        "trText": "%{ProjectName}",
+                        "trDisabledText": "%{ProjectName}"
+                    }
+                }
+            ]
+        },
+        {
+            "trDisplayName": "Kit Selection",
+            "trShortTitle": "Kits",
+            "typeId": "Kits",
+            "enabled": "%{JS: ! %{IsSubproject}}",
+            "data": { "projectFilePath": "%{ProjectFile}" }
+        },
+        {
+            "trDisplayName": "Project Management",
+            "trShortTitle": "Summary",
+            "typeId": "Summary"
+        }
+    ],
+    "generators":
+    [
+        {
+            "typeId": "File",
+            "data":
+            [
+                {
+                    "source": "module.pro",
+                    "target": "%{ProFile}",
+                    "openAsProject": true,
+                    "condition": "%{JS: '%{BuildSystem}' === 'qmake'}"
+                },
+                {
+                    "source": "findremakenrules.pri",
+                    "target": "findremakenrules.pri",
+                    "openAsProject": false,
+                    "condition": "%{JS: '%{BuildSystem}' === 'qmake'}"
+                },
+                {
+                    "source": "remaken-module.pc.in",
+                    "target": "%{JS: 'bcom-' + '%{ProjectName}' + '.pc.in'}",
+                    "openAsProject": false,
+                    "condition": "%{JS: '%{BuildSystem}' === 'qmake'}"
+                },
+                {
+                    "source": "module_main.cpp",
+                    "target": "%{CppFileName}",
+                    "openInEditor": true
+                },
+                {
+                    "source": "module_API.h",
+                    "target": "%{ModuleName}API.h",
+                    "openInEditor": true
+                },
+                {
+                    "source": "packagedependencies_tmpl.txt",
+                    "target": "packagedependencies.txt",
+                    "openInEditor": true
+                },
+                {
+                    "source": "git.ignore",
+                    "target": ".gitignore",
+                    "condition": "%{JS: ! %{IsSubproject} && '%{VersionControl}' === 'G.Git'}"
+                }
+            ]
+        }
+    ]
+}
