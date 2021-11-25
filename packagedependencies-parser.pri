@@ -348,7 +348,12 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
     verboseMessage("conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR")
-    system(conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR)
+    android {
+        system(conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR)
+    }
+    else {
+        system(conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR)
+    }
     include($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanbuildinfo.pri)
 }
 else {
