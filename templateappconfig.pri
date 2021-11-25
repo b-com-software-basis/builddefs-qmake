@@ -1,6 +1,9 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
-FRAMEWORK = $$TARGET
+!defined(FRAMEWORK,var) {
+    warning("FRAMEWORK is not defined : defaulting to $$TARGET")
+    FRAMEWORK = $$TARGET
+}
 
 # Manage install path
 include(bcom_installpath_define.pri)
