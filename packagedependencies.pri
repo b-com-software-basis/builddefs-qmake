@@ -176,7 +176,7 @@ PKGDEPFILENAME=packagedependencies.txt
 contains(LINKMODE,static) {
     PKGDEPFILENAME=packagedependencies-static.txt
 }
-write_file($$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}, DEPFILE_CONTENT)
+write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}, DEPFILE_CONTENT)
 
 message("=====> Parsing extra-packages files")
 DEPFILE_CONTENT = $$aggregateDepsFiles($${extradepsfiles})
@@ -184,11 +184,11 @@ EXTRADEPFILENAME=extra-packages.txt
 contains(LINKMODE,static) {
     EXTRADEPFILENAME=extra-packages-static.txt
 }
-write_file($$_PRO_FILE_PWD_/build/$${EXTRADEPFILENAME}, DEPFILE_CONTENT)
+write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}, DEPFILE_CONTENT)
 
 contains(DEPENDENCIESCONFIG,use_remaken_parser)|contains(CONFIG,use_remaken_parser)|contains(REMAKENCONFIG,use_remaken_parser) {
     message("--> [INFO] Using dependencies from dependenciesBuildInfo.pri generated with remaken")
-    include($$_PRO_FILE_PWD_/build/$${LINKMODE}/$${OUTPUTDIR}/dependenciesBuildInfo.pri)
+    include($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${LINKMODE}/$${OUTPUTDIR}/dependenciesBuildInfo.pri)
 } else {
     message("--> [INFO] Parsing and using dependencies from packagedependencies-parser.pri")
     include (packagedependencies-parser.pri)
@@ -213,10 +213,10 @@ QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
 defined(PROJECTDEPLOYDIR,var) {
     package_files.path = $${PROJECTDEPLOYDIR}
     exists($$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}) {
-        package_files.files = $$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}
+        package_files.files = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
     }
      exists($$_PRO_FILE_PWD_/build/$${EXTRADEPFILENAME}) {
-        package_files.files = $$_PRO_FILE_PWD_/build/$${EXTRADEPFILENAME}
+        package_files.files = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
         package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
