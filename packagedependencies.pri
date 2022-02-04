@@ -20,8 +20,8 @@ CONFIG(release,debug|release) {
     CONANBUILDTYPE = Release
 }
 
-exists($$_PRO_FILE_PWD_/build/configure_conditions.pri) {
-    include($$_PRO_FILE_PWD_/build/configure_conditions.pri)
+exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri) {
+    include($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri)
 }
 
 # Check input parameters existence
@@ -212,10 +212,10 @@ QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
 # PROJECTDEPLOYDIR only defined for lib
 defined(PROJECTDEPLOYDIR,var) {
     package_files.path = $${PROJECTDEPLOYDIR}
-    exists($$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}) {
+    exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}) {
         package_files.files = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
     }
-     exists($$_PRO_FILE_PWD_/build/$${EXTRADEPFILENAME}) {
+     exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}) {
         package_files.files = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
