@@ -216,7 +216,7 @@ defined(PROJECTDEPLOYDIR,var) {
         package_files.files = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
     }
      exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}) {
-        package_files.files = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
+        package_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
     }
     exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
         package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
