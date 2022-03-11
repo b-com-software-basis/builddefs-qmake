@@ -1,62 +1,44 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
-ignorefile = packageignoreinstall.txt
-exists($$_PRO_FILE_PWD_/$${ignorefile}) {
-    IGNOREFILE_CONTENT = $$cat($$_PRO_FILE_PWD_/$${ignorefile},lines)
-    write_file($$_PRO_FILE_PWD_/build/$${ignorefile}, IGNOREFILE_CONTENT)
+packageignoredepsfiles = $$_PRO_FILE_PWD_/packageignoreinstall.txt
+win32:!android {
+    packageignoredepsfiles += $$_PRO_FILE_PWD_/packageignoreinstall-win.txt
+}
+# Common unix platform (macx, linux, android...)
+unix {
+    packageignoredepsfiles += $$_PRO_FILE_PWD_/packageignoreinstall-unix.txt
+}
+macx:!android {
+    packageignoredepsfiles += $$_PRO_FILE_PWD_/packageignoreinstall-mac.txt
+}
+linux:!android {
+    packageignoredepsfiles += $$_PRO_FILE_PWD_/packageignoreinstall-linux.txt
+}
+android {
+    packageignoredepsfiles += $$_PRO_FILE_PWD_/packageignoreinstall-android.txt
 }
 
-ignorefile = packageignoreinstall-win.txt
-win32:!android:exists($$_PRO_FILE_PWD_/$${ignorefile}) {
-    IGNOREFILE_CONTENT = $$cat($$_PRO_FILE_PWD_/$${ignorefile},lines)
-    write_file($$_PRO_FILE_PWD_/build/$${ignorefile}, IGNOREFILE_CONTENT)
+defineReplace(aggregateIgnoreDepsFiles) {
+    ignoreDepsFilesList = $$ARGS
+    for(depfile, ignoreDepsFilesList) {
+        !exists($${depfile}) {
+            verboseMessage("  -- No " $${depfile} " file to process for " $$TARGET)
+        } else {
+            pkgIgnoreFileContent += $$cat($${depfile},lines)
+
+        }
+    }
+    return($${pkgIgnoreFileContent})
 }
 
-ignorefile = packageignoreinstall-unix.txt
-unix:exists($$_PRO_FILE_PWD_/$${ignorefile}) {
-    IGNOREFILE_CONTENT = $$cat($$_PRO_FILE_PWD_/$${ignorefile},lines)
-    write_file($$_PRO_FILE_PWD_/build/$${ignorefile}, IGNOREFILE_CONTENT)
-}
-
-ignorefile = packageignoreinstall-mac.txt
-macx:!android:exists($$_PRO_FILE_PWD_/$${ignorefile}) {
-    IGNOREFILE_CONTENT = $$cat($$_PRO_FILE_PWD_/$${ignorefile},lines)
-    write_file($$_PRO_FILE_PWD_/build/$${ignorefile}, IGNOREFILE_CONTENT)
-}
-
-ignorefile = packageignoreinstall-linux.txt
-linux:!android:exists($$_PRO_FILE_PWD_/$${ignorefile}) {
-    IGNOREFILE_CONTENT = $$cat($$_PRO_FILE_PWD_/$${ignorefile},lines)
-    write_file($$_PRO_FILE_PWD_/build/$${ignorefile}, IGNOREFILE_CONTENT)
-}
-
-ignorefile = packageignoreinstall-android.txt
-android:exists($$_PRO_FILE_PWD_/$${ignorefile}) {
-    IGNOREFILE_CONTENT = $$cat($$_PRO_FILE_PWD_/$${ignorefile},lines)
-    write_file($$_PRO_FILE_PWD_/build/$${ignorefile}, IGNOREFILE_CONTENT)
-}
+IGNOREDEPFILE_CONTENT = $$aggregateIgnoreDepsFiles($${packageignoredepsfiles})
+IGNOREPKGDEPFILENAME=packageignoreinstall.txt
+write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}, IGNOREDEPFILE_CONTENT)
 
 defined(PROJECTDEPLOYDIR,var) {
     packageignore_files.path = $${PROJECTDEPLOYDIR}
-
-    # package ignore files
-    exists($$_PRO_FILE_PWD_/build/packageignoreinstall.txt) {
-        packageignore_files.files += $$_PRO_FILE_PWD_/build/packageignoreinstall.txt
-    }
-    win32:!android:exists($$_PRO_FILE_PWD_/build/packageignoreinstall-win.txt) {
-        packageignore_files.files += $$_PRO_FILE_PWD_/build/packageignoreinstall-win.txt
-    }
-    unix:exists($$_PRO_FILE_PWD_/build/packageignoreinstall-unix.txt) {
-        packageignore_files.files += $$_PRO_FILE_PWD_/build/packageignoreinstall-unix.txt
-    }
-    macx:!android:exists($$_PRO_FILE_PWD_/build/packageignoreinstall-mac.txt) {
-        packageignore_files.files += $$_PRO_FILE_PWD_/build/packageignoreinstall-mac.txt
-    }
-    linux:!android:exists($$_PRO_FILE_PWD_/build/packageignoreinstall-linux.txt) {
-        packageignore_files.files += $$_PRO_FILE_PWD_/build/packageignoreinstall-linux.txt
-    }
-    android:exists($$_PRO_FILE_PWD_/build/packageignoreinstall-android.txt) {
-        packageignore_files.files += $$_PRO_FILE_PWD_/build/packageignoreinstall-android.txt
+    exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/packageignoreinstall.txt) {
+        packageignore_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/packageignoreinstall.txt
     }
     INSTALLS += packageignore_files
 }
