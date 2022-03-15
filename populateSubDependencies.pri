@@ -54,19 +54,22 @@ defineReplace(populateSubDependencies) {
                         !equals(pkgCategory,$${pkgRepoType}) {
                             deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
                             !exists($${deployFolder}) { #try old structure for backward compatibility
+                                warning("No package found at " $${deployFolder})
+                                warning("--> Try with old structure for backward compatibility")
                                 deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${REMAKEN_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                             }
                         }
                         !exists($${deployFolder}) {
-                            warning("Dependencies source folder should include the target platform information " $${REMAKEN_TARGET_PLATFORM})
+                            warning("No package found at " $${deployFolder})
+                            warning("--> Dependencies source folder should include the target platform information " $${REMAKEN_TARGET_PLATFORM})
                             deployFolder=$${REMAKENDEPSFOLDER}/$${pkgName}/$${pkgVersion}
                             !equals(pkgCategory,$${pkgRepoType}) {
                                 deployFolder=$${REMAKENDEPSFOLDER}/$${pkgCategory}/$${pkgName}/$${pkgVersion}
                             }
-                            warning("Defaulting search folder to " $${deployFolder})
+                            warning("--> Finally try without target platform in $${deployFolder}")
                         }
                         !exists($${deployFolder}) {
-                            error("No package found at " $${deployFolder})
+                            error("  No package found at " $${deployFolder})
                         }
                         contains(pkgLinkMode,static) {
                             exists($${deployFolder}/packagedependencies-static.txt) {

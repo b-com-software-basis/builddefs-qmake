@@ -84,6 +84,11 @@ isEmpty(BCOM_TARGET_ARCH) {
           conanArch = "arch=x86"
           vcpkgtriplet = x86-osx
       }
+      contains(CONFIG, arm64) {
+          BCOM_TARGET_ARCH = arm64
+          conanArch = "arch=armv8"
+          vcpkgtriplet = arm64-osx
+      }
   }
   linux:!android {
       # To build for i386, duplicate the 64 bits build kit and change the compilers used : Qmake specs are adapted for 32 bits build
@@ -178,6 +183,7 @@ isEmpty(REMAKEN_TARGET_PLATFORM) {
         REMAKEN_BUILD_TOOLCHAIN=$$basename(QMAKE_CC)-$$BCOM_COMPILER_VER
     }
     REMAKEN_TARGET_PLATFORM = $${REMAKEN_OS}-$${REMAKEN_BUILD_TOOLCHAIN}
+    REMAKEN_FULL_PLATFORM = $${REMAKEN_TARGET_PLATFORM}-$${BCOM_TARGET_ARCH}
 }
 
 macx {

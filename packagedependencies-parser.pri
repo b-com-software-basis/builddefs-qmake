@@ -1,6 +1,6 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
-packagedepsfiles = $$_PRO_FILE_PWD_/build/$${PKGDEPFILENAME}
+packagedepsfiles = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
 
 message(" ")
 message("----------------------------------------------------------------")

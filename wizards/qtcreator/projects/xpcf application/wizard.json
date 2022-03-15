@@ -53,16 +53,6 @@
                     "type": "Spacer"
                 },
                 {
-                    "name": "PackageDescription",
-                    "type": "Label",
-                    "span": false,
-                    "data":
-                    {
-                        "trText": "-> (used to install several modules in the same package - defaults to the project name)",
-                        "wordWrap": true
-                    }
-                },
-                {
                     "name": "PackageName",
                     "trDisplayName": "Package name :",
                     "type": "LineEdit",
@@ -71,6 +61,16 @@
                     {
                         "trText": "%{ProjectName}",
                         "trDisabledText": "%{ProjectName}"
+                    }
+                },
+				{
+                    "name": "PackageDescription",
+                    "type": "Label",
+                    "span": false,
+                    "data":
+                    {
+                        "trText": "-> (used to install several modules in the same package - defaults to the project name)",
+                        "wordWrap": true
                     }
                 },
                 {
