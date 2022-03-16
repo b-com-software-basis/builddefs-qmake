@@ -33,12 +33,14 @@ defineReplace(aggregateIgnoreDepsFiles) {
 
 IGNOREDEPFILE_CONTENT = $$aggregateIgnoreDepsFiles($${packageignoredepsfiles})
 IGNOREPKGDEPFILENAME=packageignoreinstall.txt
-write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}, IGNOREDEPFILE_CONTENT)
+!isEmpty(IGNOREDEPFILE_CONTENT) {
+    write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}, IGNOREDEPFILE_CONTENT)
+}
 
 defined(PROJECTDEPLOYDIR,var) {
     packageignore_files.path = $${PROJECTDEPLOYDIR}
-    exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/packageignoreinstall.txt) {
-        packageignore_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/packageignoreinstall.txt
+    exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}) {
+        packageignore_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}
     }
     INSTALLS += packageignore_files
 }

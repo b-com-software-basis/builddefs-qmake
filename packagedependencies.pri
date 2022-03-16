@@ -176,7 +176,9 @@ PKGDEPFILENAME=packagedependencies.txt
 contains(LINKMODE,static) {
     PKGDEPFILENAME=packagedependencies-static.txt
 }
-write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}, DEPFILE_CONTENT)
+!isEmpty(DEPFILE_CONTENT) {
+    write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}, DEPFILE_CONTENT)
+}
 
 message("=====> Parsing extra-packages files")
 DEPFILE_CONTENT = $$aggregateDepsFiles($${extradepsfiles})
@@ -184,7 +186,9 @@ EXTRADEPFILENAME=extra-packages.txt
 contains(LINKMODE,static) {
     EXTRADEPFILENAME=extra-packages-static.txt
 }
-write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}, DEPFILE_CONTENT)
+!isEmpty(DEPFILE_CONTENT) {
+    write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}, DEPFILE_CONTENT)
+}
 
 contains(DEPENDENCIESCONFIG,use_remaken_parser)|contains(CONFIG,use_remaken_parser)|contains(REMAKENCONFIG,use_remaken_parser) {
     message("--> [INFO] Using dependencies from dependenciesBuildInfo.pri generated with remaken")
