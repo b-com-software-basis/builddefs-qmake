@@ -112,8 +112,6 @@ INSTALLS += target
 
 # Parse dependencies if any and fill CFLAGS,CXXFLAGS and LFLAGS
 include (packagedependencies.pri)
-# remove .pc and packagedependencies.txt copy
-INSTALLS -= package_files
 
 # manage setup creation
 contains (CONFIG, app_setup) {

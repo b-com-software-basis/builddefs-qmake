@@ -218,8 +218,10 @@ defined(PROJECTDEPLOYDIR,var) {
      exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}) {
         package_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
     }
-    exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
-        package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
+    contains(TEMPLATE, lib)|contains(TEMPLATE,vclib) {
+        exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
+            package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
+        }
     }
     INSTALLS += package_files
 }
