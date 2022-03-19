@@ -26,12 +26,12 @@ isEmpty(QMAKE_RATS_FLAGS):!!isEmpty(QMAKE_RATS) {
     remaken_rats_source.variables = QMAKE_RATS_FLAGS
     remaken_rats_source.commands = $$QMAKE_RATS $(QMAKE_COMP_QMAKE_RATS_FLAGS) --xml ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
     remaken_rats_source.output = $${_PRO_FILE_PWD_}/$${QMAKE_CODE_SCANNER_REPORT_FOLDER}/rats_report.xml
-  #  remaken_rats_source.input = BCOM_ALLSOURCES
+  #  remaken_rats_source.input = REMAKEN_ALLSOURCES
     remaken_rats_source.input = SOURCES
     remaken_rats_source.input += HEADERS
     remaken_rats_source.name = RATS
-    remaken_rats_source.variable_out = BCOM_RATS_REPORT
-    silent:remaken_rats_source.commands = @echo Calling rats $${BCOM_ALLSOURCES} && $$remaken_rats_source.commands
+    remaken_rats_source.variable_out = REMAKEN_RATS_REPORT
+    silent:remaken_rats_source.commands = @echo Calling rats $${REMAKEN_ALLSOURCES} && $$remaken_rats_source.commands
     QMAKE_EXTRA_COMPILERS += remaken_rats_source
 }
 

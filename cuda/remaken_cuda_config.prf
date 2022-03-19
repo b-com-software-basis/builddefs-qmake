@@ -143,7 +143,7 @@ win32 {
     cuda.name = Compile ${QMAKE_FILE_IN}
     contains(TEMPLATE, app) {
         cuda.CONFIG += no_link
-        cuda.variable_out = BCOM_CUDA_COMPILED_FILES
+        cuda.variable_out = REMAKEN_CUDA_COMPILED_FILES
         silent:cuda.commands = @echo cuda ${QMAKE_FILE_IN} && $$cuda.commands
     }
     QMAKE_EXTRA_COMPILERS += cuda
@@ -154,9 +154,9 @@ win32 {
         cuda_link.variables = LIBS
         cuda_link.commands = $$CUDA_DIR/bin/nvcc $$NVCC_OPTIONS -ccbin $${QMAKE_CXX} ${INCPATH} $(DEFINES) ${QMAKE_COMP_LIBS} -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
         cuda_link.output = $$TARGET #${QMAKE_FILE_BASE}_cudalink$${first(QMAKE_EXT_OBJ)}
-        cuda_link.input = BCOM_CUDA_COMPILED_FILES
-        cuda_link.name = Link ${BCOM_CUDA_COMPILED_FILES}
-        cuda_link.variable_out = BCOM_CUDA_LINK_FILES
+        cuda_link.input = REMAKEN_CUDA_COMPILED_FILES
+        cuda_link.name = Link ${REMAKEN_CUDA_COMPILED_FILES}
+        cuda_link.variable_out = REMAKEN_CUDA_LINK_FILES
         silent:cuda_link.commands = @echo cuda_link ${QMAKE_FILE_IN} && $$cuda_link.commands
         QMAKE_EXTRA_COMPILERS += cuda_link
     }

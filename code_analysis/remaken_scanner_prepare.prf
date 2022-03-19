@@ -1,5 +1,5 @@
 # Author(s) : Loic Touraine, Stephane Leduc
-    # Detect build toolchain and define BCOM_TARGET_ARCH
+    # Detect build toolchain and define REMAKEN_TARGET_ARCH
 include(remaken_arch_define.pri)
 
 QMAKE_CODE_SCANNER="sonar-scanner"

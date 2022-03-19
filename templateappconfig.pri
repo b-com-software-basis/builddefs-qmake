@@ -35,7 +35,7 @@ CONFIG(release,debug|release) {
 
 # manage default/custom install dir
 !defined(TARGETDEPLOYDIR,var) {
-    TARGETDEPLOYDIR = $${PROJECTDEPLOYDIR}/bin/$${BCOM_TARGET_ARCH}/$${LINKMODE}/$$OUTPUTDIR
+    TARGETDEPLOYDIR = $${PROJECTDEPLOYDIR}/bin/$${REMAKEN_TARGET_ARCH}/$${LINKMODE}/$$OUTPUTDIR
     warning("TARGETDEPLOYDIR may be defined before templateappconfig.pri inclusion => Defaulting TARGETDEPLOYDIR to $${TARGETDEPLOYDIR}. ")
 }
 

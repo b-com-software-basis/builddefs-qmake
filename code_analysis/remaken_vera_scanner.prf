@@ -29,8 +29,8 @@ isEmpty(QMAKE_VERA_FLAGS):!!isEmpty(QMAKE_VERA) {
     remaken_vera_source.input = SOURCES
     remaken_vera_source.input += HEADERS
     remaken_vera_source.name = VERA
-    remaken_vera_source.variable_out = BCOM_VERA_REPORT
-    silent:remaken_vera_source.commands = @echo Calling vera++ $${BCOM_ALLSOURCES} && $$remaken_vera_source.commands
+    remaken_vera_source.variable_out = REMAKEN_VERA_REPORT
+    silent:remaken_vera_source.commands = @echo Calling vera++ $${REMAKEN_ALLSOURCES} && $$remaken_vera_source.commands
     QMAKE_EXTRA_COMPILERS += remaken_vera_source
 }
 

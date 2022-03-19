@@ -5,18 +5,18 @@
     error("FRAMEWORK must be defined before templatelibconfig.pri inclusion. A typical definition is FRAMEWORK = \$\$TARGET.")
 }
 
-# Detect build toolchain and define BCOM_TARGET_ARCH
+# Detect build toolchain and define REMAKEN_TARGET_ARCH
 include(remaken_arch_define.pri)
 
 QMAKE_CODE_SCANNER="sonar-scanner"
 
 for (source, SOURCES) {
-    BCOM_ALLSOURCES += $${_PRO_FILE_PWD_}/$${source}
+    REMAKEN_ALLSOURCES += $${_PRO_FILE_PWD_}/$${source}
 }
 for (header, HEADERS) {
-    BCOM_ALLSOURCES += $${_PRO_FILE_PWD_}/$${header}
+    REMAKEN_ALLSOURCES += $${_PRO_FILE_PWD_}/$${header}
 }
-message("ALL Sources = " $$BCOM_ALLSOURCES)
+message("ALL Sources = " $$REMAKEN_ALLSOURCES)
 
 REPORTSPREFIX += "vera"
 REPORTSPREFIX += "rats"
@@ -39,7 +39,7 @@ win32 {
     !equals(CODE_SCAN_PREPARE_CMD,"") {
         CODE_SCAN_PREPARE_CMD += &&
     }
-    CODE_SCAN_PREPARE_CMD += vera++ -s -c $${OUT_PWD}/vera_report.xml $${BCOM_ALLSOURCES}
+    CODE_SCAN_PREPARE_CMD += vera++ -s -c $${OUT_PWD}/vera_report.xml $${REMAKEN_ALLSOURCES}
     REPORTSPREFIX += " cppcheck"
 }
 
@@ -47,10 +47,10 @@ win32 {
    CODE_SCAN_PREPARE_CMD += &&
 }
 # https://bitbucket.org/verateam/vera/wiki/Home
-CODE_SCAN_PREPARE_CMD += vera++ -s -c $${OUT_PWD}/vera_report.xml $${BCOM_ALLSOURCES}
+CODE_SCAN_PREPARE_CMD += vera++ -s -c $${OUT_PWD}/vera_report.xml $${REMAKEN_ALLSOURCES}
 
 # https://github.com/andrew-d/rough-auditing-tool-for-security
-CODE_SCAN_PREPARE_CMD += && rats -w 3 --xml $${BCOM_ALLSOURCES} > $${OUT_PWD}/rats_report.xml
+CODE_SCAN_PREPARE_CMD += && rats -w 3 --xml $${REMAKEN_ALLSOURCES} > $${OUT_PWD}/rats_report.xml
 
 
 for (prefix, REPORTSPREFIX) {
@@ -61,7 +61,7 @@ for (prefix, REPORTSPREFIX) {
 }
 
 # need to parse also include dependencies ??
-# INCLUDEDIRS = $$replace(BCOMDEPSINCLUDEPATH,"-I","")
+# INCLUDEDIRS = $$replace(REMAKENDEPSINCLUDEPATH,"-I","")
 
 #drmemory.exe -logdir c:/logs -- c:/path/to/my/app
 #also for linux and mac

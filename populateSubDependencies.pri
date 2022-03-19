@@ -1,6 +1,6 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
-# Detect build toolchain and define BCOM_TARGET_ARCH and REMAKEN_TARGET_PLATFORM
+# Detect build toolchain and define REMAKEN_TARGET_ARCH and REMAKEN_TARGET_PLATFORM
 include(remaken_arch_define.pri)
 
 defineReplace(populateSubDependencies) {

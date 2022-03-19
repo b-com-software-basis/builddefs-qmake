@@ -55,10 +55,10 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
     contains(PLUGIN_EXTENSION,.aaxplugin) {
 
         # manage 32/64bit build
-        contains(BCOM_TARGET_ARCH, x86_64) {
+        contains(REMAKEN_TARGET_ARCH, x86_64) {
             AAXPLUGIN_ARCH = x64
         }
-        contains(BCOM_TARGET_ARCH, i386) {
+        contains(REMAKEN_TARGET_ARCH, i386) {
             AAXPLUGIN_ARCH = Win32
         }
 

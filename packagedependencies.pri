@@ -79,7 +79,7 @@ android {
     extradepsfiles += $$_PRO_FILE_PWD_/extra-packages-android.txt
 }
 
-BCOMPFX = remaken-
+REMAKENPFX = remaken-
 
 defineReplace(aggregateDepsFiles) {
     packageDepsFilesList = $$ARGS
@@ -198,8 +198,8 @@ contains(DEPENDENCIESCONFIG,use_remaken_parser)|contains(CONFIG,use_remaken_pars
     include (packagedependencies-parser.pri)
 }
 
-exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
-    templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in
+exists($$_PRO_FILE_PWD_/$${REMAKENPFX}$${TARGET}.pc.in) {
+    templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${REMAKENPFX}$${TARGET}.pc.in
 } else {
     templatePkgConfigSrc=template-pkgconfig.pc.in
 }
@@ -208,8 +208,8 @@ message("--> [INFO] using file "  $${templatePkgConfigSrc} " as pkgconfig templa
 PCFILE_CONTENT = $$cat($${templatePkgConfigSrc},lines)
 PCFILE_CONTENT = $$replace(PCFILE_CONTENT, "@TARGET@", $$TARGET)
 PCFILE_CONTENT = $$replace(PCFILE_CONTENT, "@VERSION@", $$VERSION)
-write_file($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc, PCFILE_CONTENT)
-QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
+write_file($$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc, PCFILE_CONTENT)
+QMAKE_DISTCLEAN += $$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc
 
 
 # TODO : place in an other file - separate finding and copy dependencies
@@ -223,8 +223,8 @@ defined(PROJECTDEPLOYDIR,var) {
         package_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
     }
     contains(TEMPLATE, lib)|contains(TEMPLATE,vclib) {
-        exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
-            package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
+        exists($$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc) {
+            package_files.files += $$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc
         }
     }
     INSTALLS += package_files

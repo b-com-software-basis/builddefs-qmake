@@ -212,32 +212,32 @@ for(depfile, packagedepsfiles) {
                         }
                     }
                 }
-                pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
+                pkgCfgFilePath = $${deployFolder}/$${REMAKENPFX}$${DEBUGPFX}$${libName}.pc
                 !exists($${pkgCfgFilePath}) {
                     # No specific .pc file for debug mode :
                     # this package is a remaken like standard package with no library debug suffix
-                    pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
+                    pkgCfgFilePath = $${deployFolder}/$${REMAKENPFX}$${libName}.pc
                 }
                 !exists($${pkgCfgFilePath}) {# default behavior
                     message("    --> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values")
                     !exists($${deployFolder}/interfaces) {
                         error("    --> [ERROR] " $${deployFolder}/interfaces " doesn't exists for package " $${libName})
                     }
-                    !exists($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}) {
-                        error("    --> [ERROR] " $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
+                    !exists($${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}) {
+                        error("    --> [ERROR] " $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
                     }
 
                     QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
                     equals(pkg.linkMode,"static") {
-                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
+                        LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
                     } else {
-                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
+                        LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
                     }
                 } else {
                     verboseMessage("    --> [INFO] "  $${pkgCfgFilePath} "exists")
-                    pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
+                    pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     pkgCfgVars += --define-variable=lext=$${LIBEXT}
-                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
+                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     !win32 {
                         pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
                     }
