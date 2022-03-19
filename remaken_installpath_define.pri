@@ -1,7 +1,7 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 # Detect build toolchain, define BCOM_TARGET_ARCH and REMAKEN_TARGET_PLATFORM
-include(bcom_arch_define.pri)
+include(remaken_arch_define.pri)
 
 # Check input parameters existence
 !defined(FRAMEWORK,var) {

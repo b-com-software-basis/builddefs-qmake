@@ -1,7 +1,7 @@
 %{Cpp:LicenseTemplate}\
 #include "%{HdrFileName}"
 
-namespace xpcf = org::bcom::xpcf;
+namespace xpcf = org::remaken::xpcf;
 
 template<> %{Class} * xpcf::ComponentFactory::createInstance<%{Class}>();
 

@@ -1,0 +1,9 @@
+# Author(s) : Loic Touraine
+
+macx{
+    include (macx/remaken_component_bundle.prf)
+}
+
+win32 {
+    include (win32/remaken_component_bundle_setup.prf)
+}

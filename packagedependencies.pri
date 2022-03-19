@@ -79,7 +79,7 @@ android {
     extradepsfiles += $$_PRO_FILE_PWD_/extra-packages-android.txt
 }
 
-BCOMPFX = bcom-
+BCOMPFX = remaken-
 
 defineReplace(aggregateDepsFiles) {
     packageDepsFilesList = $$ARGS
@@ -114,7 +114,7 @@ defineReplace(aggregateDepsFiles) {
                     equals(pkgTypeInfoListSize,2) {
                         pkg.repoType = $$member(pkgTypeInfoList,1)
                     } else {
-                    equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                    equals(pkg.identifier,"remakenBuild")|equals(pkg.identifier,"thirdParties") {
                             pkg.repoType = "artifactory"
                         }  # otherwise pkg.repoType = pkg.identifier
                     }

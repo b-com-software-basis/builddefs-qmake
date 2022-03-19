@@ -1,7 +1,7 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 # Detect build toolchain and define BCOM_TARGET_ARCH and REMAKEN_TARGET_PLATFORM
-include(bcom_arch_define.pri)
+include(remaken_arch_define.pri)
 
 defineReplace(populateSubDependencies) {
     packageDepsFilesList = $$ARGS
@@ -36,7 +36,7 @@ defineReplace(populateSubDependencies) {
                     equals(pkgTypeInfoListSize,2) {
                         pkgRepoType = $$member(pkgTypeInfoList,1)
                     } else {
-                       equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"thirdParties") {
+                       equals(pkgCategory,"remakenBuild")|equals(pkgCategory,"thirdParties") {
                             pkgRepoType = "artifactory"
                         }  # otherwise pkgRepoType = pkgCategory
                     }

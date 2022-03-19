@@ -6,12 +6,12 @@
 }
 
 # Manage install path
-include(bcom_installpath_define.pri)
+include(remaken_installpath_define.pri)
 
 TEMPLATE = app
 
 # Include extended compiler rules
-include (bcom_compiler_specs.prf)
+include (remaken_compiler_specs.prf)
 
 # Check input parameters existence
 # Warning : app targetdeploydir depends on DEPENDENCIESCONFIG, and lib depends on CONFIG
@@ -115,5 +115,5 @@ include (packagedependencies.pri)
 
 # manage setup creation
 contains (CONFIG, app_setup) {
-    include (bcom_app_rules.prf)
+    include (remaken_app_rules.prf)
 }

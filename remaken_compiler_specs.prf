@@ -1,0 +1,11 @@
+# Author(s) : Loic Touraine
+
+macx {
+    include (macx/remaken_rez.prf)
+    include (macx/remaken_resmerger.prf)
+    include (macx/remaken_objective_c.prf)
+}
+
+contains(REMAKENCONFIG,CUDA) {
+    include (cuda/remaken_cuda_config.prf)
+}

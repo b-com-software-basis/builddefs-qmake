@@ -1,16 +1,16 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 # Check input parameters existence
-include (bcom_scanner_prepare.prf)
-include (bcom_vera_scanner.prf)
-include (bcom_rats_scanner.prf)
+include (remaken_scanner_prepare.prf)
+include (remaken_vera_scanner.prf)
+include (remaken_rats_scanner.prf)
 
 !defined(SONAR_ANALYZERS,var) {
     warning("No sonar analyzer found : check you have at least one of cppcheck, rats, vera++ ... installed ! make code_scan rule will not be available !Refer to https://github.com/SonarOpenCommunity/sonar-cxx/wiki/Code-checkers for a list of analyzers")
 } else {
 
     # Detect build toolchain and define BCOM_TARGET_ARCH
-    include(bcom_arch_define.pri)
+    include(remaken_arch_define.pri)
 
     QMAKE_CODE_SCANNER="sonar-scanner"
 

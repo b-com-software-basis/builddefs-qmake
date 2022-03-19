@@ -2,7 +2,7 @@
 
 #Note (QT Creator Bug ?): files shown in the project tree are NOT the files used for compiling
 !contains(QMAKE_BCOMDEFINES,"defined") {
-    message("Including qmake_bcom_defines")
+    message("Including qmake_remaken_defines")
     QMAKE_BCOMDEFINES="defined"
     # Check input parameters existence - libs absolute path
     !defined(_BCOM_LIBS_ROOT_,var) {

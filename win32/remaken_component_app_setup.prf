@@ -1,13 +1,13 @@
 # Author(s) : Stephane Leduc
 
-include (bcom_check_setup.pri)
+include (remaken_check_setup.pri)
 
 COPYLOGO_CLEAN_CMD = IF EXIST $${OUT_PWD}/logo.ico $$QMAKE_DEL_FILE /f $$shell_path($${OUT_PWD}/logo.ico)
-bcom_copylogo_clean.commands = $${COPYLOGO_CLEAN_CMD}
+remaken_copylogo_clean.commands = $${COPYLOGO_CLEAN_CMD}
 
-bcom_copylogo_prepare.commands = copy $$shell_quote($$shell_path($${SETUP_ICO_FILE})) $$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
-bcom_copylogo_prepare.depends += bcom_copylogo_clean $(TARGET)
-create_setup.depends += bcom_copylogo_prepare
+remaken_copylogo_prepare.commands = copy $$shell_quote($$shell_path($${SETUP_ICO_FILE})) $$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
+remaken_copylogo_prepare.depends += remaken_copylogo_clean $(TARGET)
+create_setup.depends += remaken_copylogo_prepare
 SETUP_ICO_FILE=$$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
 
 contains (CONFIG, app_setup)
@@ -69,5 +69,5 @@ contains (CONFIG, app_setup)
 
 create_setup.commands = $${NSIS_PACKAGE_CMD}
 #create_setup.depends = all install
-QMAKE_EXTRA_TARGETS  += bcom_copylogo_clean bcom_copylogo_prepare create_setup
+QMAKE_EXTRA_TARGETS  += remaken_copylogo_clean remaken_copylogo_prepare create_setup
 

@@ -53,7 +53,7 @@ TODO
 ### Package tree
 	package_name/package_version/
 	package_name-package_version_remakeninfo.txt (or libname ??)
-	bcom-package_name.pc (should be renamed to remaken-*.pc ?)
+	remaken-package_name.pc (should be renamed to remaken-*.pc ?)
 	interfaces/
 	lib/[arch]/[mode]/[config]/
 
@@ -105,7 +105,7 @@ When ```link_mode``` is not provided :
 
 When ```repository_type``` is not specified :
 
-- it defaults to b-com when identifier is either ```bcomBuild``` or ```thirdParties``` (and in this case, the identifier is also the destination subfolder where the dependencies are installed)
+- it defaults to b-com when identifier is either ```remakenBuild``` or ```thirdParties``` (and in this case, the identifier is also the destination subfolder where the dependencies are installed)
 - it defaults to system when identifier is one of yum, apt, pkgtool, pkgutil, brew, macports, pacman, choco, zypper
 
 For other repository types (github, vcpkg, conan, system) when the identifier matches the repository type,
@@ -138,7 +138,7 @@ Options are directly forwarded to the underlying repository tool.
 ### Sample repositories declarations :
 
 	opencv|3.4.3|opencv|thirdParties|https://github.com/SolarFramework/binaries/releases/download
-	xpcf|2.1.0|xpcf|bcomBuild|https://github.com/SolarFramework/binaries/releases/download|static|
+	xpcf|2.1.0|xpcf|remakenBuild|https://github.com/SolarFramework/binaries/releases/download|static|
 	spdlog|0.14.0|spdlog|thirdParties@b-com|https://github.com/SolarFramework/binaries/releases/download
 	eigen|3.3.5|eigen|system|https://github.com/SolarFramework/binaries/releases/download
 	fbow|0.0.1|fbow|vcpkg|https://github.com/SolarFramework/binaries/releases/download

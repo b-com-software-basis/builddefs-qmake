@@ -6,7 +6,7 @@
 }
 
 # Detect build toolchain and define BCOM_TARGET_ARCH
-include(bcom_arch_define.pri)
+include(remaken_arch_define.pri)
 
 QMAKE_CODE_SCANNER="sonar-scanner"
 
@@ -65,9 +65,9 @@ for (prefix, REPORTSPREFIX) {
 
 #drmemory.exe -logdir c:/logs -- c:/path/to/my/app
 #also for linux and mac
-bcom_code_scan_clean.commands = $${CODE_SCAN_CLEAN_CMD}
-bcom_code_scan_prepare.commands = $$CODE_SCAN_PREPARE_CMD
-bcom_code_scan_prepare.depends += bcom_code_scan_clean
+remaken_code_scan_clean.commands = $${CODE_SCAN_CLEAN_CMD}
+remaken_code_scan_prepare.commands = $$CODE_SCAN_PREPARE_CMD
+remaken_code_scan_prepare.depends += remaken_code_scan_clean
 
 code_scan.commands = $${QMAKE_CODE_SCANNER} \
   -Dsonar.projectKey=$${TARGET}-$${BRANCH} \
@@ -79,7 +79,7 @@ code_scan.commands = $${QMAKE_CODE_SCANNER} \
   -Dsonar.cxx.includeDirectories=$${_PRO_FILE_PWD_}/src,$${_PRO_FILE_PWD_}/interfaces \ #,$${INCLUDEDIRS} \
   -Dsonar.cxx.vera.reportPath=$${OUT_PWD}/vera_report.xml \
   -Dsonar.cxx.rats.reportPath=$${OUT_PWD}/rats_report.xml
-code_scan.depends += bcom_code_scan_prepare
+code_scan.depends += remaken_code_scan_prepare
 
-QMAKE_EXTRA_TARGETS += bcom_code_scan_clean bcom_code_scan_prepare code_scan
+QMAKE_EXTRA_TARGETS += remaken_code_scan_clean remaken_code_scan_prepare code_scan
 

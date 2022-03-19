@@ -2,14 +2,14 @@
 
 #Note (QT Creator Bug ?): files shown in the project tree are NOT the files used for compiling
 
-include(../qmake_bcom_defines.pri)
+include(../qmake_remaken_defines.pri)
 
 !contains(QMAKE_JUCEDEFINES,"defined") {
     message("Including qmake_juce_defines")
     QMAKE_JUCEDEFINES="defined"
     # Check input parameters existence - libs absolute path
-    exists("$${_BCOM_LIBS_ROOT_}/libs/bcom-Juce") {
-       JUCEFOLDER = "bcom-Juce"
+    exists("$${_BCOM_LIBS_ROOT_}/libs/remaken-Juce") {
+       JUCEFOLDER = "remaken-Juce"
     } else {
         exists("$${_BCOM_LIBS_ROOT_}/libs/Juce") {
             JUCEFOLDER = "Juce"

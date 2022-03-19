@@ -1,12 +1,12 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 # Manage manifest file
-include(bcom_manifest.prf)
+include(remaken_manifest.prf)
 
 TEMPLATE = lib
 
 # Include extended compiler rules
-include (bcom_compiler_specs.prf)
+include (remaken_compiler_specs.prf)
 
 staticlib {
     LINKMODE = static

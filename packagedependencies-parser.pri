@@ -80,7 +80,7 @@ for(depfile, packagedepsfiles) {
             equals(pkgTypeInfoListSize,2) {
                 pkg.repoType = $$member(pkgTypeInfoList,1)
             } else {
-                equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                equals(pkg.identifier,"remakenBuild")|equals(pkg.identifier,"thirdParties") {
                     pkg.repoType = "artifactory"
                 }  # otherwise pkg.repoType = pkg.identifier
             }
@@ -215,7 +215,7 @@ for(depfile, packagedepsfiles) {
                 pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
                 !exists($${pkgCfgFilePath}) {
                     # No specific .pc file for debug mode :
-                    # this package is a bcom like standard package with no library debug suffix
+                    # this package is a remaken like standard package with no library debug suffix
                     pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
                 }
                 !exists($${pkgCfgFilePath}) {# default behavior

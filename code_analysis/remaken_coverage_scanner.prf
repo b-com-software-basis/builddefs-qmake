@@ -1,0 +1,41 @@
+# Author(s) : Loic Touraine, Stephane Leduc
+
+# Check input parameters existence
+isEmpty(QMAKE_COVERAGE) {
+    unix {
+        QMAKE_COVERAGE = $$system(which gcov)
+        QMAKE_COVERAGE_REPORT = $$system(which gcovr)
+    }
+
+    win32 {
+    }
+
+    isEmpty(QMAKE_COVERAGE) {
+        message("gcov not found")
+    }
+    isEmpty(QMAKE_COVERAGE_REPORT) {
+        message("gcovr not found")
+    }
+}
+
+isEmpty(QMAKE_COVERAGE_FLAGS):!!isEmpty(QMAKE_COVERAGE) {
+    QMAKE_COVERAGE_FLAGS = -w 3
+}
+
+!isEmpty(QMAKE_COVERAGE) {
+    SONAR_ANALYZERS += COVERAGE
+
+    remaken_coverage_source.CONFIG += no_link combine
+    remaken_coverage_source.dependency_type = TYPE_C
+    remaken_coverage_source.variables = QMAKE_COVERAGE_FLAGS
+    remaken_coverage_source.commands = $$QMAKE_COVERAGE $(QMAKE_COMP_QMAKE_COVERAGE_FLAGS) --xml ${QMAKE_FILE_IN} > ${QMAKE_FILE_OUT}
+    remaken_coverage_source.output = $${_PRO_FILE_PWD_}/$${QMAKE_CODE_SCANNER_REPORT_FOLDER}/coverage_report.xml
+  #  remaken_coverage_source.input = BCOM_ALLSOURCES
+    remaken_coverage_source.input = SOURCES
+    remaken_coverage_source.input += HEADERS
+    remaken_coverage_source.name = COVERAGE
+    remaken_coverage_source.variable_out = BCOM_COVERAGE_REPORT
+    silent:remaken_coverage_source.commands = @echo Calling COVERAGE $${BCOM_ALLSOURCES} && $$remaken_coverage_source.commands
+    QMAKE_EXTRA_COMPILERS += remaken_coverage_source
+}
+

@@ -1,13 +1,13 @@
 # Author(s) : Stephane Leduc
 
-include (bcom_check_setup.pri)
+include (remaken_check_setup.pri)
 
 COPYLOGO_CLEAN_CMD = IF EXIST $${OUT_PWD}/logo.ico $$QMAKE_DEL_FILE /f $$shell_path($${OUT_PWD}/logo.ico)
-bcom_copylogo_clean.commands = $${COPYLOGO_CLEAN_CMD}
+remaken_copylogo_clean.commands = $${COPYLOGO_CLEAN_CMD}
 
-bcom_copylogo_prepare.commands = copy $$shell_quote($$shell_path($${SETUP_ICO_FILE})) $$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
-bcom_copylogo_prepare.depends += bcom_copylogo_clean $(TARGET)
-create_setup.depends += bcom_copylogo_prepare
+remaken_copylogo_prepare.commands = copy $$shell_quote($$shell_path($${SETUP_ICO_FILE})) $$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
+remaken_copylogo_prepare.depends += remaken_copylogo_clean $(TARGET)
+create_setup.depends += remaken_copylogo_prepare
 SETUP_ICO_FILE=$$shell_quote($$shell_path($${OUT_PWD}/logo.ico))
 
 #init unused value
@@ -120,19 +120,19 @@ for (PLUGIN_EXTENSION, QMAKE_PLUGIN_EXTENSION_LIST) {
 
         # manage clean
         AAXBUNDLE_PACKAGE_CLEAN_CMD = IF EXIST $${TARGET}$${PLUGIN_EXTENSION} rmdir /S /Q $${TARGET}$${PLUGIN_EXTENSION}
-        bcom_component_aaxbundle_clean.commands = $${AAXBUNDLE_PACKAGE_CLEAN_CMD}
+        remaken_component_aaxbundle_clean.commands = $${AAXBUNDLE_PACKAGE_CLEAN_CMD}
 
-        bcom_component_aaxbundle_prepare.commands = $${AAXBUNDLE_PREPARE_CMD}
-        bcom_component_aaxbundle_prepare.depends += bcom_component_aaxbundle_clean $(TARGET)
-        create_bundle.depends += bcom_component_aaxbundle_prepare
+        remaken_component_aaxbundle_prepare.commands = $${AAXBUNDLE_PREPARE_CMD}
+        remaken_component_aaxbundle_prepare.depends += remaken_component_aaxbundle_clean $(TARGET)
+        create_bundle.depends += remaken_component_aaxbundle_prepare
 
         SETUP_SUFFIX = AAX
     }
 
     contains(PLUGIN_EXTENSION,.vst3) {
         VST3_PREPARE_CMD += $$QMAKE_COPY $${TARGET}.$${DYNLIBEXT} $${TARGET}$${PLUGIN_EXTENSION}
-        bcom_component_vst3bundle_prepare.commands = $${VST3_PREPARE_CMD}
-        create_bundle.depends += bcom_component_vst3bundle_prepare
+        remaken_component_vst3bundle_prepare.commands = $${VST3_PREPARE_CMD}
+        create_bundle.depends += remaken_component_vst3bundle_prepare
         SETUP_SUFFIX = VST3
     }
 
@@ -208,5 +208,5 @@ sign_bundle.depends += create_bundle
 create_setup.commands = $${NSIS_PACKAGE_CMD}
 #create_setup.depends += create_bundle
 
-QMAKE_EXTRA_TARGETS  += bcom_copylogo_clean bcom_copylogo_prepare bcom_component_aaxbundle_clean bcom_component_aaxbundle_prepare bcom_component_vst3bundle_prepare create_bundle create_setup sign_bundle
+QMAKE_EXTRA_TARGETS  += remaken_copylogo_clean remaken_copylogo_prepare remaken_component_aaxbundle_clean remaken_component_aaxbundle_prepare remaken_component_vst3bundle_prepare create_bundle create_setup sign_bundle
 

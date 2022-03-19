@@ -10,7 +10,7 @@ exists("/usr/bin/codesign") {
 SYSTEM_SIGNTOOL_PARAMS = --force --sign --deep
 
 MAC_PLUGINS_ROOT_PATH = $$(HOME)/Library/Audio/Plug-Ins
-include(bcom_plist_bundle.prf)
+include(remaken_plist_bundle.prf)
 
 for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
     equals(BUNDLE_EXTENSION,.aaxplugin) {
@@ -24,7 +24,7 @@ for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
     }
     equals(BUNDLE_EXTENSION,.component)|equals(BUNDLE_EXTENSION,.appex) {
         MAC_PLUGIN_SUBFOLDER = Components
-        bcom_component_bundle_prepare.depends += $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
+        remaken_component_bundle_prepare.depends += $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
         component_resources.path = Contents/Resources
         component_resources.files = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
         component_resources.depends = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
@@ -104,13 +104,13 @@ for (BUNDLE_EXTENSION, QMAKE_BUNDLE_EXTENSION_LIST) {
     }
 }
 
-bcom_component_bundle_clean.commands = $${BUNDLE_PACKAGE_CLEAN_CMD}
-bcom_component_bundle_prepare.commands = $$BUNDLE_PREPARE_CMD
-bcom_component_bundle_prepare.depends += bcom_component_bundle_clean
+remaken_component_bundle_clean.commands = $${BUNDLE_PACKAGE_CLEAN_CMD}
+remaken_component_bundle_prepare.commands = $$BUNDLE_PREPARE_CMD
+remaken_component_bundle_prepare.depends += remaken_component_bundle_clean
 
-#Files copy in bundle must occur after the library build : the bcom_component_bundle depends on the Makefile's $(TARGET)
+#Files copy in bundle must occur after the library build : the remaken_component_bundle depends on the Makefile's $(TARGET)
 create_bundle.commands = $$BUNDLE_PACKAGE_CMD
-create_bundle.depends += bcom_component_bundle_prepare $(TARGET)
+create_bundle.depends += remaken_component_bundle_prepare $(TARGET)
 
 sign_bundle.commands = $$BUNDLE_SIGN_CMD
 sign_bundle.depends = $$create_bundle
@@ -123,7 +123,7 @@ uninstall_bundle.commands = $$BUNDLE_UNINSTALL_CMD
 
 
 #QMAKE doesn't manage adding targets from inference rules : we need to explicitly declare each target even when they are dependent on each other
-QMAKE_EXTRA_TARGETS += bcom_component_bundle_clean bcom_component_bundle_prepare create_bundle install_bundle uninstall_bundle sign_bundle
+QMAKE_EXTRA_TARGETS += remaken_component_bundle_clean remaken_component_bundle_prepare create_bundle install_bundle uninstall_bundle sign_bundle
 
-#NOTE: DO NOT PUT bcom_component_bundle in POST or PRE_TARGETDEPS as it will create a circular dependent upon $(TARGET) and will result in the build of the target AFTER the bcom_component_bundle target
+#NOTE: DO NOT PUT remaken_component_bundle in POST or PRE_TARGETDEPS as it will create a circular dependent upon $(TARGET) and will result in the build of the target AFTER the remaken_component_bundle target
 #which gives an error (the target to copy doesn't exists)
