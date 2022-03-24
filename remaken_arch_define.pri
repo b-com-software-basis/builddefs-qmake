@@ -1,5 +1,6 @@
 # Author(s) : Loic Touraine
 
+REMAKEN_BUILD_RULES_FOLDER = .build-rules
 REMAKEN_INFO_SUFFIX=remakeninfo.txt
 !win32 {
     include(builddefs_info.pri)

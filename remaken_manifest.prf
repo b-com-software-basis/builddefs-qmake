@@ -5,6 +5,10 @@ include(remaken_installpath_define.pri)
 REMAKEN_TARGET_INFO=$${TARGET}-$${VERSION}_$${REMAKEN_INFO_SUFFIX}
 PLATFORMFLAG="platform=$${REMAKEN_TARGET_PLATFORM}"
 
+!defined(PRODUCT_COMPANY,var) {
+    PRODUCT_COMPANY = bcom
+}
+
 write_file($${OUT_PWD}/$${REMAKEN_TARGET_INFO}, PLATFORMFLAG)
 
 contains(CONFIG,c++11) {

@@ -105,7 +105,7 @@ When ```link_mode``` is not provided :
 
 When ```repository_type``` is not specified :
 
-- it defaults to b-com when identifier is either ```remakenBuild``` or ```thirdParties``` (and in this case, the identifier is also the destination subfolder where the dependencies are installed)
+- it defaults to b-com when identifier is either ```remakenBuild``` or ```bcomBuild``` or ```thirdParties``` (and in this case, the identifier is also the destination subfolder where the dependencies are installed)
 - it defaults to system when identifier is one of yum, apt, pkgtool, pkgutil, brew, macports, pacman, choco, zypper
 
 For other repository types (github, vcpkg, conan, system) when the identifier matches the repository type,
@@ -208,6 +208,9 @@ To manage ```install``` or ```install_recurse``` with QTVS, include ```remaken_i
 declare QTVS config before include ```template*.pri``` file
 
 ### Product information
+
+PRODUCT_COMPANY can de defined in local project file. defined to "bcom" by default
+
 Defined in _ProductConfig.pri local project file
 
 	PRODUCT_NAME

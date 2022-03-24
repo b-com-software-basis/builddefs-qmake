@@ -14,7 +14,7 @@
 @if '%{Base}' && '%{Base}' !== 'None'
 class %{CN} : virtual public %{Base}
 @else
-class %{CN}: virtual public org::remaken::xpcf::IComponentIntrospect
+class %{CN}: virtual public org::bcom::xpcf::IComponentIntrospect
 @endif
 {
 public:
@@ -23,7 +23,7 @@ public:
 
 %{JS: Cpp.closeNamespaces('%{Class}')}
 
-template <> struct org::remaken::xpcf::InterfaceTraits<%{Class}>
+template <> struct org::bcom::xpcf::InterfaceTraits<%{Class}>
 {
     static constexpr const char * UUID = "%{UUID}";
     static constexpr const char * NAME = "%{CN}";

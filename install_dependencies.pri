@@ -34,13 +34,13 @@ defineReplace(aggregateIgnoreDepsFiles) {
 IGNOREDEPFILE_CONTENT = $$aggregateIgnoreDepsFiles($${packageignoredepsfiles})
 IGNOREPKGDEPFILENAME=packageignoreinstall.txt
 !isEmpty(IGNOREDEPFILE_CONTENT) {
-    write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}, IGNOREDEPFILE_CONTENT)
+    write_file($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}, IGNOREDEPFILE_CONTENT)
 }
 
 defined(PROJECTDEPLOYDIR,var) {
     packageignore_files.path = $${PROJECTDEPLOYDIR}
-    exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}) {
-        packageignore_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}
+    exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}) {
+        packageignore_files.files += $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${IGNOREPKGDEPFILENAME}
     }
     INSTALLS += packageignore_files
 }
@@ -69,9 +69,9 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
     remakenBundleRecurseOption = --recurse
 }
 
-exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}) {
-    verboseMessage("remaken bundle $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} -cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${REMAKEN_TARGET_ARCH} -v $${remakenBundleRecurseOption}")
-    REMAKEN_BUNDLE_COMMAND = remaken bundle $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} --cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${REMAKEN_TARGET_ARCH} -v $${remakenBundleRecurseOption}
+exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}) {
+    verboseMessage("remaken bundle $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} -cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${REMAKEN_TARGET_ARCH} -v $${remakenBundleRecurseOption}")
+    REMAKEN_BUNDLE_COMMAND = remaken bundle $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} --cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${REMAKEN_TARGET_ARCH} -v $${remakenBundleRecurseOption}
 
     win32 {
         contains(PROJECTCONFIG,QTVS) {

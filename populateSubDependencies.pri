@@ -36,7 +36,7 @@ defineReplace(populateSubDependencies) {
                     equals(pkgTypeInfoListSize,2) {
                         pkgRepoType = $$member(pkgTypeInfoList,1)
                     } else {
-                       equals(pkgCategory,"remakenBuild")|equals(pkgCategory,"thirdParties") {
+                       equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"remakenBuild")|equals(pkgCategory,"thirdParties") {
                             pkgRepoType = "artifactory"
                         }  # otherwise pkgRepoType = pkgCategory
                     }

@@ -20,8 +20,8 @@ CONFIG(release,debug|release) {
     CONANBUILDTYPE = Release
 }
 
-exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri) {
-    include($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri)
+exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri) {
+    include($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri)
 }
 
 # Check input parameters existence
@@ -114,7 +114,7 @@ defineReplace(aggregateDepsFiles) {
                     equals(pkgTypeInfoListSize,2) {
                         pkg.repoType = $$member(pkgTypeInfoList,1)
                     } else {
-                    equals(pkg.identifier,"remakenBuild")|equals(pkg.identifier,"thirdParties") {
+                    equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"remakenBuild")|equals(pkg.identifier,"thirdParties") {
                             pkg.repoType = "artifactory"
                         }  # otherwise pkg.repoType = pkg.identifier
                     }
@@ -177,7 +177,7 @@ contains(LINKMODE,static) {
     PKGDEPFILENAME=packagedependencies-static.txt
 }
 !isEmpty(DEPFILE_CONTENT) {
-    write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}, DEPFILE_CONTENT)
+    write_file($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}, DEPFILE_CONTENT)
 }
 
 message("=====> Parsing extra-packages files")
@@ -187,12 +187,12 @@ contains(LINKMODE,static) {
     EXTRADEPFILENAME=extra-packages-static.txt
 }
 !isEmpty(DEPFILE_CONTENT) {
-    write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}, DEPFILE_CONTENT)
+    write_file($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}, DEPFILE_CONTENT)
 }
 
 contains(DEPENDENCIESCONFIG,use_remaken_parser)|contains(CONFIG,use_remaken_parser)|contains(REMAKENCONFIG,use_remaken_parser) {
     message("--> [INFO] Using dependencies from dependenciesBuildInfo.pri generated with remaken")
-    include($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${LINKMODE}/$${OUTPUTDIR}/dependenciesBuildInfo.pri)
+    include($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${LINKMODE}/$${OUTPUTDIR}/dependenciesBuildInfo.pri)
 } else {
     message("--> [INFO] Parsing and using dependencies from packagedependencies-parser.pri")
     include (packagedependencies-parser.pri)
@@ -216,11 +216,11 @@ QMAKE_DISTCLEAN += $$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc
 # PROJECTDEPLOYDIR only defined for lib
 defined(PROJECTDEPLOYDIR,var) {
     package_files.path = $${PROJECTDEPLOYDIR}
-    exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}) {
-        package_files.files = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
+    exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}) {
+        package_files.files = $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
     }
-     exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}) {
-        package_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
+     exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}) {
+        package_files.files += $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
     }
     contains(TEMPLATE, lib)|contains(TEMPLATE,vclib) {
         exists($$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc) {

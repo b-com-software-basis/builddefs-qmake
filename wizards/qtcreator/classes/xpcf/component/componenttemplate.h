@@ -14,9 +14,9 @@
 %{JS: Cpp.openNamespaces('%{Class}')}
 
 @if '%{Base}' && '%{Base}' !== 'None'
-class %{CN} : public org::remaken::xpcf::%{BaseComponentClass}, virtual public %{Base}
+class %{CN} : public org::bcom::xpcf::%{BaseComponentClass}, virtual public %{Base}
 @else
-class %{CN}: public org::remaken::xpcf::%{BaseComponentClass}
+class %{CN}: public org::bcom::xpcf::%{BaseComponentClass}
 @endif
 {
 public:
@@ -25,14 +25,14 @@ public:
     void unloadComponent () override;
 
     @if '%{BaseComponentClass}' === 'ConfigurableBase'
-    org::remaken::xpcf::XPCFErrorCode onConfigured() override;
+    org::bcom::xpcf::XPCFErrorCode onConfigured() override;
     @endif
 };
 
 
 %{JS: Cpp.closeNamespaces('%{Class}')}
 
-template <> struct org::remaken::xpcf::ComponentTraits<%{Class}>
+template <> struct org::bcom::xpcf::ComponentTraits<%{Class}>
 {
     static constexpr const char * UUID = "%{UUID}";
     static constexpr const char * NAME = "%{CN}";

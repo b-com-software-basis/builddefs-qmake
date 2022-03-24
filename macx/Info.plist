@@ -42,7 +42,7 @@
     <key>CFBundleIconFile</key>
     <string></string>
     <key>CFBundleIdentifier</key>
-    <string>com.remaken.@PRODUCTNAME@</string>
+    <string>com.@PRODUCTCOMPANY@.@PRODUCTNAME@</string>
     <key>CFBundleName</key>
     <string>@EXECUTABLE@</string>
     <key>CFBundleDisplayName</key>
