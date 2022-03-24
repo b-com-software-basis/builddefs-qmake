@@ -310,8 +310,9 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
 # Manage conan dependencies
 !isEmpty(remakenConanDeps) {
-    !exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR) {
-        mkpath($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR)
+    REMAKEN_CONAN_DEPS_OUTPUTDIR=$$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${LINKMODE}/$$OUTPUTDIR
+    !exists($${REMAKEN_CONAN_DEPS_OUTPUTDIR}) {
+        mkpath($${REMAKEN_CONAN_DEPS_OUTPUTDIR})
     }
 
     #create conanfile.txt
@@ -327,7 +328,7 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     for (option,remakenConanOptions) {
         CONANFILECONTENT+=$${option}
     }
-    write_file($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt, CONANFILECONTENT)
+    write_file($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt, CONANFILECONTENT)
     contains(CONFIG,c++11) {
         !msvc {
             conanCppStd=11
@@ -347,15 +348,15 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    verboseMessage("conan install $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR")
+    verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
     android {
-        system(conan install $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing -if $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR)
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
     }
     else {
-        system(conan install $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR)
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
     }
-    include($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR/conanbuildinfo.pri)
+    include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
 }
 else {
-    # TODO remove generated '$${REMAKEN_BUILD_RULES_FOLDER}/$${LINKMODE}/$$OUTPUTDIR' folder
+    # TODO remove generated '$${REMAKEN_CONAN_DEPS_OUTPUTDIR}' folder
 }
