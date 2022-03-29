@@ -1,12 +1,12 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 # Manage manifest file
-include(bcom_manifest.prf)
+include(remaken_manifest.prf)
 
 TEMPLATE = lib
 
 # Include extended compiler rules
-include (bcom_compiler_specs.prf)
+include (remaken_compiler_specs.prf)
 
 staticlib {
     LINKMODE = static
@@ -24,7 +24,7 @@ CONFIG(release,debug|release) {
     OUTPUTDIR = release
 }
 
-TARGETDEPLOYDIR = $${PROJECTDEPLOYDIR}/lib/$${BCOM_TARGET_ARCH}/$${LINKMODE}/$$OUTPUTDIR
+TARGETDEPLOYDIR = $${PROJECTDEPLOYDIR}/lib/$${REMAKEN_TARGET_ARCH}/$${LINKMODE}/$$OUTPUTDIR
 
 unix {
     target.path = /usr/lib
@@ -40,12 +40,12 @@ macx {
     #NOTE : the following override is mandatory to get a correct install_name in the target library header
     #This name ensure later calls of macdylibbundler will correctly work when deploying this library with an executable
     QMAKE_LFLAGS_SONAME = -Wl,-install_name,$${TARGETDEPLOYDIR}/
-    contains(BCOM_TARGET_ARCH, x86_64) {
+    contains(REMAKEN_TARGET_ARCH, x86_64) {
         QMAKE_CFLAGS += -arch x86_64
         QMAKE_CXXFLAGS += -arch x86_64
         QMAKE_LFLAGS += -arch x86_64
     }
-    contains(BCOM_TARGET_ARCH, i386) {
+    contains(REMAKEN_TARGET_ARCH, i386) {
         QMAKE_CFLAGS += -arch i386
         QMAKE_CXXFLAGS += -arch i386
         QMAKE_LFLAGS += -arch i386

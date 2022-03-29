@@ -6,7 +6,7 @@ Remaken meta-dependency tool documentation
 == Package tree
 package_name/package_version/
 package_name-package_version_remakeninfo.txt (or libname ??)
-bcom-package_name.pc (should be renamed to remaken-*.pc ?)
+remaken-package_name.pc (should be renamed to remaken-*.pc ?)
 interfaces/
 lib/[arch]/[mode]/[config]/
 
@@ -51,7 +51,7 @@ When link_mode is not provided :
 (Conan note : link_mode is mandatory if the targeted dependency needs the option. When link_mode is not provided or is set to "na", it is not forwarded to conan, has some packages (typically header only libraries) don't define this option and setting the option leads to an error).
 
 when repository_type is not specified :
-- it defaults to b-com when identifier is either bcomBuild or thirdParties (and in this case, the identifier is also the destination subfolder where the dependencies are installed)
+- it defaults to b-com when identifier is either remakenBuild or bcomBuild or thirdParties (and in this case, the identifier is also the destination subfolder where the dependencies are installed)
 
 - it defaults to system when identifier is one of yum, apt, pkgtool, pkgutil, brew, macports, pacman, choco, zypper
 
@@ -75,7 +75,7 @@ eigen|3.3.5|eigen|pkgtool@system|https://github.com/SolarFramework/binaries/rele
 
 Sample repositories declarations :
 opencv|3.4.3|opencv|thirdParties|https://github.com/SolarFramework/binaries/releases/download
-xpcf|2.1.0|xpcf|bcomBuild|https://github.com/SolarFramework/binaries/releases/download|static|
+xpcf|2.1.0|xpcf|remakenBuild|https://github.com/SolarFramework/binaries/releases/download|static|
 spdlog|0.14.0|spdlog|thirdParties@b-com|https://github.com/SolarFramework/binaries/releases/download
 eigen|3.3.5|eigen|system|https://github.com/SolarFramework/binaries/releases/download
 fbow|0.0.1|fbow|vcpkg|https://github.com/SolarFramework/binaries/releases/download
@@ -136,6 +136,9 @@ to manage 'install' or 'install_recurse' with QTVS, include remaken_install_targ
 declare QTVS config before include template*.pri file
 
 == Product information
+
+PRODUCT_COMPANY can de defined in local project file. defined to "bcom" by default
+
 Defined in _ProductConfig.pri local project file
 PRODUCT_NAME::
 PRODUCT_DESCRIPTION::

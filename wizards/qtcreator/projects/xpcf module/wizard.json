@@ -253,7 +253,7 @@
                 },
                 {
                     "source": "remaken-module.pc.in",
-                    "target": "%{JS: 'bcom-' + '%{ProjectName}' + '.pc.in'}",
+                    "target": "%{JS: 'remaken-' + '%{ProjectName}' + '.pc.in'}",
                     "openAsProject": false,
                     "condition": "%{JS: '%{BuildSystem}' === 'qmake'}"
                 },

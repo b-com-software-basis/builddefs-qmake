@@ -5,5 +5,5 @@ macx{
 }
 
 win32 {
-    include (win32/bcom_component_app_setup.prf)
+    include (win32/remaken_component_app_setup.prf)
 }

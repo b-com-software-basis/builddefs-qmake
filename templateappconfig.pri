@@ -6,12 +6,12 @@
 }
 
 # Manage install path
-include(bcom_installpath_define.pri)
+include(remaken_installpath_define.pri)
 
 TEMPLATE = app
 
 # Include extended compiler rules
-include (bcom_compiler_specs.prf)
+include (remaken_compiler_specs.prf)
 
 # Check input parameters existence
 # Warning : app targetdeploydir depends on DEPENDENCIESCONFIG, and lib depends on CONFIG
@@ -35,7 +35,7 @@ CONFIG(release,debug|release) {
 
 # manage default/custom install dir
 !defined(TARGETDEPLOYDIR,var) {
-    TARGETDEPLOYDIR = $${PROJECTDEPLOYDIR}/bin/$${BCOM_TARGET_ARCH}/$${LINKMODE}/$$OUTPUTDIR
+    TARGETDEPLOYDIR = $${PROJECTDEPLOYDIR}/bin/$${REMAKEN_TARGET_ARCH}/$${LINKMODE}/$$OUTPUTDIR
     warning("TARGETDEPLOYDIR may be defined before templateappconfig.pri inclusion => Defaulting TARGETDEPLOYDIR to $${TARGETDEPLOYDIR}. ")
 }
 
@@ -115,5 +115,5 @@ include (packagedependencies.pri)
 
 # manage setup creation
 contains (CONFIG, app_setup) {
-    include (bcom_app_rules.prf)
+    include (remaken_app_rules.prf)
 }

@@ -87,7 +87,7 @@ macx {
             LIBS += -framework AudioUnit
         }
 
-        BCOM_REZ_FILES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU.r
+        REMAKEN_REZ_FILES += $${JUCEPATH}/juce_audio_plugin_client/juce_audio_plugin_client_AU.r
         QMAKE_REZ_FLAGS= -F AudioUnit -F CoreServices -F CarbonCore -i /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/CarbonCore.framework/Versions/A/Headers
     }
 

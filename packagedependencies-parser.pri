@@ -1,6 +1,6 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
-packagedepsfiles = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
+packagedepsfiles = $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
 
 message(" ")
 message("----------------------------------------------------------------")
@@ -80,7 +80,7 @@ for(depfile, packagedepsfiles) {
             equals(pkgTypeInfoListSize,2) {
                 pkg.repoType = $$member(pkgTypeInfoList,1)
             } else {
-                equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"remakenBuild")|equals(pkg.identifier,"thirdParties") {
                     pkg.repoType = "artifactory"
                 }  # otherwise pkg.repoType = pkg.identifier
             }
@@ -212,32 +212,38 @@ for(depfile, packagedepsfiles) {
                         }
                     }
                 }
-                pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${DEBUGPFX}$${libName}.pc
-                !exists($${pkgCfgFilePath}) {
+                oldPkgCfgFilePath = $${deployFolder}/$${OLDPFX}$${DEBUGPFX}$${libName}.pc
+                pkgCfgFilePath = $${deployFolder}/$${REMAKENPFX}$${DEBUGPFX}$${libName}.pc
+                !exists($${pkgCfgFilePath}):!exists($${oldPkgCfgFilePath}) {
                     # No specific .pc file for debug mode :
-                    # this package is a bcom like standard package with no library debug suffix
-                    pkgCfgFilePath = $${deployFolder}/$${BCOMPFX}$${libName}.pc
+                    # this package is a remaken like standard package with no library debug suffix
+                    pkgCfgFilePath = $${deployFolder}/$${REMAKENPFX}$${libName}.pc
+                    oldPkgCfgFilePath = $${deployFolder}/$${OLDPFX}$${libName}.pc
                 }
-                !exists($${pkgCfgFilePath}) {# default behavior
+                !exists($${pkgCfgFilePath}):!exists($${oldPkgCfgFilePath}) {# default behavior
                     message("    --> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values")
                     !exists($${deployFolder}/interfaces) {
                         error("    --> [ERROR] " $${deployFolder}/interfaces " doesn't exists for package " $${libName})
                     }
-                    !exists($${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}) {
-                        error("    --> [ERROR] " $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
+                    !exists($${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}) {
+                        error("    --> [ERROR] " $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
                     }
 
                     QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
                     equals(pkg.linkMode,"static") {
-                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
+                        LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
                     } else {
-                        LIBS += $${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
+                        LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
                     }
                 } else {
+                    exists($${oldPkgCfgFilePath}):!exists($${pkgCfgFilePath}) {
+                        # use old prefix file
+                        pkgCfgFilePath = $${oldPkgCfgFilePath}
+                    }
                     verboseMessage("    --> [INFO] "  $${pkgCfgFilePath} "exists")
-                    pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
+                    pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     pkgCfgVars += --define-variable=lext=$${LIBEXT}
-                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$BCOM_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
+                    pkgCfgVars += --define-variable=libdir=$${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     !win32 {
                         pkgCfgVars += --define-variable=pfx=$${LIBPREFIX}
                     }
@@ -310,8 +316,9 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
 # Manage conan dependencies
 !isEmpty(remakenConanDeps) {
-    !exists($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR) {
-        mkpath($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR)
+    REMAKEN_CONAN_DEPS_OUTPUTDIR=$$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${LINKMODE}/$$OUTPUTDIR
+    !exists($${REMAKEN_CONAN_DEPS_OUTPUTDIR}) {
+        mkpath($${REMAKEN_CONAN_DEPS_OUTPUTDIR})
     }
 
     #create conanfile.txt
@@ -327,7 +334,7 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     for (option,remakenConanOptions) {
         CONANFILECONTENT+=$${option}
     }
-    write_file($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt, CONANFILECONTENT)
+    write_file($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt, CONANFILECONTENT)
     contains(CONFIG,c++11) {
         !msvc {
             conanCppStd=11
@@ -347,15 +354,15 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
     CONFIG += conan_basic_setup
 #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    verboseMessage("conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR")
+    verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
     android {
-        system(conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR)
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
     }
     else {
-        system(conan install $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR)
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
     }
-    include($$_PRO_FILE_PWD_/build/$${LINKMODE}/$$OUTPUTDIR/conanbuildinfo.pri)
+    include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
 }
 else {
-    # TODO remove generated 'build/$${LINKMODE}/$$OUTPUTDIR' folder
+    # TODO remove generated '$${REMAKEN_CONAN_DEPS_OUTPUTDIR}' folder
 }

@@ -1,0 +1,30 @@
+# Author(s) : Loic Touraine
+
+#global defaults
+isEmpty(QMAKE_RESMERGER) {
+    exists("/Applications/Xcode.app/Contents/Developer/Tools/ResMerger") {
+       QMAKE_RESMERGER = "/Applications/Xcode.app/Contents/Developer/Tools/ResMerger"
+    } else {
+        exists("/Developer/Tools/ResMerger") {
+            QMAKE_RESMERGER = "/Developer/Tools/ResMerger"
+        } else {
+            message("Unable to find ResMerger application : check your Xcode and Developer Tools installation")
+        }
+    }
+}
+isEmpty(QMAKE_RESMERGER_FLAGS) {
+    QMAKE_RESMERGER_FLAGS = -dstIs DF
+}
+isEmpty(RESMERGER_DIR):RESMERGER_DIR = .
+isEmpty(QMAKE_EXT_RESMERGER):QMAKE_EXT_RESMERGER = .rsrc
+
+remaken_resmerger_source.CONFIG += no_link combine
+remaken_resmerger_source.dependency_type = TYPE_C
+remaken_resmerger_source.variables = QMAKE_RESMERGER_FLAGS
+remaken_resmerger_source.commands = $$QMAKE_RESMERGER $(QMAKE_COMP_QMAKE_RESMERGER_FLAGS) ${QMAKE_FILE_IN} -o ${QMAKE_FILE_OUT}
+remaken_resmerger_source.output = $$RESMERGER_DIR/$${TARGET}$${first(QMAKE_EXT_RESMERGER)}
+remaken_resmerger_source.input = REMAKEN_REZ_COMPILED_FILES
+remaken_resmerger_source.name = RESMERGER $${REMAKEN_REZ_COMPILED_FILES}
+remaken_resmerger_source.variable_out = RESMERGERFILE
+silent:remaken_resmerger_source.commands = @echo resmerger$${REMAKEN_REZ_COMPILED_FILES} && $$wremaken_resmerger_source.commands
+QMAKE_EXTRA_COMPILERS += remaken_resmerger_source

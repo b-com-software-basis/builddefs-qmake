@@ -20,8 +20,8 @@ CONFIG(release,debug|release) {
     CONANBUILDTYPE = Release
 }
 
-exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri) {
-    include($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri)
+exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri) {
+    include($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/configure_conditions.pri)
 }
 
 # Check input parameters existence
@@ -79,7 +79,8 @@ android {
     extradepsfiles += $$_PRO_FILE_PWD_/extra-packages-android.txt
 }
 
-BCOMPFX = bcom-
+REMAKENPFX = remaken-
+OLDPFX = bcom-
 
 defineReplace(aggregateDepsFiles) {
     packageDepsFilesList = $$ARGS
@@ -114,7 +115,7 @@ defineReplace(aggregateDepsFiles) {
                     equals(pkgTypeInfoListSize,2) {
                         pkg.repoType = $$member(pkgTypeInfoList,1)
                     } else {
-                    equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"thirdParties") {
+                    equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"remakenBuild")|equals(pkg.identifier,"thirdParties") {
                             pkg.repoType = "artifactory"
                         }  # otherwise pkg.repoType = pkg.identifier
                     }
@@ -177,7 +178,7 @@ contains(LINKMODE,static) {
     PKGDEPFILENAME=packagedependencies-static.txt
 }
 !isEmpty(DEPFILE_CONTENT) {
-    write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}, DEPFILE_CONTENT)
+    write_file($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}, DEPFILE_CONTENT)
 }
 
 message("=====> Parsing extra-packages files")
@@ -187,44 +188,50 @@ contains(LINKMODE,static) {
     EXTRADEPFILENAME=extra-packages-static.txt
 }
 !isEmpty(DEPFILE_CONTENT) {
-    write_file($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}, DEPFILE_CONTENT)
+    write_file($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}, DEPFILE_CONTENT)
 }
 
 contains(DEPENDENCIESCONFIG,use_remaken_parser)|contains(CONFIG,use_remaken_parser)|contains(REMAKENCONFIG,use_remaken_parser) {
     message("--> [INFO] Using dependencies from dependenciesBuildInfo.pri generated with remaken")
-    include($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${LINKMODE}/$${OUTPUTDIR}/dependenciesBuildInfo.pri)
+    include($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${LINKMODE}/$${OUTPUTDIR}/dependenciesBuildInfo.pri)
 } else {
     message("--> [INFO] Parsing and using dependencies from packagedependencies-parser.pri")
     include (packagedependencies-parser.pri)
 }
 
-exists($$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in) {
-    templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${BCOMPFX}$${TARGET}.pc.in
-} else {
-    templatePkgConfigSrc=template-pkgconfig.pc.in
+exists($$_PRO_FILE_PWD_/$${REMAKENPFX}$${TARGET}.pc.in) {
+    templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${REMAKENPFX}$${TARGET}.pc.in
+} 
+else {
+    exists($$_PRO_FILE_PWD_/$${OLDPFX}$${TARGET}.pc.in) {
+        templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${OLDPFX}$${TARGET}.pc.in
+    }
+    else {
+        templatePkgConfigSrc=template-pkgconfig.pc.in
+    }
 }
 
 message("--> [INFO] using file "  $${templatePkgConfigSrc} " as pkgconfig template source")
 PCFILE_CONTENT = $$cat($${templatePkgConfigSrc},lines)
 PCFILE_CONTENT = $$replace(PCFILE_CONTENT, "@TARGET@", $$TARGET)
 PCFILE_CONTENT = $$replace(PCFILE_CONTENT, "@VERSION@", $$VERSION)
-write_file($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc, PCFILE_CONTENT)
-QMAKE_DISTCLEAN += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
+write_file($$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc, PCFILE_CONTENT)
+QMAKE_DISTCLEAN += $$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc
 
 
 # TODO : place in an other file - separate finding and copy dependencies
 # PROJECTDEPLOYDIR only defined for lib
 defined(PROJECTDEPLOYDIR,var) {
     package_files.path = $${PROJECTDEPLOYDIR}
-    exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}) {
-        package_files.files = $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
+    exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}) {
+        package_files.files = $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}
     }
-     exists($$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}) {
-        package_files.files += $$_PRO_FILE_PWD_/build/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
+     exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}) {
+        package_files.files += $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${EXTRADEPFILENAME}
     }
     contains(TEMPLATE, lib)|contains(TEMPLATE,vclib) {
-        exists($$OUT_PWD/$${BCOMPFX}$${TARGET}.pc) {
-            package_files.files += $$OUT_PWD/$${BCOMPFX}$${TARGET}.pc
+        exists($$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc) {
+            package_files.files += $$OUT_PWD/$${REMAKENPFX}$${TARGET}.pc
         }
     }
     INSTALLS += package_files

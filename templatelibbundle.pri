@@ -19,16 +19,16 @@ macx {
     QMAKE_CXXFLAGS += -Wno-shorten-64-to-32 -Wno-newline-eof
     QMAKE_CXXFLAGS += -O0
 
-    bcom_component_binary.path = Contents/MacOS
-    bcom_component_binary.files = lib$${TARGET}.$${DYNLIBEXT}
-    QMAKE_BUNDLE_BINARY += bcom_component_binary
+    remaken_component_binary.path = Contents/MacOS
+    remaken_component_binary.files = lib$${TARGET}.$${DYNLIBEXT}
+    QMAKE_BUNDLE_BINARY += remaken_component_binary
 }
 
 win32 {
     # set target for AAX
-    bcom_component_binary.path = Contents
-    bcom_component_binary.files = $${TARGET}.$${DYNLIBEXT}
-    QMAKE_SETUP_BINARY += bcom_component_binary
+    remaken_component_binary.path = Contents
+    remaken_component_binary.files = $${TARGET}.$${DYNLIBEXT}
+    QMAKE_SETUP_BINARY += remaken_component_binary
 }
 
-include (bcom_bundle_rules.prf)
+include (remaken_bundle_rules.prf)

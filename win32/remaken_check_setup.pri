@@ -20,7 +20,7 @@
 #SETUP_INSTALLDIR=$$shell_quote($$shell_path($$(PROGRAMW6432)/Steinberg/VSTPlugins/))
 
 # Sub install dir (added to install dir) (OPTIONAL - value can be empty)
-#SETUP_SUBINSTALLDIR=bcom
+#SETUP_SUBINSTALLDIR=remaken
 
 # Copy all contents of directory (OPTIONAL - values can be empty)
 #SETUP_COPYDIR=$$shell_quote($$shell_path($$_PRO_FILE_PWD_/config/BVC_minimal_config))
