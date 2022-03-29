@@ -80,6 +80,7 @@ android {
 }
 
 REMAKENPFX = remaken-
+OLDPFX = bcom-
 
 defineReplace(aggregateDepsFiles) {
     packageDepsFilesList = $$ARGS
@@ -200,8 +201,14 @@ contains(DEPENDENCIESCONFIG,use_remaken_parser)|contains(CONFIG,use_remaken_pars
 
 exists($$_PRO_FILE_PWD_/$${REMAKENPFX}$${TARGET}.pc.in) {
     templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${REMAKENPFX}$${TARGET}.pc.in
-} else {
-    templatePkgConfigSrc=template-pkgconfig.pc.in
+} 
+else {
+    exists($$_PRO_FILE_PWD_/$${OLDPFX}$${TARGET}.pc.in) {
+        templatePkgConfigSrc=$$_PRO_FILE_PWD_/$${OLDPFX}$${TARGET}.pc.in
+    }
+    else {
+        templatePkgConfigSrc=template-pkgconfig.pc.in
+    }
 }
 
 message("--> [INFO] using file "  $${templatePkgConfigSrc} " as pkgconfig template source")

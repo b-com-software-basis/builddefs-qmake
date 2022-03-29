@@ -212,13 +212,15 @@ for(depfile, packagedepsfiles) {
                         }
                     }
                 }
+                oldPkgCfgFilePath = $${deployFolder}/$${OLDPFX}$${DEBUGPFX}$${libName}.pc
                 pkgCfgFilePath = $${deployFolder}/$${REMAKENPFX}$${DEBUGPFX}$${libName}.pc
-                !exists($${pkgCfgFilePath}) {
+                !exists($${pkgCfgFilePath}):!exists($${oldPkgCfgFilePath}) {
                     # No specific .pc file for debug mode :
                     # this package is a remaken like standard package with no library debug suffix
                     pkgCfgFilePath = $${deployFolder}/$${REMAKENPFX}$${libName}.pc
+                    oldPkgCfgFilePath = $${deployFolder}/$${OLDPFX}$${libName}.pc
                 }
-                !exists($${pkgCfgFilePath}) {# default behavior
+                !exists($${pkgCfgFilePath}):!exists($${oldPkgCfgFilePath}) {# default behavior
                     message("    --> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values")
                     !exists($${deployFolder}/interfaces) {
                         error("    --> [ERROR] " $${deployFolder}/interfaces " doesn't exists for package " $${libName})
@@ -234,6 +236,10 @@ for(depfile, packagedepsfiles) {
                         LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
                     }
                 } else {
+                    exists($${oldPkgCfgFilePath}):!exists($${pkgCfgFilePath}) {
+                        # use old prefix file
+                        pkgCfgFilePath = $${oldPkgCfgFilePath}
+                    }
                     verboseMessage("    --> [INFO] "  $${pkgCfgFilePath} "exists")
                     pkgCfgVars = --define-variable=prefix=$${deployFolder} --define-variable=depdir=$${deployFolder}/lib/dependencies/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR
                     pkgCfgVars += --define-variable=lext=$${LIBEXT}
