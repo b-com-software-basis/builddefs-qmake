@@ -70,8 +70,8 @@ contains(DEPENDENCIESCONFIG,install_recurse) {
 }
 
 exists($$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME}) {
-    verboseMessage("remaken bundle $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} -cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${REMAKEN_TARGET_ARCH} -v $${remakenBundleRecurseOption}")
-    REMAKEN_BUNDLE_COMMAND = remaken bundle $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} --cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${REMAKEN_TARGET_ARCH} -v $${remakenBundleRecurseOption}
+    verboseMessage("remaken bundle $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} --cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${REMAKEN_TARGET_ARCH} -v $${remakenBundleRecurseOption} -f")
+    REMAKEN_BUNDLE_COMMAND = remaken bundle $$_PRO_FILE_PWD_/$${REMAKEN_BUILD_RULES_FOLDER}/$${REMAKEN_FULL_PLATFORM}/$${PKGDEPFILENAME} -d $$shell_quote($$clean_path($${TARGETDEPLOYDIR})) -c $${RemakenConfig} --cpp-std $${RemakenCppStd} -b $${REMAKEN_BUILD_TOOLCHAIN} -o $${REMAKEN_OS} -a $${REMAKEN_TARGET_ARCH} -v $${remakenBundleRecurseOption} -f
 
     win32 {
         contains(PROJECTCONFIG,QTVS) {
