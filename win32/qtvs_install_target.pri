@@ -59,6 +59,9 @@ contains(PROJECTCONFIG,QTVS) {
                     write_file($${INSTALL_PROJECT_FILE},BAT_INSTALLPROJECT_COMMAND, append)
                 }
             }
+            for (install_extra, $${install}.extra) {
+                write_file($${INSTALL_PROJECT_FILE},install_extra, append)
+            }
         }
     }
     exists($${INSTALL_PROJECT_FILE}) {

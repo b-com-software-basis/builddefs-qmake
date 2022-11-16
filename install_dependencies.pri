@@ -130,7 +130,5 @@ contains(DEPENDENCIESCONFIG,install)|contains(DEPENDENCIESCONFIG,install_recurse
             install_xpcf_deps.depends = install
         }
     }
-
-    #defined(INSTALL_XPCF_XML_FILE,var) {
 }
 QMAKE_EXTRA_TARGETS  += install_deps install_xpcf_deps
