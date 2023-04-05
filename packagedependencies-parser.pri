@@ -160,18 +160,31 @@ for(depfile, packagedepsfiles) {
                     sharedLinkMode = True
                 }
                 !equals(pkg.linkMode,na) {
-                    remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
+                    equals(CONAN_MAJOR_VERSION,1) {
+                        remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
+                    }
+                    else {
+                        remakenConanOptions += $${pkg.name}/*:shared=$${sharedLinkMode}
+                    }
                 }
                 conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
                 for (conanOption, conanOptions) {
                     conanOptionInfo = $$split(conanOption, :)
                     conanOptionPrefix = $$take_first(conanOptionInfo)
                     isEmpty(conanOptionInfo) {
-                        remakenConanOptions += $${pkg.name}:$${conanOption}
+                        equals(CONAN_MAJOR_VERSION,1) {
+                            remakenConanOptions += $${pkg.name}:$${conanOption}
+                        }
+                        else {
+                            remakenConanOptions += $${pkg.name}/*:$${conanOption}
+                        }
                     }
                     else {
                         remakenConanOptions += $${conanOption}
                     }
+                }
+                !equals(CONAN_MAJOR_VERSION,1) {
+                   remakenConanDepsPkg+=$${pkg.name}"|"$${sharedLinkMode}
                 }
             }
             equals(pkg.repoType,"http") |equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
@@ -263,14 +276,19 @@ for(depfile, packagedepsfiles) {
                 verboseMessage("    $$pkgCfgVars")
                 verboseMessage("    pkg-config variables for libs :")
                 verboseMessage("    $$pkgCfgLibVars")
-                PKGCFG_CFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
+                PKGCFG_INCLUDE_PATH = $$system(pkg-config --cflags-only-I $$pkgCfgVars $$pkgCfgFilePath)
+                INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I,"")   #TODO manage path with -I inside
+                QMAKE_CXXFLAGS += $$system(pkg-config --cflags-only-other $$pkgCfgVars $$pkgCfgFilePath)
                 LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
             }
             verboseMessage(" ")
         } # for(var, dependencies)
+        verboseMessage(" ")
         verboseMessage("---- process result for $${depfile} :")
-        verboseMessage("  --> [INFO] pkg-config CFLAGS : ")
-        verboseMessage("  "$${PKGCFG_CFLAGS})
+        verboseMessage("  --> [INFO] pkg-config INCLUDEPATH : ")
+        verboseMessage("  "$${INCLUDEPATH})
+        verboseMessage("  --> [INFO] pkg-config QMAKE_CXXFLAGS : ")
+        verboseMessage("  "$${QMAKE_CXXFLAGS})
         verboseMessage("  --> [INFO] LIBS : " )
         verboseMessage("  "$${LIBS})
         verboseMessage(" ")
@@ -278,41 +296,6 @@ for(depfile, packagedepsfiles) {
 } # for(depfile, packagedepsfiles)
 
 
-# separate parameters manually in generated qmake vars
-# because 'split' does't run correctly with space in path
-gen_suffix=
-for(info, PKGCFG_CFLAGS) {
-    first2char = $$str_member($$info, 0, 1)
-    equals(first2char, "-W") | equals(first2char, "-D") | equals (first2char, "-I") {
-        gen_suffix= $${gen_suffix}A
-        gen_cflags_$${gen_suffix}=$$info
-        LIST_CFLAGVAR += gen_cflags_$${gen_suffix}
-    } else {
-        gen_cflags_$${gen_suffix}+=$$info
-    }
-}
-# now split -I in INCLUDEPATH and -D in QMAKE_CXX_FLAGS
-for (var, LIST_CFLAGVAR) {
-    first2char = $$str_member($$eval($${var}), 0, 1)
-    equals (first2char, "-I") {
-        #manage path with space
-        # TODO check with a real path with space
-        INCLUDEPATH += $$shell_quote($$replace($$eval(var), -I,))
-    } else {
-        QMAKE_CXXFLAGS += $$eval($${var})
-    }
-}
-
-message("----------------------------------------------------------------")
-message("---- Global processing result ")
-message("  --> [INFO] QMAKE_CXXFLAGS : ")
-message("  "$${QMAKE_CXXFLAGS})
-message("  --> [INFO] INCLUDEPATH : ")
-message("  "$${INCLUDEPATH})
-message("  --> [INFO] LIBS : " )
-message("  "$${LIBS})
-QMAKE_CFLAGS += $${QMAKE_CXXFLAGS}
-QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
 # Manage conan dependencies
 !isEmpty(remakenConanDeps) {
@@ -328,7 +311,14 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     }
     CONANFILECONTENT+=""
     CONANFILECONTENT+="[generators]"
-    CONANFILECONTENT+="qmake"
+
+    equals(CONAN_MAJOR_VERSION,1) {
+        CONANFILECONTENT+="qmake"
+    }
+    else {
+        CONANFILECONTENT+="PkgConfigDeps"
+    }
+
     CONANFILECONTENT+=""
     CONANFILECONTENT+="[options]"
     for (option,remakenConanOptions) {
@@ -352,17 +342,77 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
         conanCppStd=20
     }
 
-    CONFIG += conan_basic_setup
-#conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
-    android {
-        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+    equals(CONAN_MAJOR_VERSION,1) {
+        installFolderParam = -if
     }
     else {
-        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+        installFolderParam = -of
     }
-    include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
-}
-else {
+
+    CONFIG += conan_basic_setup
+    #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
+    android {
+        verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+    }
+    else {
+        CONAN_COMPILER_VERSION_OPTION=
+        win32 {
+            CONAN_COMPILER_VERSION_OPTION=-s compiler.version=$${CONAN_WIN_COMPILER_VERSION}
+        }
+        verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+    }
+
+    equals(CONAN_MAJOR_VERSION,1) {
+        include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
+    }
+    else {
+        for (dep, remakenConanDepsPkg) {
+            conanDepInfo = $$split(dep, |)
+            name = $$member(conanDepInfo,0)
+            sharedLinkMode = $$member(conanDepInfo,1)
+            pkgCfgFilePath = $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/$${name}.pc
+            !exists($${pkgCfgFilePath})) {# default behavior
+                error("    --> [ERROR] " $${pkgCfgFilePath} " doesn't exists")
+            } else {
+                verboseMessage("    --> [INFO] "  $${pkgCfgFilePath} "exists")
+            }
+
+            PKGCFG_INCLUDE_PATH = $$system("(set PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR}) && pkg-config --cflags-only-I $$pkgCfgFilePath")
+            INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I,"")   #TODO manage path with -I inside
+            QMAKE_CXXFLAGS += $$system("(set PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR}) && pkg-config --cflags-only-other $$pkgCfgFilePath")
+
+            equals(sharedLinkMode,"False") {
+                pkgCfgLibVars = --libs-only-other --static
+            } else {
+                pkgCfgLibVars = --libs
+            }
+            pkgCfgLibVars = --libs #SLETODO always this even in static mode...todo test in shared mode
+            LIBS += $$system("(set PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR}) && pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
+        } # for(var, remakenConanDepsPkg)
+        verboseMessage(" ")
+        verboseMessage("---- process result after add conan dependencies :")
+        verboseMessage("  --> [INFO] pkg-config INCLUDEPATH : ")
+        verboseMessage("  "$${INCLUDEPATH})
+        verboseMessage("  --> [INFO] pkg-config QMAKE_CXXFLAGS : ")
+        verboseMessage("  "$${QMAKE_CXXFLAGS})
+        verboseMessage("  --> [INFO] LIBS : " )
+        verboseMessage("  "$${LIBS})
+        verboseMessage(" ")
+    }
+
     # TODO remove generated '$${REMAKEN_CONAN_DEPS_OUTPUTDIR}' folder
 }
+
+message("----------------------------------------------------------------")
+message("---- Global processing result ")
+message("  --> [INFO] QMAKE_CXXFLAGS : ")
+message("  "$${QMAKE_CXXFLAGS})
+message("  --> [INFO] INCLUDEPATH : ")
+message("  "$${INCLUDEPATH})
+message("  --> [INFO] LIBS : " )
+message("  "$${LIBS})
+QMAKE_CFLAGS += $${QMAKE_CXXFLAGS}
+QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
+

@@ -137,6 +137,24 @@ ios {
     REMAKEN_OS = ios
 }
 
+isEmpty(CONAN_MAJOR_VERSION) {
+    CONAN_VERSION_CMD_RESULT += $$system(conan --version)
+    CONAN_MAJOR_VERSION=1
+    !isEmpty(CONAN_VERSION_CMD_RESULT) {
+        CONAN_VERSION_INFO_LIST = $$split(CONAN_VERSION_CMD_RESULT, ' ')
+        CONAN_VERSION_INFO_LIST_SIZE = $$size(CONAN_VERSION_INFO_LIST)
+        equals(CONAN_VERSION_INFO_LIST_SIZE,3) {
+            CONAN_VERSION = $$member(CONAN_VERSION_INFO_LIST,2)
+            CONAN_VERSION_LIST = $$split(CONAN_VERSION, .)
+            CONAN_VERSION_LIST_SIZE = $$size(CONAN_VERSION_LIST)
+            equals(CONAN_VERSION_LIST_SIZE,3) {
+                CONAN_MAJOR_VERSION=$$member(CONAN_VERSION_LIST,0)
+            }
+        }
+    }
+    message("Conan version detected : $${CONAN_VERSION} - (major version = $${CONAN_MAJOR_VERSION})")
+}
+
 isEmpty(REMAKEN_TARGET_PLATFORM) {
     REMAKEN_BUILD_TOOLCHAIN = $$basename(QMAKE_CC)
     win32 {
@@ -169,9 +187,37 @@ isEmpty(REMAKEN_TARGET_PLATFORM) {
                 REMAKEN_COMPILER_VER = 14.0
             }
             greaterThan(QMAKE_MSC_VER, 1909) {
-                # Visual Studio 2017 (14.x with x >= 1) / Visual C++ 19.10 and up
+                # Visual Studio 2017 (14.x with x >= 1 and < 2 ) / Visual C++ 19.10 and up to 19.16
                 # Note : msvc version set to 14.1 for Visual Studio 2017 in order to separate version from msvc 2015!
                 REMAKEN_COMPILER_VER = 14.1
+                equals(CONAN_MAJOR_VERSION,1) {
+                   CONAN_WIN_COMPILER_VERSION = 15     # visual studio version removed with conan 2.x
+                }
+                else {
+                   CONAN_WIN_COMPILER_VERSION = 191    # msvc version
+                }
+            }
+            greaterThan(QMAKE_MSC_VER, 1920) {
+                # Visual Studio 2019 (14.x with x >= 2 and < 30) / Visual C++ 19.20 and up to 19.29
+                # Note : msvc version set to 14.1 - TODO change to 14.2??
+                REMAKEN_COMPILER_VER = 14.1
+                equals(CONAN_MAJOR_VERSION,1) {
+                   CONAN_WIN_COMPILER_VERSION = 16
+                }
+                else {
+                   CONAN_WIN_COMPILER_VERSION = 192
+                }
+            }
+            greaterThan(QMAKE_MSC_VER, 1930) {
+                # Visual Studio 2022 (14.x with x >= 30) / Visual C++ 19.30 and up
+                # Note : msvc version set to 14.1 - TODO change to 14.30??
+                REMAKEN_COMPILER_VER = 14.1
+                equals(CONAN_MAJOR_VERSION,1) {
+                   CONAN_WIN_COMPILER_VERSION = 17
+                }
+                else {
+                   CONAN_WIN_COMPILER_VERSION = 193
+                }
             }
         }
         contains(CONFIG,c++14)|contains(CONFIG,c++1z)|contains(CONFIG,c++17)|contains(CONFIG,c++2a)|contains(CONFIG,c++20) {
