@@ -349,7 +349,6 @@ for(depfile, packagedepsfiles) {
         installFolderParam = -of
     }
 
-    CONFIG += conan_basic_setup
     #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
     android {
         verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
@@ -357,14 +356,46 @@ for(depfile, packagedepsfiles) {
     }
     else {
         CONAN_COMPILER_VERSION_OPTION=
+        CONAN_COMPILER_RUNTIME=
         win32 {
             CONAN_COMPILER_VERSION_OPTION=-s compiler.version=$${CONAN_WIN_COMPILER_VERSION}
+
+            # manage runtime
+            equals(CONAN_MAJOR_VERSION,1) {
+                usestaticwinrt{
+                    equals(CONANBUILDTYPE, "Debug") {
+                        CONAN_WIN_COMPILER_RUNTIME="MTd"
+                    }
+                    else {
+                        CONAN_WIN_COMPILER_RUNTIME="MT"
+                    }
+                }
+                else
+                {
+                    equals(CONANBUILDTYPE, "Debug") {
+                        CONAN_WIN_COMPILER_RUNTIME="MDd"
+                    }
+                    else {
+                        CONAN_WIN_COMPILER_RUNTIME="MD"
+                    }
+                }
+            }
+            else {
+                usestaticwinrt {
+                    CONAN_WIN_COMPILER_RUNTIME="static"
+                } else {
+                    CONAN_WIN_COMPILER_RUNTIME="dynamic"
+                }
+            }
+
+            CONAN_COMPILER_RUNTIME=-s compiler.runtime=$$CONAN_WIN_COMPILER_RUNTIME
         }
-        verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
-        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+        verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} $${CONAN_COMPILER_VERSION_RUNTIME} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} $${CONAN_COMPILER_VERSION_RUNTIME} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
     }
 
     equals(CONAN_MAJOR_VERSION,1) {
+        CONFIG += conan_basic_setup
         include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
     }
     else {
