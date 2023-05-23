@@ -180,7 +180,13 @@ for(depfile, packagedepsfiles) {
                         }
                     }
                     else {
-                        remakenConanOptions += $${conanOption}
+                        equals(CONAN_MAJOR_VERSION,1) {
+                            remakenConanOptions += $${conanOption}
+                        }
+                        else {
+                            conanOptionPkgOption = $$member(conanOptionInfo,0)
+                            remakenConanOptions += $${conanOptionPrefix}/*:$${conanOptionPkgOption}
+                        }
                     }
                 }
                 !equals(CONAN_MAJOR_VERSION,1) {
@@ -410,9 +416,15 @@ for(depfile, packagedepsfiles) {
                 verboseMessage("    --> [INFO] "  $${pkgCfgFilePath} "exists")
             }
 
-            PKGCFG_INCLUDE_PATH = $$system("(set PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR}) && pkg-config --cflags-only-I $$pkgCfgFilePath")
+            PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "export PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR} ;"
+            win32{
+                PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "(set PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR}) &&"
+            }
+            verboseMessage("INCLUDEPATH : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-I $$pkgCfgFilePath")
+            verboseMessage("QMAKE_CXXFLAGS : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-other $$pkgCfgFilePath")
+            PKGCFG_INCLUDE_PATH = $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-I $$pkgCfgFilePath")
             INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I,"")   #TODO manage path with -I inside
-            QMAKE_CXXFLAGS += $$system("(set PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR}) && pkg-config --cflags-only-other $$pkgCfgFilePath")
+            QMAKE_CXXFLAGS += $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-other $$pkgCfgFilePath")
 
             equals(sharedLinkMode,"False") {
                 pkgCfgLibVars = --libs-only-other --static
@@ -420,7 +432,8 @@ for(depfile, packagedepsfiles) {
                 pkgCfgLibVars = --libs
             }
             pkgCfgLibVars = --libs #SLETODO always this even in static mode...todo test in shared mode
-            LIBS += $$system("(set PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR}) && pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
+            verboseMessage("LIBS : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
+            LIBS += $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
         } # for(var, remakenConanDepsPkg)
         verboseMessage(" ")
         verboseMessage("---- process result after add conan dependencies :")
