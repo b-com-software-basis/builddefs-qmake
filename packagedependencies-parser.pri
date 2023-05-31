@@ -354,8 +354,8 @@ for(depfile, packagedepsfiles) {
     else {
         installFolderParam = -of
     }
-
-    #conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
+    # remove conan.lock file (conan V2 can't remove v1 file and makes error)
+    system(IF EXIST $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock $$QMAKE_DEL_FILE /f $$shell_path($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock))
     android {
         verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
         system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
@@ -396,8 +396,8 @@ for(depfile, packagedepsfiles) {
 
             CONAN_COMPILER_RUNTIME=-s compiler.runtime=$$CONAN_WIN_COMPILER_RUNTIME
         }
-        verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} $${CONAN_COMPILER_VERSION_RUNTIME} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
-        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} $${CONAN_COMPILER_VERSION_RUNTIME} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+        message("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} $${CONAN_COMPILER_VERSION_RUNTIME} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} $${CONAN_COMPILER_RUNTIME} $${CONAN_COMPILER_VERSION_RUNTIME} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
     }
 
     equals(CONAN_MAJOR_VERSION,1) {
