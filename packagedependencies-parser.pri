@@ -355,7 +355,12 @@ for(depfile, packagedepsfiles) {
         installFolderParam = -of
     }
     # remove conan.lock file (conan V2 can't remove v1 file and makes error)
-    system(IF EXIST $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock $$QMAKE_DEL_FILE /f $$shell_path($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock))
+    win32 {
+        system(IF EXIST $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock $$QMAKE_DEL_FILE /f $$shell_path($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock))
+    } else {
+        system($$QMAKE_DEL_FILE $$shell_path($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock))
+    }
+
     android {
         verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
         system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
