@@ -190,7 +190,7 @@ for(depfile, packagedepsfiles) {
                     }
                 }
                 !equals(CONAN_MAJOR_VERSION,1) {
-                   remakenConanDepsPkg+=$${pkg.name}"|"$${sharedLinkMode}
+                   remakenConanDepsPkg+=$${libName}"|"$${sharedLinkMode}
                 }
             }
             equals(pkg.repoType,"http") |equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
