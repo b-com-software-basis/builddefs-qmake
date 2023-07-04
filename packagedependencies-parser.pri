@@ -297,7 +297,18 @@ for (var, LIST_CFLAGVAR) {
     equals (first2char, "-I") {
         #manage path with space
         # TODO check with a real path with space
-        INCLUDEPATH += $$shell_quote($$replace($$eval(var), -I,))
+
+        # disable external/system warnings
+        contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+           win32{
+                QMAKE_CXXFLAGS += $$shell_quote($$replace($$eval(var), -I,/external:I ))
+                QMAKE_CXXFLAGS += /external:anglebrackets /external:W0 /experimental:external /external:templates-
+           } else {
+                QMAKE_CXXFLAGS += $$shell_quote($$replace($$eval(var), -I,-isystem))
+           }
+        } else {
+            INCLUDEPATH += $$shell_quote($$replace($$eval(var), -I,))
+        }
     } else {
         QMAKE_CXXFLAGS += $$eval($${var})
     }
