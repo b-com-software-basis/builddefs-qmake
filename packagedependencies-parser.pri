@@ -52,6 +52,14 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
     message(" ")
 }
 
+win32 {
+    !isEmpty(packagedepsfiles) {
+        contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+            QMAKE_CXXFLAGS += /external:anglebrackets /external:W0 /experimental:external /external:templates-
+        }
+    }
+}
+
 message("----------------------------------------------------------------")
 for(depfile, packagedepsfiles) {
     !exists($${depfile}) {
@@ -248,7 +256,17 @@ for(depfile, packagedepsfiles) {
                         error("    --> [ERROR] " $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
                     }
 
-                    QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+                    contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+                        QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+                        win32{
+                            QMAKE_CXXFLAGS += /external:I $${deployFolder}/interfaces
+                        } else {
+                            QMAKE_CXXFLAGS += -isystem$${deployFolder}/interfaces
+                        }
+                    } else {
+                        QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+                    }
+
                     equals(pkg.linkMode,"static") {
                         LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
                     } else {
@@ -283,7 +301,19 @@ for(depfile, packagedepsfiles) {
                 verboseMessage("    pkg-config variables for libs :")
                 verboseMessage("    $$pkgCfgLibVars")
                 PKGCFG_INCLUDE_PATH = $$system(pkg-config --cflags-only-I $$pkgCfgVars $$pkgCfgFilePath)
-                INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I,"")   #TODO manage path with -I inside
+
+                # disable external/system warnings
+                #TODO manage path with -I inside / manage space in PKGCFG_INCLUDE_PATH (split by -I before reconstruct and...)
+                contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+                   win32{
+                        QMAKE_CXXFLAGS += $$replace(PKGCFG_INCLUDE_PATH, -I," /external:I ")
+                   } else {
+                        QMAKE_CXXFLAGS += $$replace(PKGCFG_INCLUDE_PATH, -I, -isystem)
+                   }
+                } else {
+                    INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I, "")
+                }
+
                 QMAKE_CXXFLAGS += $$system(pkg-config --cflags-only-other $$pkgCfgVars $$pkgCfgFilePath)
                 LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
             }
@@ -428,7 +458,19 @@ for(depfile, packagedepsfiles) {
             verboseMessage("INCLUDEPATH : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-I $$pkgCfgFilePath")
             verboseMessage("QMAKE_CXXFLAGS : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-other $$pkgCfgFilePath")
             PKGCFG_INCLUDE_PATH = $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-I $$pkgCfgFilePath")
-            INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I,"")   #TODO manage path with -I inside
+
+            # disable external/system warnings
+            #TODO manage path with -I inside / manage space in PKGCFG_INCLUDE_PATH (split by -I before reconstruct and...)
+            contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+               win32{
+                    QMAKE_CXXFLAGS += $$replace(PKGCFG_INCLUDE_PATH, -I," /external:I ")
+               } else {
+                    QMAKE_CXXFLAGS += $$replace(PKGCFG_INCLUDE_PATH, -I, -isystem)
+               }
+            } else {
+                INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I, "")
+            }
+
             QMAKE_CXXFLAGS += $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-other $$pkgCfgFilePath")
 
             equals(sharedLinkMode,"False") {
