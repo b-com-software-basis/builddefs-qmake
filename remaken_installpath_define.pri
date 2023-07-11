@@ -17,5 +17,5 @@ include(remaken_arch_define.pri)
     defined(INSTALLSUBDIR,var) {
         PROJECTDEPLOYDIR = $${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${INSTALLSUBDIR}/$${FRAMEWORK}/$${VERSION}
     }
-    warning("PROJECTDEPLOYDIR may be defined before templatelibconfig.pri inclusion => Defaulting PROJECTDEPLOYDIR to $${PROJECTDEPLOYDIR}. ")
+    message("PROJECTDEPLOYDIR may be defined before templatelibconfig.pri or templateappconfig.pri inclusion => Defaulting PROJECTDEPLOYDIR to $${PROJECTDEPLOYDIR}. ")
 }

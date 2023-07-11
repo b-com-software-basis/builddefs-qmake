@@ -1,7 +1,7 @@
 # Author(s) : Loic Touraine, Stephane Leduc
 
 !defined(FRAMEWORK,var) {
-    warning("FRAMEWORK is not defined : defaulting to $$TARGET")
+    message("FRAMEWORK is not defined : defaulting to $$TARGET")
     FRAMEWORK = $$TARGET
 }
 
@@ -36,7 +36,7 @@ CONFIG(release,debug|release) {
 # manage default/custom install dir
 !defined(TARGETDEPLOYDIR,var) {
     TARGETDEPLOYDIR = $${PROJECTDEPLOYDIR}/bin/$${REMAKEN_TARGET_ARCH}/$${LINKMODE}/$$OUTPUTDIR
-    warning("TARGETDEPLOYDIR may be defined before templateappconfig.pri inclusion => Defaulting TARGETDEPLOYDIR to $${TARGETDEPLOYDIR}. ")
+    message("TARGETDEPLOYDIR may be defined before templateappconfig.pri inclusion => Defaulting TARGETDEPLOYDIR to $${TARGETDEPLOYDIR}. ")
 }
 
 unix {
