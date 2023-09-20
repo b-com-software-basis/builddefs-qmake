@@ -18,11 +18,23 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
 
     recursionLevels = 0 1 2 3 4 5 6 7 8 9
     # packagedepsfiles
-    subDeps = $$populateSubDependencies($${packagedepsfiles})
+    subDepsMetaInfo = $$populateSubDependencies($${packagedepsfiles}, $${TARGET})
     for (i, recursionLevels) {
-        !isEmpty(subDeps) {
-            packagedepsfiles += $${subDeps}
-            subDeps = $$populateSubDependencies($${subDeps})
+        subDepsList = $$split(subDepsMetaInfo, ;)
+        subDepsListSize = $$size(subDepsList)
+        equals(subDepsListSize,3) {
+            subDepsFiles = $$member(subDepsList,0)
+            pkgDepName = $$member(subDepsList,1)
+            subDepsTree += $$member(subDepsList,2)
+        } else {
+            subDepsFiles =
+            subDepsTree += $${subDepsList}
+        }
+
+        subDepsMetaInfo =
+        !isEmpty(subDepsFiles) {
+            packagedepsfiles += $${subDepsFiles}
+            subDepsMetaInfo = $$populateSubDependencies($${subDepsFiles}, $${pkgDepName})
         }
     }
 
@@ -48,6 +60,40 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
            message("    $$var")
         }
     }
+
+    message("---- Complete dependencies tree for project $${TARGET} :" )
+    for (dep, subDepsTree) {
+        message("    $${dep}")
+    }
+
+    # generate transitives deps to ignore
+    for(dep, subDepsTree) {
+        depInf = $$split(dep, |)
+        pkgParent = $$member(depInf,0)
+        pkgName = $$member(depInf,1)
+        pkgMode = $$member(depInf,2)
+
+        !equals(pkgParent,$$TARGET):equals(pkgMode,"static") {
+            staticParent = $$getStaticParentPkg($${pkgParent}, $${subDepsTree})
+            for (i, recursionLevels) {
+                !isEmpty(staticParent) {
+                    !equals(staticParent, $$TARGET) {
+                        staticParent = $$getStaticParentPkg($${staticParent}, $${subDepsTree})
+                    }
+                } else {
+                    !contains(StaticTransitiveDeps,$$pkgName) {
+                        StaticTransitiveDeps += $$pkgName
+                    }
+                }
+            }
+        }
+    }
+
+    message("---- Static transitive dependencies in project $${TARGET} :" )
+    for (dep, StaticTransitiveDeps) {
+        message("    $${dep}")
+    }
+
     message("----------------------------------------------------------------")
     message(" ")
 }
@@ -168,10 +214,10 @@ for(depfile, packagedepsfiles) {
                     sharedLinkMode = True
                 }
                 !equals(pkg.linkMode,na) {
-                    equals(CONAN_MAJOR_VERSION,1) {
-                        remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
-                    }
-                    else {
+                equals(CONAN_MAJOR_VERSION,1) {
+                    remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
+                }
+                else {
                         remakenConanOptions += $${pkg.name}/*:shared=$${sharedLinkMode}
                     }
                 }
@@ -189,9 +235,9 @@ for(depfile, packagedepsfiles) {
                     }
                     else {
                         equals(CONAN_MAJOR_VERSION,1) {
-                            remakenConanOptions += $${conanOption}
-                        }
-                        else {
+                        remakenConanOptions += $${conanOption}
+                    }
+                    else {
                             conanOptionPkgOption = $$member(conanOptionInfo,0)
                             remakenConanOptions += $${conanOptionPrefix}/*:$${conanOptionPkgOption}
                         }
@@ -264,8 +310,8 @@ for(depfile, packagedepsfiles) {
                             QMAKE_CXXFLAGS += -isystem$${deployFolder}/interfaces
                         }
                     } else {
-                        QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
-                    }
+                    QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+}
 
                     equals(pkg.linkMode,"static") {
                         LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
@@ -298,8 +344,6 @@ for(depfile, packagedepsfiles) {
             equals(pkg.repoType,"http")|equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
                 verboseMessage("    pkg-config variables for includes :")
                 verboseMessage("    $$pkgCfgVars")
-                verboseMessage("    pkg-config variables for libs :")
-                verboseMessage("    $$pkgCfgLibVars")
                 PKGCFG_INCLUDE_PATH = $$system(pkg-config --cflags-only-I $$pkgCfgVars $$pkgCfgFilePath)
 
                 # disable external/system warnings
@@ -315,7 +359,15 @@ for(depfile, packagedepsfiles) {
                 }
 
                 QMAKE_CXXFLAGS += $$system(pkg-config --cflags-only-other $$pkgCfgVars $$pkgCfgFilePath)
-                LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+
+                contains(DEPENDENCIESCONFIG,ignore_transitive):contains(StaticTransitiveDeps,$${pkg.name}) {
+                    verboseMessage("    libs :")
+                    verboseMessage("    Ignore static transitive dependency lib : $${pkg.name}")
+                } else {
+                    verboseMessage("    pkg-config variables for libs :")
+                    verboseMessage("    $$pkgCfgLibVars")
+                    LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+                }
             }
             verboseMessage(" ")
         } # for(var, dependencies)
@@ -349,7 +401,7 @@ for(depfile, packagedepsfiles) {
     CONANFILECONTENT+="[generators]"
 
     equals(CONAN_MAJOR_VERSION,1) {
-        CONANFILECONTENT+="qmake"
+       CONANFILECONTENT+="qmake"
     }
     else {
         CONANFILECONTENT+="PkgConfigDeps"
