@@ -3,18 +3,25 @@
 # Detect build toolchain and define REMAKEN_TARGET_ARCH and REMAKEN_TARGET_PLATFORM
 include(remaken_arch_define.pri)
 
-# SLETODO : split in populateSubDependencies (old function) and getSubDependenciesTree
-
 defineReplace(populateSubDependencies) {
+    # list contains same size!
     packageDepsFilesList = $$1
-    parentPkg = $$2
+    parentPkgList = $$2
 
+    # TODO add assert on same size on list
+
+    index =
+    # loop on packageDepsFilesList, and use 'index' for manage a index for parentPkgList
     for (depfile, packageDepsFilesList) {
+        indexSize = $$size(index)
+        parentPkg = $$member(parentPkgList,$$indexSize)
+        index+=1
         exists($${depfile}) {
             baseDepFile = $$basename(depfile)
             message("---- Parsing sub-dependencies from " $${depfile} " ----" )
             dependencies = $$cat($${depfile})
             for (dependency, dependencies) {
+                #message (dependency $$dependency)
                 dependencyPkgDepFiles=""
                 dependencyMetaInf = $$split(dependency, |)
                 pkgInformation = $$member(dependencyMetaInf,0)
@@ -54,7 +61,7 @@ defineReplace(populateSubDependencies) {
                     }
                     verboseMessage("  ---- Processing dependency $${pkgName}_$${pkgVersion}@$${pkgRepoType} repository")
 
-                    pkgTreeItem += $${parentPkg}|$${pkgName}|$${pkgLinkMode}
+                    pkgTreeItem = $${parentPkg}|$${pkgName}|$${pkgLinkMode}
 
                     equals(pkgRepoType,"http")|equals(pkgRepoType,"artifactory") | equals(pkgRepoType,"github") | equals(pkgRepoType,"nexus") {
                         deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
@@ -80,52 +87,31 @@ defineReplace(populateSubDependencies) {
                         }
                         contains(pkgLinkMode,static) {
                             exists($${deployFolder}/packagedependencies-static.txt) {
-                                dependencyPkgDepFiles+=$${deployFolder}/packagedependencies-static.txt
+                                dependencyPkgDepFiles=$${deployFolder}/packagedependencies-static.txt
                             }
                             else {
                                 exists($${deployFolder}/packagedependencies.txt) {
-                                    dependencyPkgDepFiles+=$${deployFolder}/packagedependencies.txt
+                                    dependencyPkgDepFiles=$${deployFolder}/packagedependencies.txt
                                 }
                             }
                         }
                         else {
                             exists($${deployFolder}/packagedependencies.txt) {
-                                dependencyPkgDepFiles+=$${deployFolder}/packagedependencies.txt
+                                dependencyPkgDepFiles=$${deployFolder}/packagedependencies.txt
                             }
                         }
-
-#                        win32:!android {
-#                            exists($${deployFolder}/packagedependencies-win.txt) {
-#                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-win.txt
-#                            }
-#                        }
-#                            # Common unix platform (macx, linux...)
-#                        unix {
-#                            exists($${deployFolder}/packagedependencies-unix.txt) {
-#                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-unix.txt
-#                            }
-#                        }
-#                        macx:!android {
-#                            exists($${deployFolder}/packagedependencies-mac.txt) {
-#                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-mac.txt
-#                            }
-#                        }
-#                        linux:!android {
-#                            exists($${deployFolder}/packagedependencies-linux.txt) {
-#                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-linux.txt
-#                            }
-#                        }
-#                        android {
-#                            exists($${deployFolder}/packagedependencies-android.txt) {
-#                                dependencyPkgDepFiles += $${deployFolder}/packagedependencies-android.txt
-#                            }
-#                        }
-
-                        currentPackageDeps = $${dependencyPkgDepFiles}
-                        !isEmpty(dependencyPkgDepFiles) {
-                            outPackageDeps += $${dependencyPkgDepFiles};$${pkgName}
-                        }
                     }
+
+                    currentPackageDeps += $${dependencyPkgDepFiles}
+                    !isEmpty(dependencyPkgDepFiles) {
+                        # subdependency file found => depfile;parentPkg;parentPkg|pkgName|pkgLinkMode (first parent pk g is used for re-call function and specify parent!)
+                        outPackageDeps += $${dependencyPkgDepFiles};$${pkgName};$${pkgTreeItem}
+                    } else {
+                        # no subdependency file found => parentPkg|pkgName|pkgLinkMode
+                        outPackageDeps += $${pkgTreeItem}
+
+                    }
+
                     isEmpty(currentPackageDeps) {
                         message("    ---- No sub-dependencies found ----")
                     } else {
@@ -142,11 +128,7 @@ defineReplace(populateSubDependencies) {
             } # for(var, dependencies)
         } #!exists($${depfile})
     } # for(depfile, packagedepsfiles)
-    !isEmpty(outPackageDeps) {
-        return($${outPackageDeps};$${pkgTreeItem})     # format : file_list;parentPkg;parentPkg|pkgname|pkgmode
-    } else {
-        return($${pkgTreeItem}) # format : parentPkg|pkgname|pkgmode
-    }
+    return ($${outPackageDeps})
 }
 
 # return pkgParent dep if static, otherwise empty

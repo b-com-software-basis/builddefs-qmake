@@ -18,23 +18,31 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
 
     recursionLevels = 0 1 2 3 4 5 6 7 8 9
     # packagedepsfiles
-    subDepsMetaInfo = $$populateSubDependencies($${packagedepsfiles}, $${TARGET})
+    subDepsMetaInfoList = $$populateSubDependencies($${packagedepsfiles}, $${TARGET})
     for (i, recursionLevels) {
-        subDepsList = $$split(subDepsMetaInfo, ;)
-        subDepsListSize = $$size(subDepsList)
-        equals(subDepsListSize,3) {
-            subDepsFiles = $$member(subDepsList,0)
-            pkgDepName = $$member(subDepsList,1)
-            subDepsTree += $$member(subDepsList,2)
-        } else {
-            subDepsFiles =
-            subDepsTree += $${subDepsList}
+        subDepsFilesList=
+        pkgDepNameList=
+        for (subDepsMetaInfo, subDepsMetaInfoList) {
+            subDepsList = $$split(subDepsMetaInfo, ;)
+            subDepsListSize = $$size(subDepsList)
+            equals(subDepsListSize,3) {
+                subDepsFilesList += $$member(subDepsList,0)
+                pkgDepNameList += $$member(subDepsList,1)
+                !contains(subDepsTree, $$member(subDepsList,2)) {
+                    subDepsTree += $$member(subDepsList,2)
+                }
+            } else {
+                subDepsFilesList =
+                !contains(subDepsTree, $${subDepsList}) {
+                    subDepsTree += $${subDepsList}
+                }
+            }
         }
 
-        subDepsMetaInfo =
-        !isEmpty(subDepsFiles) {
-            packagedepsfiles += $${subDepsFiles}
-            subDepsMetaInfo = $$populateSubDependencies($${subDepsFiles}, $${pkgDepName})
+        subDepsMetaInfoList =
+        !isEmpty(subDepsFilesList) {
+            packagedepsfiles += $${subDepsFilesList}
+            subDepsMetaInfoList = $$populateSubDependencies($${subDepsFilesList}, $${pkgDepNameList})
         }
     }
 
