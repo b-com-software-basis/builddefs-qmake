@@ -311,7 +311,6 @@ for(depfile, packagedepsfiles) {
                     }
 
                     contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
-                        QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
                         win32{
                             QMAKE_CXXFLAGS += /external:I $${deployFolder}/interfaces
                         } else {
