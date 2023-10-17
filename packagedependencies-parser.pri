@@ -301,6 +301,10 @@ for(depfile, packagedepsfiles) {
                     pkgCfgFilePath = $${deployFolder}/$${REMAKENPFX}$${libName}.pc
                     oldPkgCfgFilePath = $${deployFolder}/$${OLDPFX}$${libName}.pc
                 }
+				#!exists($${pkgCfgFilePath}):!exists($${oldPkgCfgFilePath}) {
+                    # No specific remaken*.pc file - try with libname.pc - TODO see if it can be useful
+                    #pkgCfgFilePath = $${deployFolder}/$${libName}.pc
+                #}				
                 !exists($${pkgCfgFilePath}):!exists($${oldPkgCfgFilePath}) {# default behavior
                     message("    --> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values")
                     !exists($${deployFolder}/interfaces) {
@@ -349,9 +353,13 @@ for(depfile, packagedepsfiles) {
                 }
             }
             equals(pkg.repoType,"http")|equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
+				PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "export PKG_CONFIG_PATH=$${deployFolder} ;"
+                win32{
+                    PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "(set PKG_CONFIG_PATH=$${deployFolder}) &&"
+                }
                 verboseMessage("    pkg-config variables for includes :")
                 verboseMessage("    $$pkgCfgVars")
-                PKGCFG_INCLUDE_PATH = $$system(pkg-config --cflags-only-I $$pkgCfgVars $$pkgCfgFilePath)
+                PKGCFG_INCLUDE_PATH = $$system($${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-I $$pkgCfgVars $$pkgCfgFilePath)
 
                 # disable external/system warnings
                 #TODO manage path with -I inside / manage space in PKGCFG_INCLUDE_PATH (split by -I before reconstruct and...)
@@ -365,7 +373,7 @@ for(depfile, packagedepsfiles) {
                     INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I, "")
                 }
 
-                QMAKE_CXXFLAGS += $$system(pkg-config --cflags-only-other $$pkgCfgVars $$pkgCfgFilePath)
+                QMAKE_CXXFLAGS += $$system($${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-other $$pkgCfgVars $$pkgCfgFilePath)
 
                 contains(DEPENDENCIESCONFIG,ignore_transitive):contains(StaticTransitiveDeps,$${pkg.name}) {
                     verboseMessage("    libs :")
@@ -373,7 +381,7 @@ for(depfile, packagedepsfiles) {
                 } else {
                     verboseMessage("    pkg-config variables for libs :")
                     verboseMessage("    $$pkgCfgLibVars")
-                    LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+                    LIBS += $$system($${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
                 }
             }
             verboseMessage(" ")
