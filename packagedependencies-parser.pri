@@ -18,11 +18,31 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
 
     recursionLevels = 0 1 2 3 4 5 6 7 8 9
     # packagedepsfiles
-    subDeps = $$populateSubDependencies($${packagedepsfiles})
+    subDepsMetaInfoList = $$populateSubDependencies($${packagedepsfiles}, $${TARGET})
     for (i, recursionLevels) {
-        !isEmpty(subDeps) {
-            packagedepsfiles += $${subDeps}
-            subDeps = $$populateSubDependencies($${subDeps})
+        subDepsFilesList=
+        pkgDepNameList=
+        for (subDepsMetaInfo, subDepsMetaInfoList) {
+            subDepsList = $$split(subDepsMetaInfo, ;)
+            subDepsListSize = $$size(subDepsList)
+            equals(subDepsListSize,3) {
+                subDepsFilesList += $$member(subDepsList,0)
+                pkgDepNameList += $$member(subDepsList,1)
+                !contains(subDepsTree, $$member(subDepsList,2)) {
+                    subDepsTree += $$member(subDepsList,2)
+                }
+            } else {
+                subDepsFilesList =
+                !contains(subDepsTree, $${subDepsList}) {
+                    subDepsTree += $${subDepsList}
+                }
+            }
+        }
+
+        subDepsMetaInfoList =
+        !isEmpty(subDepsFilesList) {
+            packagedepsfiles += $${subDepsFilesList}
+            subDepsMetaInfoList = $$populateSubDependencies($${subDepsFilesList}, $${pkgDepNameList})
         }
     }
 
@@ -48,8 +68,50 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
            message("    $$var")
         }
     }
+
+    message("---- Complete dependencies tree for project $${TARGET} :" )
+    for (dep, subDepsTree) {
+        message("    $${dep}")
+    }
+
+    # generate transitives deps to ignore
+    for(dep, subDepsTree) {
+        depInf = $$split(dep, |)
+        pkgParent = $$member(depInf,0)
+        pkgName = $$member(depInf,1)
+        pkgMode = $$member(depInf,2)
+
+        !equals(pkgParent,$$TARGET):equals(pkgMode,"static") {
+            staticParent = $$getStaticParentPkg($${pkgParent}, $${subDepsTree})
+            for (i, recursionLevels) {
+                !isEmpty(staticParent) {
+                    !equals(staticParent, $$TARGET) {
+                        staticParent = $$getStaticParentPkg($${staticParent}, $${subDepsTree})
+                    }
+                } else {
+                    !contains(StaticTransitiveDeps,$$pkgName) {
+                        StaticTransitiveDeps += $$pkgName
+                    }
+                }
+            }
+        }
+    }
+
+    message("---- Static transitive dependencies in project $${TARGET} :" )
+    for (dep, StaticTransitiveDeps) {
+        message("    $${dep}")
+    }
+
     message("----------------------------------------------------------------")
     message(" ")
+}
+
+win32 {
+    !isEmpty(packagedepsfiles) {
+        contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+            QMAKE_CXXFLAGS += /external:anglebrackets /external:W0 /experimental:external /external:templates-
+        }
+    }
 }
 
 message("----------------------------------------------------------------")
@@ -160,18 +222,37 @@ for(depfile, packagedepsfiles) {
                     sharedLinkMode = True
                 }
                 !equals(pkg.linkMode,na) {
+                equals(CONAN_MAJOR_VERSION,1) {
                     remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
+                }
+                else {
+                        remakenConanOptions += $${pkg.name}/*:shared=$${sharedLinkMode}
+                    }
                 }
                 conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
                 for (conanOption, conanOptions) {
                     conanOptionInfo = $$split(conanOption, :)
                     conanOptionPrefix = $$take_first(conanOptionInfo)
                     isEmpty(conanOptionInfo) {
-                        remakenConanOptions += $${pkg.name}:$${conanOption}
+                        equals(CONAN_MAJOR_VERSION,1) {
+                            remakenConanOptions += $${pkg.name}:$${conanOption}
+                        }
+                        else {
+                            remakenConanOptions += $${pkg.name}/*:$${conanOption}
+                        }
                     }
                     else {
+                        equals(CONAN_MAJOR_VERSION,1) {
                         remakenConanOptions += $${conanOption}
                     }
+                    else {
+                            conanOptionPkgOption = $$member(conanOptionInfo,0)
+                            remakenConanOptions += $${conanOptionPrefix}/*:$${conanOptionPkgOption}
+                        }
+                    }
+                }
+                !equals(CONAN_MAJOR_VERSION,1) {
+                   remakenConanDepsPkg+=$${libName}"|"$${sharedLinkMode}
                 }
             }
             equals(pkg.repoType,"http") |equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
@@ -220,6 +301,10 @@ for(depfile, packagedepsfiles) {
                     pkgCfgFilePath = $${deployFolder}/$${REMAKENPFX}$${libName}.pc
                     oldPkgCfgFilePath = $${deployFolder}/$${OLDPFX}$${libName}.pc
                 }
+				#!exists($${pkgCfgFilePath}):!exists($${oldPkgCfgFilePath}) {
+                    # No specific remaken*.pc file - try with libname.pc - TODO see if it can be useful
+                    #pkgCfgFilePath = $${deployFolder}/$${libName}.pc
+                #}				
                 !exists($${pkgCfgFilePath}):!exists($${oldPkgCfgFilePath}) {# default behavior
                     message("    --> [WARNING] " $${pkgCfgFilePath} " doesn't exists : adding default values")
                     !exists($${deployFolder}/interfaces) {
@@ -229,7 +314,16 @@ for(depfile, packagedepsfiles) {
                         error("    --> [ERROR] " $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT} " doesn't exists for package " $${libName})
                     }
 
+                    contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+                        win32{
+                            QMAKE_CXXFLAGS += /external:I $${deployFolder}/interfaces
+                        } else {
+                            QMAKE_CXXFLAGS += -isystem$${deployFolder}/interfaces
+                        }
+                    } else {
                     QMAKE_CXXFLAGS += -I$${deployFolder}/interfaces
+}
+
                     equals(pkg.linkMode,"static") {
                         LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
                     } else {
@@ -259,18 +353,45 @@ for(depfile, packagedepsfiles) {
                 }
             }
             equals(pkg.repoType,"http")|equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
+				PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "export PKG_CONFIG_PATH=$${deployFolder} ;"
+                win32{
+                    PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "(set PKG_CONFIG_PATH=$${deployFolder}) &&"
+                }
                 verboseMessage("    pkg-config variables for includes :")
                 verboseMessage("    $$pkgCfgVars")
-                verboseMessage("    pkg-config variables for libs :")
-                verboseMessage("    $$pkgCfgLibVars")
-                PKGCFG_CFLAGS += $$system(pkg-config --cflags $$pkgCfgVars $$pkgCfgFilePath)
-                LIBS += $$system(pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+                PKGCFG_INCLUDE_PATH = $$system($${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-I $$pkgCfgVars $$pkgCfgFilePath)
+
+                # disable external/system warnings
+                #TODO manage path with -I inside / manage space in PKGCFG_INCLUDE_PATH (split by -I before reconstruct and...)
+                contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+                   win32{
+                        QMAKE_CXXFLAGS += $$replace(PKGCFG_INCLUDE_PATH, -I," /external:I ")
+                   } else {
+                        QMAKE_CXXFLAGS += $$replace(PKGCFG_INCLUDE_PATH, -I, -isystem)
+                   }
+                } else {
+                    INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I, "")
+                }
+
+                QMAKE_CXXFLAGS += $$system($${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-other $$pkgCfgVars $$pkgCfgFilePath)
+
+                contains(DEPENDENCIESCONFIG,ignore_transitive):contains(StaticTransitiveDeps,$${pkg.name}) {
+                    verboseMessage("    libs :")
+                    verboseMessage("    Ignore static transitive dependency lib : $${pkg.name}")
+                } else {
+                    verboseMessage("    pkg-config variables for libs :")
+                    verboseMessage("    $$pkgCfgLibVars")
+                    LIBS += $$system($${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+                }
             }
             verboseMessage(" ")
         } # for(var, dependencies)
+        verboseMessage(" ")
         verboseMessage("---- process result for $${depfile} :")
-        verboseMessage("  --> [INFO] pkg-config CFLAGS : ")
-        verboseMessage("  "$${PKGCFG_CFLAGS})
+        verboseMessage("  --> [INFO] pkg-config INCLUDEPATH : ")
+        verboseMessage("  "$${INCLUDEPATH})
+        verboseMessage("  --> [INFO] pkg-config QMAKE_CXXFLAGS : ")
+        verboseMessage("  "$${QMAKE_CXXFLAGS})
         verboseMessage("  --> [INFO] LIBS : " )
         verboseMessage("  "$${LIBS})
         verboseMessage(" ")
@@ -278,41 +399,6 @@ for(depfile, packagedepsfiles) {
 } # for(depfile, packagedepsfiles)
 
 
-# separate parameters manually in generated qmake vars
-# because 'split' does't run correctly with space in path
-gen_suffix=
-for(info, PKGCFG_CFLAGS) {
-    first2char = $$str_member($$info, 0, 1)
-    equals(first2char, "-W") | equals(first2char, "-D") | equals (first2char, "-I") {
-        gen_suffix= $${gen_suffix}A
-        gen_cflags_$${gen_suffix}=$$info
-        LIST_CFLAGVAR += gen_cflags_$${gen_suffix}
-    } else {
-        gen_cflags_$${gen_suffix}+=$$info
-    }
-}
-# now split -I in INCLUDEPATH and -D in QMAKE_CXX_FLAGS
-for (var, LIST_CFLAGVAR) {
-    first2char = $$str_member($$eval($${var}), 0, 1)
-    equals (first2char, "-I") {
-        #manage path with space
-        # TODO check with a real path with space
-        INCLUDEPATH += $$shell_quote($$replace($$eval(var), -I,))
-    } else {
-        QMAKE_CXXFLAGS += $$eval($${var})
-    }
-}
-
-message("----------------------------------------------------------------")
-message("---- Global processing result ")
-message("  --> [INFO] QMAKE_CXXFLAGS : ")
-message("  "$${QMAKE_CXXFLAGS})
-message("  --> [INFO] INCLUDEPATH : ")
-message("  "$${INCLUDEPATH})
-message("  --> [INFO] LIBS : " )
-message("  "$${LIBS})
-QMAKE_CFLAGS += $${QMAKE_CXXFLAGS}
-QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
 
 # Manage conan dependencies
 !isEmpty(remakenConanDeps) {
@@ -328,7 +414,14 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
     }
     CONANFILECONTENT+=""
     CONANFILECONTENT+="[generators]"
-    CONANFILECONTENT+="qmake"
+
+    equals(CONAN_MAJOR_VERSION,1) {
+       CONANFILECONTENT+="qmake"
+    }
+    else {
+        CONANFILECONTENT+="PkgConfigDeps"
+    }
+
     CONANFILECONTENT+=""
     CONANFILECONTENT+="[options]"
     for (option,remakenConanOptions) {
@@ -352,17 +445,132 @@ QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
         conanCppStd=20
     }
 
-    CONFIG += conan_basic_setup
-#conan install -o boost:shared=True -s build_type=Release -s cppstd=14 boost/1.68.0@conan/stable
-    verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
-    android {
-        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+    equals(CONAN_MAJOR_VERSION,1) {
+        installFolderParam = -if
     }
     else {
-        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing -if $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+        installFolderParam = -of
     }
-    include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
-}
-else {
+    # remove conan.lock file (conan V2 can't remove v1 file and makes error)
+    win32 {
+        system(IF EXIST $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock $$QMAKE_DEL_FILE /f $$shell_path($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock))
+    } else {
+        system($$QMAKE_DEL_FILE $$shell_path($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conan.lock))
+    }
+
+    android {
+        verboseMessage("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} -pr android-clang-$${ANDROID_TARGET_ARCH} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+    }
+    else {
+        CONAN_COMPILER_VERSION_OPTION=
+        CONAN_COMPILER_RUNTIME=
+        win32 {
+            CONAN_COMPILER_VERSION_OPTION=-s compiler.version=$${CONAN_WIN_COMPILER_VERSION}
+
+            # manage runtime
+            equals(CONAN_MAJOR_VERSION,1) {
+                usestaticwinrt{
+                    equals(CONANBUILDTYPE, "Debug") {
+                        CONAN_WIN_COMPILER_RUNTIME="MTd"
+                    }
+                    else {
+                        CONAN_WIN_COMPILER_RUNTIME="MT"
+                    }
+                }
+                else
+                {
+                    equals(CONANBUILDTYPE, "Debug") {
+                        CONAN_WIN_COMPILER_RUNTIME="MDd"
+                    }
+                    else {
+                        CONAN_WIN_COMPILER_RUNTIME="MD"
+                    }
+                }
+            }
+            else {
+                usestaticwinrt {
+                    CONAN_WIN_COMPILER_RUNTIME="static"
+                } else {
+                    CONAN_WIN_COMPILER_RUNTIME="dynamic"
+                }
+            }
+
+            CONAN_COMPILER_RUNTIME=-s compiler.runtime=$$CONAN_WIN_COMPILER_RUNTIME
+        }
+        message("conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} $${CONAN_COMPILER_VERSION_RUNTIME} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR}")
+        system(conan install $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt -s $${conanArch} -s compiler.cppstd=$${conanCppStd} -s build_type=$${CONANBUILDTYPE} $${CONAN_COMPILER_VERSION_OPTION} $${CONAN_COMPILER_RUNTIME} $${CONAN_COMPILER_VERSION_RUNTIME} --build=missing $${installFolderParam} $${REMAKEN_CONAN_DEPS_OUTPUTDIR})
+    }
+
+    equals(CONAN_MAJOR_VERSION,1) {
+        CONFIG += conan_basic_setup
+        include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
+    }
+    else {
+        for (dep, remakenConanDepsPkg) {
+            conanDepInfo = $$split(dep, |)
+            name = $$member(conanDepInfo,0)
+            sharedLinkMode = $$member(conanDepInfo,1)
+            pkgCfgFilePath = $${REMAKEN_CONAN_DEPS_OUTPUTDIR}/$${name}.pc
+            !exists($${pkgCfgFilePath})) {# default behavior
+                error("    --> [ERROR] " $${pkgCfgFilePath} " doesn't exists")
+            } else {
+                verboseMessage("    --> [INFO] "  $${pkgCfgFilePath} "exists")
+            }
+
+            PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "export PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR} ;"
+            win32{
+                PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "(set PKG_CONFIG_PATH=$${REMAKEN_CONAN_DEPS_OUTPUTDIR}) &&"
+            }
+            verboseMessage("INCLUDEPATH : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-I $$pkgCfgFilePath")
+            verboseMessage("QMAKE_CXXFLAGS : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-other $$pkgCfgFilePath")
+            PKGCFG_INCLUDE_PATH = $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-I $$pkgCfgFilePath")
+
+            # disable external/system warnings
+            #TODO manage path with -I inside / manage space in PKGCFG_INCLUDE_PATH (split by -I before reconstruct and...)
+            contains(DEPENDENCIESCONFIG,externaldeps)|contains(CONFIG,externaldeps)|contains(REMAKENCONFIG,externaldeps) {
+               win32{
+                    QMAKE_CXXFLAGS += $$replace(PKGCFG_INCLUDE_PATH, -I," /external:I ")
+               } else {
+                    QMAKE_CXXFLAGS += $$replace(PKGCFG_INCLUDE_PATH, -I, -isystem)
+               }
+            } else {
+                INCLUDEPATH += $$replace(PKGCFG_INCLUDE_PATH, -I, "")
+            }
+
+            QMAKE_CXXFLAGS += $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config --cflags-only-other $$pkgCfgFilePath")
+
+            equals(sharedLinkMode,"False") {
+                pkgCfgLibVars = --libs-only-other --static
+            } else {
+                pkgCfgLibVars = --libs
+            }
+            pkgCfgLibVars = --libs #SLETODO always this even in static mode...todo test in shared mode
+            verboseMessage("LIBS : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
+            LIBS += $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
+        } # for(var, remakenConanDepsPkg)
+        verboseMessage(" ")
+        verboseMessage("---- process result after add conan dependencies :")
+        verboseMessage("  --> [INFO] pkg-config INCLUDEPATH : ")
+        verboseMessage("  "$${INCLUDEPATH})
+        verboseMessage("  --> [INFO] pkg-config QMAKE_CXXFLAGS : ")
+        verboseMessage("  "$${QMAKE_CXXFLAGS})
+        verboseMessage("  --> [INFO] LIBS : " )
+        verboseMessage("  "$${LIBS})
+        verboseMessage(" ")
+    }
+
     # TODO remove generated '$${REMAKEN_CONAN_DEPS_OUTPUTDIR}' folder
 }
+
+message("----------------------------------------------------------------")
+message("---- Global processing result ")
+message("  --> [INFO] QMAKE_CXXFLAGS : ")
+message("  "$${QMAKE_CXXFLAGS})
+message("  --> [INFO] INCLUDEPATH : ")
+message("  "$${INCLUDEPATH})
+message("  --> [INFO] LIBS : " )
+message("  "$${LIBS})
+QMAKE_CFLAGS += $${QMAKE_CXXFLAGS}
+QMAKE_OBJECTIVE_CFLAGS += $${QMAKE_CXXFLAGS}
+
