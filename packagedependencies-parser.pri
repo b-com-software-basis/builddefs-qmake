@@ -227,7 +227,11 @@ for(depfile, packagedepsfiles) {
                     remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
                 }
                 else {
-                        remakenConanOptions += $${pkg.name}/*:shared=$${sharedLinkMode}
+                        equals(pkg.name, $$replace(pkg.name, "/*","")) {
+                            remakenConanOptions += $${pkg.name}/*:shared=$${sharedLinkMode}
+                        } else {
+                            remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
+                        }
                     }
                 }
                 conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
@@ -239,7 +243,11 @@ for(depfile, packagedepsfiles) {
                             remakenConanOptions += $${pkg.name}:$$replace(conanOption, "\"","")
                         }
                         else {
-                            remakenConanOptions += $${pkg.name}/*:$$replace(conanOption, "\"","")
+                            equals(pkg.name, $$replace(pkg.name, "/*","")) {
+                                remakenConanOptions += $${pkg.name}/*:$$replace(conanOption, "\"","")
+                            } else {
+                                remakenConanOptions += $${pkg.name}:$$replace(conanOption, "\"","")
+                            }
                         }
                     }
                     else {
@@ -248,7 +256,11 @@ for(depfile, packagedepsfiles) {
                         }
                         else {
                             conanOptionPkgOption = $$member(conanOptionInfo,0)
-                            remakenConanOptions += $${conanOptionPrefix}/*:$$replace(conanOptionPkgOption, "\"","")
+                            equals(conanOptionPrefix, $$replace(conanOptionPrefix, "/*","")) {
+                               remakenConanOptions += $${conanOptionPrefix}/*:$$replace(conanOptionPkgOption, "\"","")
+                            } else {
+                               remakenConanOptions += $${conanOptionPrefix}:$$replace(conanOptionPkgOption, "\"","")
+                            }
                         }
                     }
                 }
