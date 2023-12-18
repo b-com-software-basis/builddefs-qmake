@@ -32,7 +32,8 @@ contains(DEPENDENCIESCONFIG,recurse)|contains(DEPENDENCIESCONFIG,recursive) {
                     subDepsTree += $$member(subDepsList,2)
                 }
             } else {
-                subDepsFilesList =
+				# fix search sub dependencies
+                #subDepsFilesList =
                 !contains(subDepsTree, $${subDepsList}) {
                     subDepsTree += $${subDepsList}
                 }
@@ -226,7 +227,11 @@ for(depfile, packagedepsfiles) {
                     remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
                 }
                 else {
-                        remakenConanOptions += $${pkg.name}/*:shared=$${sharedLinkMode}
+                        equals(pkg.name, $$replace(pkg.name, "/*","")) {
+                            remakenConanOptions += $${pkg.name}/*:shared=$${sharedLinkMode}
+                        } else {
+                            remakenConanOptions += $${pkg.name}:shared=$${sharedLinkMode}
+                        }
                     }
                 }
                 conanOptions = $$split(pkg.toolOptions, $$LITERAL_HASH)
@@ -235,19 +240,27 @@ for(depfile, packagedepsfiles) {
                     conanOptionPrefix = $$take_first(conanOptionInfo)
                     isEmpty(conanOptionInfo) {
                         equals(CONAN_MAJOR_VERSION,1) {
-                            remakenConanOptions += $${pkg.name}:$${conanOption}
+                            remakenConanOptions += $${pkg.name}:$$replace(conanOption, "\"","")
                         }
                         else {
-                            remakenConanOptions += $${pkg.name}/*:$${conanOption}
+                            equals(pkg.name, $$replace(pkg.name, "/*","")) {
+                                remakenConanOptions += $${pkg.name}/*:$$replace(conanOption, "\"","")
+                            } else {
+                                remakenConanOptions += $${pkg.name}:$$replace(conanOption, "\"","")
+                            }
                         }
                     }
                     else {
                         equals(CONAN_MAJOR_VERSION,1) {
-                        remakenConanOptions += $${conanOption}
-                    }
-                    else {
+                            remakenConanOptions += $$replace(conanOption, "\"","")
+                        }
+                        else {
                             conanOptionPkgOption = $$member(conanOptionInfo,0)
-                            remakenConanOptions += $${conanOptionPrefix}/*:$${conanOptionPkgOption}
+                            equals(conanOptionPrefix, $$replace(conanOptionPrefix, "/*","")) {
+                               remakenConanOptions += $${conanOptionPrefix}/*:$$replace(conanOptionPkgOption, "\"","")
+                            } else {
+                               remakenConanOptions += $${conanOptionPrefix}:$$replace(conanOptionPkgOption, "\"","")
+                            }
                         }
                     }
                 }
@@ -410,7 +423,9 @@ for(depfile, packagedepsfiles) {
     #create conanfile.txt
     CONANFILECONTENT="[requires]"
     for (dep,remakenConanDeps) {
-        CONANFILECONTENT+=$${dep}
+        !contains(CONANFILECONTENT,$${dep}) {
+            CONANFILECONTENT+=$${dep}
+        }
     }
     CONANFILECONTENT+=""
     CONANFILECONTENT+="[generators]"
@@ -425,7 +440,9 @@ for(depfile, packagedepsfiles) {
     CONANFILECONTENT+=""
     CONANFILECONTENT+="[options]"
     for (option,remakenConanOptions) {
-        CONANFILECONTENT+=$${option}
+        !contains(CONANFILECONTENT,$${option}) {
+            CONANFILECONTENT+=$${option}
+        }
     }
     write_file($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanfile.txt, CONANFILECONTENT)
     contains(CONFIG,c++11) {
