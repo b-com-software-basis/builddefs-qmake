@@ -191,6 +191,7 @@ for(depfile, packagedepsfiles) {
                 pkgCfgLibVars += --libs
             }
             equals(pkg.repoType,"system") {# local system package handling
+                checkPkgconfigInstalled()
                 pkgCfgFilePath = ""
                 !equals(pkg.identifier, "choco") {
                     !system(pkg-config --exists $${libName}) {
@@ -366,6 +367,7 @@ for(depfile, packagedepsfiles) {
                 }
             }
             equals(pkg.repoType,"http")|equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
+                checkPkgconfigInstalled()
 				PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "export PKG_CONFIG_PATH=$${deployFolder} ;"
                 win32{
                     PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "(set PKG_CONFIG_PATH=$${deployFolder}) &&"
@@ -525,6 +527,7 @@ for(depfile, packagedepsfiles) {
     }
     else {
         for (dep, remakenConanDepsPkg) {
+            checkPkgconfigInstalled()
             conanDepInfo = $$split(dep, |)
             name = $$member(conanDepInfo,0)
             sharedLinkMode = $$member(conanDepInfo,1)
