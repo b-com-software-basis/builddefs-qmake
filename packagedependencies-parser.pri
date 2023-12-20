@@ -482,7 +482,7 @@ for(depfile, packagedepsfiles) {
     else {
         CONAN_COMPILER_VERSION_OPTION=
         CONAN_COMPILER_RUNTIME=
-        win32 {
+        win32-msvc {
             CONAN_COMPILER_VERSION_OPTION=-s compiler.version=$${CONAN_WIN_COMPILER_VERSION}
 
             # manage runtime
