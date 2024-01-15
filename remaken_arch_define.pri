@@ -157,7 +157,7 @@ isEmpty(CONAN_MAJOR_VERSION) {
 
 isEmpty(REMAKEN_TARGET_PLATFORM) {
     REMAKEN_BUILD_TOOLCHAIN = $$basename(QMAKE_CC)
-    win32 {
+    win32-msvc {
         !defined(QMAKE_MSC_VER,var) {
             !defined (MSVC_VER, var) {
                 error("Unable to find msvc version : Use minimum Qt 5.6 version.")
