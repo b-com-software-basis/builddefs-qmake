@@ -41,8 +41,7 @@ Install [Qt Creator](https://www.qt.io/download)
 
 ### Windows
 
-- Install [Nsis](https://nsis.sourceforge.io/Main_Page) - version 3.04 
-(EnVar plug-in issue on more recent version)
+- Install [Nsis](https://nsis.sourceforge.io/Main_Page) - version 3.0.9
 - Install [Nsis Environment variable plugin](https://nsis.sourceforge.io/EnVar_plug-in)
 
 ## Packaging structure

@@ -1,6 +1,5 @@
 ; helps to manage env var
 ; http://nsis.sourceforge.net/Path_Manipulation
-!include /*@CUSTOM_NSIS_INCLUDE@*/"EnvVarUpdate.nsh"
 ; helps to manage powershell command
 !include /*@CUSTOM_NSIS_INCLUDE@*/"psexec.nsh"
 
@@ -142,7 +141,10 @@ Section "-hidden Install"
 
   
 !ifdef CUSTOMIZE_ADDTOPATH
-  ${EnvVarUpdate} $0 "PATH" "A" "HKCU" "$SetupInstallDir"
+  EnVar::SetHKCU
+  EnVar::AddValue "PATH" "$SetupInstallDir"
+
+  #${EnvVarUpdate} $0 "PATH" "A" "HKCU" "$SetupInstallDir"
 !endif
 SectionEnd
 
@@ -164,7 +166,9 @@ Section "Uninstall"
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SETUP_GUID}"
   
 !ifdef CUSTOMIZE_ADDTOPATH
-  ${un.EnvVarUpdate} $0 "PATH" "R" "HKCU" "$SetupInstallDir"
+    EnVar::SetHKCU
+    EnVar::DeleteValue "PATH" "$SetupInstallDir"
+    #${un.EnvVarUpdate} $0 "PATH" "R" "HKCU" "$SetupInstallDir"
 !endif
 SectionEnd
 
