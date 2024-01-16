@@ -1,0 +1,60 @@
+name: Builddefs-Qmake CI
+on:
+  push:
+    branches:
+      - master
+      - develop
+      - '/releases/**'
+    tags:
+      - '[0-9]+\.[0-9]+\.[0-9]+'
+      
+env: 
+  tag_version: ${{ github.ref_name == 'develop' && '4.11.0' || github.ref_name }}  
+  
+jobs:
+  exec-ci:
+    runs-on: ubuntu-latest
+    steps:
+    
+    # Checkout
+    - name : checkout bd/qmake and zip for internal artefact
+      uses: actions/checkout@v3
+    
+    # Zip internal artefact
+    - name : Zip internal artefact
+      run : cd .. && mkdir builddefs-qmake-package && cp -r builddefs-qmake/ builddefs-qmake-package/builddefs-qmake && mv builddefs-qmake-package builddefs-qmake/builddefs-qmake-package && cd - 
+    
+    # Internal artefact
+    - name: Internal Artefact
+      uses: actions/upload-artifact@v3
+      with:
+        name: builddefs-qmake-package
+        path: builddefs-qmake-package
+    
+    # Remove Internal artefact
+    - name: Remove internal artefact
+      run : rm -rf builddefs-qmake-package
+    
+    # Zip results (for tag)
+    - name : zip results
+      run : cd .. && zip -r -y builddefs-qmake/builddefs-qmake-package.zip builddefs-qmake && cd -
+    
+    # Delete previous latest version 
+    - name: delete previous latest version
+      uses: dev-drprasad/delete-tag-and-release@v1.0
+      with:
+        tag_name: ${{ env.tag_version }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        delete_release: true
+    
+    # Tag current version
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        automatic_release_tag: builddefs-qmake-${{ env.tag_version }}
+        prerelease: true
+        title: builddefs-qmake-${{ env.tag_version }}
+        files: |
+          builddefs-qmake-package.zip
+
+    
