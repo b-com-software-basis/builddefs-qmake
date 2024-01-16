@@ -51,7 +51,7 @@ jobs:
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        automatic_release_tag: builddefs-qmake-${{ env.tag_version }}
+        automatic_release_tag: ${{ env.tag_version }}
         prerelease: true
         title: builddefs-qmake-${{ env.tag_version }}
         files: |
