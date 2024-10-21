@@ -210,13 +210,24 @@ isEmpty(REMAKEN_TARGET_PLATFORM) {
             }
             greaterThan(QMAKE_MSC_VER, 1930) {
                 # Visual Studio 2022 (14.x with x >= 30) / Visual C++ 19.30 and up
-                # Note : msvc version set to 14.1 - TODO change to 14.30??
-                REMAKEN_COMPILER_VER = 14.1
+                # Note : msvc version set to 14.3
+                REMAKEN_COMPILER_VER = 14.3
                 equals(CONAN_MAJOR_VERSION,1) {
                    CONAN_WIN_COMPILER_VERSION = 17
                 }
                 else {
                    CONAN_WIN_COMPILER_VERSION = 193
+                }
+            }
+            greaterThan(QMAKE_MSC_VER, 1939) {
+                # Visual Studio 2022 (14.x with x >= 40) / Visual C++ 19.40 and up
+                # Note : msvc version set to 14.3
+                REMAKEN_COMPILER_VER = 14.3
+                equals(CONAN_MAJOR_VERSION,1) {
+                   CONAN_WIN_COMPILER_VERSION = 17
+                }
+                else {
+                   CONAN_WIN_COMPILER_VERSION = 194
                 }
             }
         }
