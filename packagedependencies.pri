@@ -116,7 +116,7 @@ defineReplace(aggregateDepsFiles) {
                         pkg.repoType = $$member(pkgTypeInfoList,1)
                     } else {
                     equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"remakenBuild")|equals(pkg.identifier,"thirdParties") {
-                            pkg.repoType = "artifactory"
+                            pkg.repoType = "gitlab"
                         }  # otherwise pkg.repoType = pkg.identifier
                     }
                     pkg.repoUrl=$$member(dependencyMetaInf,4)

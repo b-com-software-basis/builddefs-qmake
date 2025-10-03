@@ -47,8 +47,8 @@ defineReplace(populateSubDependencies) {
                     equals(pkgTypeInfoListSize,2) {
                         pkgRepoType = $$member(pkgTypeInfoList,1)
                     } else {
-                       equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"remakenBuild")|equals(pkgCategory,"thirdParties") {
-                            pkgRepoType = "artifactory"
+                        equals(pkgCategory,"bcomBuild")|equals(pkgCategory,"remakenBuild")|equals(pkgCategory,"thirdParties") {
+                            pkgRepoType = "gitlab"
                         }  # otherwise pkgRepoType = pkgCategory
                     }
                     # check pkgLinkMode not empty and mandatory equals to static|shared, otherwise set to default DEPLINKMODE
@@ -63,7 +63,7 @@ defineReplace(populateSubDependencies) {
 
                     pkgTreeItem = $${parentPkg}|$${pkgName}|$${pkgLinkMode}
 
-                    equals(pkgRepoType,"http")|equals(pkgRepoType,"artifactory") | equals(pkgRepoType,"github") | equals(pkgRepoType,"nexus") {
+                    equals(pkgRepoType,"http")|equals(pkgRepoType,"artifactory") | equals(pkgRepoType,"github") | equals(pkgRepoType,"nexus") | equals(pkgRepoType,"gitlab") {
                         deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkgName}/$${pkgVersion}
                         !equals(pkgCategory,$${pkgRepoType}) {
                             deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkgCategory}/$${pkgName}/$${pkgVersion}

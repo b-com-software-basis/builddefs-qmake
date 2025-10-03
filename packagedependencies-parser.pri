@@ -144,7 +144,7 @@ for(depfile, packagedepsfiles) {
                 pkg.repoType = $$member(pkgTypeInfoList,1)
             } else {
                 equals(pkg.identifier,"bcomBuild")|equals(pkg.identifier,"remakenBuild")|equals(pkg.identifier,"thirdParties") {
-                    pkg.repoType = "artifactory"
+                    pkg.repoType = "gitlab"
                 }  # otherwise pkg.repoType = pkg.identifier
             }
             pkg.repoUrl=$$member(dependencyMetaInf,4)
@@ -269,7 +269,7 @@ for(depfile, packagedepsfiles) {
                    remakenConanDepsPkg+=$${libName}"|"$${sharedLinkMode}
                 }
             }
-            equals(pkg.repoType,"http") |equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") {
+            equals(pkg.repoType,"http") |equals(pkg.repoType,"artifactory") | equals(pkg.repoType,"github") | equals(pkg.repoType,"nexus") | equals(pkg.repoType,"gitlab") {
                 # custom built package handling
                 deployFolder=$${REMAKENDEPSFOLDER}/$${REMAKEN_TARGET_PLATFORM}/$${pkg.name}/$${pkg.version}
                 !equals(pkg.identifier,$${pkg.repoType}) {
@@ -366,7 +366,7 @@ for(depfile, packagedepsfiles) {
                     }
                 }
             }
-            equals(pkg.repoType,"http")|equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system") {
+            equals(pkg.repoType,"http")|equals(pkg.repoType,"artifactory")|equals(pkg.repoType,"github")|equals(pkg.repoType,"nexus")|equals(pkg.repoType,"system")|equals(pkg.repoType,"gitlab") {
                 checkPkgconfigInstalled()
 				PKG_CONFIG_PATH_SET_ENVVAR_COMMAND = "export PKG_CONFIG_PATH=$${deployFolder} ;"
                 win32{
