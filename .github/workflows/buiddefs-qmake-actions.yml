@@ -26,7 +26,7 @@ jobs:
     
     # Internal artefact
     - name: Internal Artefact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.6.2
       with:
         name: builddefs-qmake-package
         path: builddefs-qmake-package
