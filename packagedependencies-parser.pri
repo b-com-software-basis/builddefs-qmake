@@ -526,6 +526,7 @@ for(depfile, packagedepsfiles) {
         include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
     }
     else {
+        project_libs =
         for (dep, remakenConanDepsPkg) {
             checkPkgconfigInstalled()
             conanDepInfo = $$split(dep, |)
@@ -567,8 +568,14 @@ for(depfile, packagedepsfiles) {
             }
             pkgCfgLibVars = --libs #SLETODO always this even in static mode...todo test in shared mode
             verboseMessage("LIBS : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
-            LIBS += $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
+            project_libs += $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
+
         } # for(var, remakenConanDepsPkg)
+        win32{
+            LIBS += $$project_libs
+        } else {
+            LIBS += -Wl,--start-group $$project_libs -Wl,--end-group
+        }
         verboseMessage(" ")
         verboseMessage("---- process result after add conan dependencies :")
         verboseMessage("  --> [INFO] pkg-config INCLUDEPATH : ")
