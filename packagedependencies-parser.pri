@@ -115,6 +115,26 @@ win32 {
     }
 }
 
+# Manage libs group
+REMAKEN_LIBGROUP =
+contains(DEPENDENCIESCONFIG,libgroup)|contains(CONFIG,libgroup)|contains(REMAKENCONFIG,libgroup) {
+    !win32:!darwin {
+        REMAKEN_LIBGROUP = 1
+    }
+}
+REMAKEN_GROUP_LIBS =
+
+# Add the libs listed in REMAKEN_NEW_LIBS to LIBS (or to the libs group when libgroup is enabled)
+defineTest(addDependencyLibs) {
+    isEmpty(REMAKEN_LIBGROUP) {
+        LIBS += $$REMAKEN_NEW_LIBS
+        export(LIBS)
+    } else {
+        REMAKEN_GROUP_LIBS += $$REMAKEN_NEW_LIBS
+        export(REMAKEN_GROUP_LIBS)
+    }
+}
+
 message("----------------------------------------------------------------")
 for(depfile, packagedepsfiles) {
     !exists($${depfile}) {
@@ -339,9 +359,11 @@ for(depfile, packagedepsfiles) {
 }
 
                     equals(pkg.linkMode,"static") {
-                        LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
+                        REMAKEN_NEW_LIBS = $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR/$${LIBPREFIX}$${libName}.$${LIBEXT}
+                        addDependencyLibs()
                     } else {
-                        LIBS += $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
+                        REMAKEN_NEW_LIBS = $${deployFolder}/lib/$$REMAKEN_TARGET_ARCH/$${pkg.linkMode}/$$OUTPUTDIR -l$${libName}
+                        addDependencyLibs()
                     }
                 } else {
                     exists($${oldPkgCfgFilePath}):!exists($${pkgCfgFilePath}) {
@@ -396,7 +418,8 @@ for(depfile, packagedepsfiles) {
                 } else {
                     verboseMessage("    pkg-config variables for libs :")
                     verboseMessage("    $$pkgCfgLibVars")
-                    LIBS += $$system($${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+                    REMAKEN_NEW_LIBS = $$system($${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath)
+                    addDependencyLibs()
                 }
             }
             verboseMessage(" ")
@@ -408,7 +431,7 @@ for(depfile, packagedepsfiles) {
         verboseMessage("  --> [INFO] pkg-config QMAKE_CXXFLAGS : ")
         verboseMessage("  "$${QMAKE_CXXFLAGS})
         verboseMessage("  --> [INFO] LIBS : " )
-        verboseMessage("  "$${LIBS})
+        verboseMessage("  "$${LIBS} $${REMAKEN_GROUP_LIBS})
         verboseMessage(" ")
     } #!exists($${depfile})
 } # for(depfile, packagedepsfiles)
@@ -526,7 +549,6 @@ for(depfile, packagedepsfiles) {
         include($${REMAKEN_CONAN_DEPS_OUTPUTDIR}/conanbuildinfo.pri)
     }
     else {
-        project_libs =
         for (dep, remakenConanDepsPkg) {
             checkPkgconfigInstalled()
             conanDepInfo = $$split(dep, |)
@@ -568,14 +590,9 @@ for(depfile, packagedepsfiles) {
             }
             pkgCfgLibVars = --libs #SLETODO always this even in static mode...todo test in shared mode
             verboseMessage("LIBS : $${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
-            project_libs += $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
-
+            REMAKEN_NEW_LIBS = $$system("$${PKG_CONFIG_PATH_SET_ENVVAR_COMMAND} pkg-config $$pkgCfgLibVars $$pkgCfgFilePath")
+            addDependencyLibs()
         } # for(var, remakenConanDepsPkg)
-        win32{
-            LIBS += $$project_libs
-        } else {
-            LIBS += -Wl,--start-group $$project_libs -Wl,--end-group
-        }
         verboseMessage(" ")
         verboseMessage("---- process result after add conan dependencies :")
         verboseMessage("  --> [INFO] pkg-config INCLUDEPATH : ")
@@ -583,11 +600,16 @@ for(depfile, packagedepsfiles) {
         verboseMessage("  --> [INFO] pkg-config QMAKE_CXXFLAGS : ")
         verboseMessage("  "$${QMAKE_CXXFLAGS})
         verboseMessage("  --> [INFO] LIBS : " )
-        verboseMessage("  "$${LIBS})
+        verboseMessage("  "$${LIBS} $${REMAKEN_GROUP_LIBS})
         verboseMessage(" ")
     }
 
     # TODO remove generated '$${REMAKEN_CONAN_DEPS_OUTPUTDIR}' folder
+}
+
+# One single group for all the dependencies (remaken and conan)
+!isEmpty(REMAKEN_LIBGROUP):!isEmpty(REMAKEN_GROUP_LIBS) {
+    LIBS += -Wl,--start-group $$REMAKEN_GROUP_LIBS -Wl,--end-group
 }
 
 message("----------------------------------------------------------------")
