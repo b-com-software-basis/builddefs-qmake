@@ -206,6 +206,28 @@ To manage ```install``` or ```install_recurse``` with QTVS, include ```remaken_i
 
 declare QTVS config before include ```template*.pri``` file
 
+### Library link order
+
+With static libraries, GNU ld (and lld) resolve symbols in a single pass, from left to right: a library must appear *after* the ones that need it. When static libraries depend on each other in a cycle (for example the static MKL libraries shipped with Open3D: ```mkl_tbb_thread``` needs symbols from ```mkl_core```, which is listed first), the link fails with ```undefined reference``` errors, whatever the order of ```LIBS```.
+
+The ```libgroup``` option fixes this by wrapping all the dependencies libraries in a linker group:
+
+    -Wl,--start-group <all the dependencies libs> -Wl,--end-group
+
+The linker then rescans the libraries of the group until no new symbol gets resolved, so their relative order doesn't matter anymore.
+
+**Usage**
+
+Add ```libgroup``` to either ```DEPENDENCIESCONFIG```, ```CONFIG``` or ```REMAKENCONFIG``` in your qmake project file, before the ```template*.pri``` inclusion:
+
+    DEPENDENCIESCONFIG = libgroup
+
+**Behavior**
+
+- Disabled by default: without ```libgroup```, ```LIBS``` is built exactly as before.
+- It applies to every kind of dependency (remaken packages, with or without pkg-config file, and conan packages) and generates one single group, so cycles between a remaken and a conan package are handled too.
+- It is ignored on Windows and on Apple platforms (macOS, iOS), whose linkers don't support ```--start-group```.
+
 ### Product information
 
 PRODUCT_COMPANY can de defined in local project file. defined to "bcom" by default
