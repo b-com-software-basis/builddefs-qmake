@@ -4,12 +4,13 @@ on:
     branches:
       - master
       - develop
-      - '/releases/**'
     tags:
-      - '[0-9]+\.[0-9]+\.[0-9]+'
+      - '**'
+      - '!master'
+      - '!develop'
       
 env: 
-  tag_version: ${{ github.ref_name == 'develop' && '4.13  .0' || github.ref_name }}  
+  tag_version: ${{ github.ref_name }}  
   
 jobs:
   exec-ci:
